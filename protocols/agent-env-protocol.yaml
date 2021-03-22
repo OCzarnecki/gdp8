@@ -1,0 +1,27 @@
+---
+name: agent-environment
+author: gdp8
+version: 0.1.0
+description: Agent-environment messages
+license: Apache-2.0
+aea_version: '>=0.11.0, <0.12.0'
+speech_acts:
+  tick: 
+    tile_water: pt:int
+    agent_water: pt:int
+    neighbour_ids: pt:set[int]
+  action:
+    command: pt:str
+    water_quantity: pt:int
+...
+---
+initiation: [tick]
+reply:
+  tick: [action]
+  action: []
+termination: [action]
+roles: {agent, environment}
+end_states: [success, illegal_action]
+keep_terminal_state_dialogues: false
+...
+
