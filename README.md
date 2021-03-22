@@ -1,29 +1,24 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Repository for the AEA project. All code goes here. Link relevant info in this file!
 
-### What is this repository for? ###
+# Project info
+* Sponsor: David Minarsch (david.minarsch@fetch.ai)
+* Academic Supervisor: Thomas Orton (thomas.orton@st-hughs.ox.ac.uk)
+* Group number: 8
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+# Set up
+Clone this repository with
+```
+git clone https://OlafC@bitbucket.org/OlafC/gdp.git
+```
+Then, follow the [AEA Framework Installation Instructions](https://docs.fetch.ai/aea/quickstart/#option-2-automated-install-script).
 
 ### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
+* Everything happens on master
+* Only push code that works
+* If you do happen to push changes that break something, please fix it quickly so the others can continue working
 
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+# Resources
+* [AEA Project Design Specification](https://docs.google.com/document/d/1yW-G3PwM8LSF0rP7QbxBdjW7P8ET7lRGUL2m7ZZIMzQ/edits]
