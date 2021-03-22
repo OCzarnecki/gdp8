@@ -1,0 +1,26 @@
+agent_name: agent_aea
+author: Chun
+version: 0.1.0
+license: Apache-2.0
+description: ''
+aea_version: '>=0.11.0, <0.12.0'
+fingerprint: {}
+fingerprint_ignore_patterns: []
+connections: []
+contracts: []
+protocols:
+- fetchai/default:0.13.0
+- fetchai/signing:0.11.0
+- fetchai/state_update:0.11.0
+skills: []
+default_connection: null
+default_ledger: fetchai
+default_routing: {}
+connection_private_key_paths: {}
+private_key_paths: {}
+logging_config:
+  disable_existing_loggers: false
+  version: 1
+registry_path: ..\packages
+dependencies:
+  aea-ledger-fetchai: {}
