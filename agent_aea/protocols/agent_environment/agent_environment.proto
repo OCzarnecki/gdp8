@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package aea.gdp8.agent_environment_communication.v0_1_0;
+
+message AgentEnvironmentMessage{
+
+  // Custom Types
+  message Command{
+    enum CommandEnum {
+      NOP = 0;
+      SEND_WATER = 1;
+      RECEIVE_WATER = 2;
+    }
+    CommandEnum command = 1;
+  }
+
+
+  // Performatives and contents
+  message Tick_Performative{
+    int32 tile_water = 1;
+    int32 agent_water = 2;
+    repeated int32 neighbour_ids = 3;
+  }
+
+  message Action_Performative{
+    Command command = 1;
+    int32 water_quantity = 2;
+  }
+
+
+  oneof performative{
+    Action_Performative action = 5;
+    Tick_Performative tick = 6;
+  }
+}

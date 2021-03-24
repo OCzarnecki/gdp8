@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package aea.gdp8.agent_agent_communication.v0_1_0;
+
+message AgentAgentMessage{
+
+  // Performatives and contents
+  message Water_Status_Performative{
+    int32 water = 1;
+  }
+
+
+  oneof performative{
+    Water_Status_Performative water_status = 5;
+  }
+}

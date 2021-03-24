@@ -1,0 +1,18 @@
+name: agent_agent
+author: gdp8
+version: 0.1.0
+protocol_specification_id: gdp8/agent_agent_communication:0.1.0
+type: protocol
+description: Agent-agent messages
+license: Apache-2.0
+aea_version: '>=0.11.0, <0.12.0'
+fingerprint:
+  __init__.py: QmVBVDFUBjy29wh12jkHTE3U7vyanPeJ5mHjjqsLLLYc9T
+  agent_agent.proto: QmSXhCNDiFB9ibdazJrinhVs4JKLJh7UvW8FwXfgRyq1E3
+  agent_agent_pb2.py: QmbtYpKmUMWCKX9nNrA5sK6PNNWgySRwFAMZqZWaUfJuDQ
+  dialogues.py: QmW8SGVyAK2dZDtLFrXN99HeivDdPXX3TrTgY1KVEzfPRD
+  message.py: QmbBqek5RZUGVfLAYZdhsLeGYmVHt99JRhJ7JsdyaY8UNR
+  serialization.py: QmaMz1x1cYPFZx2HpAgVBGRgJx2CPQfLe2yD7krGZUkudH
+fingerprint_ignore_patterns: []
+dependencies:
+  protobuf: {}
