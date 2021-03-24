@@ -1,8 +1,8 @@
 agent_name: env_aea
-author: Chun
+author: gdp8
 version: 0.1.0
 license: Apache-2.0
-description: ''
+description: This agent provides is the environment simulation for the other agents.
 aea_version: '>=0.11.0, <0.12.0'
 fingerprint: {}
 fingerprint_ignore_patterns: []
@@ -12,8 +12,8 @@ protocols:
 - fetchai/default:0.13.0
 - fetchai/signing:0.11.0
 - fetchai/state_update:0.11.0
+- gdp8/agent_environment:0.1.0
 skills: []
-default_connection: null
 default_ledger: fetchai
 default_routing: {}
 connection_private_key_paths: {}
@@ -24,3 +24,4 @@ logging_config:
 registry_path: ..\packages
 dependencies:
   aea-ledger-fetchai: {}
+default_connection: null
