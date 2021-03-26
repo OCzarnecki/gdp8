@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021 gdp8
+#   Copyright 2021 fetchai
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@
 # ------------------------------------------------------------------------------
 
 """
-This module contains the classes required for agent_environment dialogue management.
+This module contains the classes required for default dialogue management.
 
-- AgentEnvironmentDialogue: The dialogue class maintains state of a dialogue and manages it.
-- AgentEnvironmentDialogues: The dialogues class keeps track of all dialogues.
+- DefaultDialogue: The dialogue class maintains state of a dialogue and manages it.
+- DefaultDialogues: The dialogues class keeps track of all dialogues.
 """
 
 from abc import ABC
@@ -31,38 +31,47 @@ from aea.common import Address
 from aea.protocols.base import Message
 from aea.protocols.dialogue.base import Dialogue, DialogueLabel, Dialogues
 
-from gdp.agent_aea.protocols.agent_environment.message import AgentEnvironmentMessage
+from gdp.agent_aea.protocols.default.message import DefaultMessage
 
 
-class AgentEnvironmentDialogue(Dialogue):
-    """The agent_environment dialogue class maintains state of a dialogue and manages it."""
+class DefaultDialogue(Dialogue):
+    """The default dialogue class maintains state of a dialogue and manages it."""
 
-    INITIAL_PERFORMATIVES = frozenset({AgentEnvironmentMessage.Performative.TICK})
-    TERMINAL_PERFORMATIVES = frozenset({AgentEnvironmentMessage.Performative.ACTION})
+    INITIAL_PERFORMATIVES = frozenset(
+        {DefaultMessage.Performative.BYTES, DefaultMessage.Performative.ERROR}
+    )
+    TERMINAL_PERFORMATIVES = frozenset(
+        {DefaultMessage.Performative.END, DefaultMessage.Performative.ERROR}
+    )
     VALID_REPLIES = {
-        AgentEnvironmentMessage.Performative.ACTION: frozenset(),
-        AgentEnvironmentMessage.Performative.TICK: frozenset(
-            {AgentEnvironmentMessage.Performative.ACTION}
+        DefaultMessage.Performative.BYTES: frozenset(
+            {
+                DefaultMessage.Performative.BYTES,
+                DefaultMessage.Performative.ERROR,
+                DefaultMessage.Performative.END,
+            }
         ),
+        DefaultMessage.Performative.END: frozenset(),
+        DefaultMessage.Performative.ERROR: frozenset(),
     }
 
     class Role(Dialogue.Role):
-        """This class defines the agent's role in a agent_environment dialogue."""
+        """This class defines the agent's role in a default dialogue."""
 
         AGENT = "agent"
-        ENVIRONMENT = "environment"
 
     class EndState(Dialogue.EndState):
-        """This class defines the end states of a agent_environment dialogue."""
+        """This class defines the end states of a default dialogue."""
 
-        SUCCESS = 0
+        SUCCESSFUL = 0
+        FAILED = 1
 
     def __init__(
         self,
         dialogue_label: DialogueLabel,
         self_address: Address,
         role: Dialogue.Role,
-        message_class: Type[AgentEnvironmentMessage] = AgentEnvironmentMessage,
+        message_class: Type[DefaultMessage] = DefaultMessage,
     ) -> None:
         """
         Initialize a dialogue.
@@ -81,18 +90,20 @@ class AgentEnvironmentDialogue(Dialogue):
         )
 
 
-class AgentEnvironmentDialogues(Dialogues, ABC):
-    """This class keeps track of all agent_environment dialogues."""
+class DefaultDialogues(Dialogues, ABC):
+    """This class keeps track of all default dialogues."""
 
-    END_STATES = frozenset({AgentEnvironmentDialogue.EndState.SUCCESS})
+    END_STATES = frozenset(
+        {DefaultDialogue.EndState.SUCCESSFUL, DefaultDialogue.EndState.FAILED}
+    )
 
-    _keep_terminal_state_dialogues = False
+    _keep_terminal_state_dialogues = True
 
     def __init__(
         self,
         self_address: Address,
         role_from_first_message: Callable[[Message, Address], Dialogue.Role],
-        dialogue_class: Type[AgentEnvironmentDialogue] = AgentEnvironmentDialogue,
+        dialogue_class: Type[DefaultDialogue] = DefaultDialogue,
     ) -> None:
         """
         Initialize dialogues.
@@ -104,7 +115,7 @@ class AgentEnvironmentDialogues(Dialogues, ABC):
             self,
             self_address=self_address,
             end_states=cast(FrozenSet[Dialogue.EndState], self.END_STATES),
-            message_class=AgentEnvironmentMessage,
+            message_class=DefaultMessage,
             dialogue_class=dialogue_class,
             role_from_first_message=role_from_first_message,
         )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021 gdp8
+#   Copyright 2018-2019 Fetch.AI Limited
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 #
 # ------------------------------------------------------------------------------
 
-"""This module contains the support resources for the agent_agent protocol."""
+"""This module contains the implementation of the default skill."""
 
-from gdp.agent_aea.protocols.agent_agent.message import AgentAgentMessage
-from gdp.agent_aea.protocols.agent_agent.serialization import AgentAgentSerializer
+from aea.configurations.base import PublicId
 
 
-AgentAgentMessage.serializer = AgentAgentSerializer
+PUBLIC_ID = PublicId.from_str("Chun/Action_Each_Turn:0.1.0")

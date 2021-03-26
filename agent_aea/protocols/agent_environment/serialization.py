@@ -25,9 +25,9 @@ from aea.mail.base_pb2 import DialogueMessage
 from aea.mail.base_pb2 import Message as ProtobufMessage
 from aea.protocols.base import Message, Serializer
 
-from packages.gdp8.protocols.agent_environment import agent_environment_pb2
-from packages.gdp8.protocols.agent_environment.custom_types import Command
-from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
+from gdp.agent_aea.protocols.agent_environment import agent_environment_pb2
+from gdp.agent_aea.protocols.agent_environment.custom_types import Command
+from gdp.agent_aea.protocols.agent_environment.message import AgentEnvironmentMessage
 
 
 class AgentEnvironmentSerializer(Serializer):

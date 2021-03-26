@@ -14,7 +14,8 @@ protocols:
 - fetchai/state_update:0.11.0
 - gdp8/agent_agent:0.1.0
 - gdp8/agent_environment:0.1.0
-skills: []
+skills:
+- gdp8/Action_Each_Turn:0.1.0
 default_ledger: fetchai
 default_routing: {}
 connection_private_key_paths: {}

@@ -7,12 +7,12 @@ description: Agent-agent messages
 license: Apache-2.0
 aea_version: '>=0.11.0, <0.12.0'
 fingerprint:
-  __init__.py: QmVBVDFUBjy29wh12jkHTE3U7vyanPeJ5mHjjqsLLLYc9T
+  __init__.py: Qmby5yjTQtAne2HsZeosx2z7Zm8n3QpUobnCy5dNWv4ivB
   agent_agent.proto: QmSXhCNDiFB9ibdazJrinhVs4JKLJh7UvW8FwXfgRyq1E3
   agent_agent_pb2.py: QmbtYpKmUMWCKX9nNrA5sK6PNNWgySRwFAMZqZWaUfJuDQ
-  dialogues.py: QmW8SGVyAK2dZDtLFrXN99HeivDdPXX3TrTgY1KVEzfPRD
+  dialogues.py: QmSom7VggCHZn9iqzGP97Gqr3p7WucSeaoiTMBgxZkewhP
   message.py: QmbBqek5RZUGVfLAYZdhsLeGYmVHt99JRhJ7JsdyaY8UNR
-  serialization.py: QmaMz1x1cYPFZx2HpAgVBGRgJx2CPQfLe2yD7krGZUkudH
+  serialization.py: QmYx2Sg2JEfJNySeKSu5QTd9b1DW1x9RAdEjVcfxFkCTiz
 fingerprint_ignore_patterns: []
 dependencies:
   protobuf: {}

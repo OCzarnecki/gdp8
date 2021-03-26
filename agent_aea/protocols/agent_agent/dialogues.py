@@ -31,7 +31,7 @@ from aea.common import Address
 from aea.protocols.base import Message
 from aea.protocols.dialogue.base import Dialogue, DialogueLabel, Dialogues
 
-from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
+from gdp.agent_aea.protocols.agent_agent.message import AgentAgentMessage
 
 
 class AgentAgentDialogue(Dialogue):

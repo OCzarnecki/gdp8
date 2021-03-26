@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021 gdp8
+#   Copyright 2021 fetchai
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,61 +17,55 @@
 #
 # ------------------------------------------------------------------------------
 
-"""This module contains agent_environment's message definition."""
+"""This module contains default's message definition."""
 
 import logging
-from typing import Any, FrozenSet, Set, Tuple, cast
+from typing import Any, Dict, Set, Tuple, cast
 
 from aea.configurations.base import PublicId
 from aea.exceptions import AEAEnforceError, enforce
 from aea.protocols.base import Message
 
-from gdp.agent_aea.protocols.agent_environment.custom_types import (
-    Command as CustomCommand,
-)
+from gdp.agent_aea.protocols.default.custom_types import ErrorCode as CustomErrorCode
 
 
-_default_logger = logging.getLogger(
-    "aea.packages.gdp8.protocols.agent_environment.message"
-)
+_default_logger = logging.getLogger("aea.packages.fetchai.protocols.default.message")
 
 DEFAULT_BODY_SIZE = 4
 
 
-class AgentEnvironmentMessage(Message):
-    """Agent-environment messages"""
+class DefaultMessage(Message):
+    """A protocol for exchanging any bytes message."""
 
-    protocol_id = PublicId.from_str("gdp8/agent_environment:0.1.0")
-    protocol_specification_id = PublicId.from_str(
-        "gdp8/agent_environment_communication:0.1.0"
-    )
+    protocol_id = PublicId.from_str("fetchai/default:0.13.0")
+    protocol_specification_id = PublicId.from_str("fetchai/default:0.1.0")
 
-    Command = CustomCommand
+    ErrorCode = CustomErrorCode
 
     class Performative(Message.Performative):
-        """Performatives for the agent_environment protocol."""
+        """Performatives for the default protocol."""
 
-        ACTION = "action"
-        TICK = "tick"
+        BYTES = "bytes"
+        END = "end"
+        ERROR = "error"
 
         def __str__(self) -> str:
             """Get the string representation."""
             return str(self.value)
 
-    _performatives = {"action", "tick"}
+    _performatives = {"bytes", "end", "error"}
     __slots__: Tuple[str, ...] = tuple()
 
     class _SlotsCls:
         __slots__ = (
-            "agent_water",
-            "command",
+            "content",
             "dialogue_reference",
+            "error_code",
+            "error_data",
+            "error_msg",
             "message_id",
-            "neighbour_ids",
             "performative",
             "target",
-            "tile_water",
-            "water_quantity",
         )
 
     def __init__(
@@ -83,7 +77,7 @@ class AgentEnvironmentMessage(Message):
         **kwargs: Any,
     ):
         """
-        Initialise an instance of AgentEnvironmentMessage.
+        Initialise an instance of DefaultMessage.
 
         :param message_id: the message id.
         :param dialogue_reference: the dialogue reference.
@@ -94,7 +88,7 @@ class AgentEnvironmentMessage(Message):
             dialogue_reference=dialogue_reference,
             message_id=message_id,
             target=target,
-            performative=AgentEnvironmentMessage.Performative(performative),
+            performative=DefaultMessage.Performative(performative),
             **kwargs,
         )
 
@@ -119,7 +113,7 @@ class AgentEnvironmentMessage(Message):
     def performative(self) -> Performative:  # type: ignore # noqa: F821
         """Get the performative of the message."""
         enforce(self.is_set("performative"), "performative is not set.")
-        return cast(AgentEnvironmentMessage.Performative, self.get("performative"))
+        return cast(DefaultMessage.Performative, self.get("performative"))
 
     @property
     def target(self) -> int:
@@ -128,37 +122,31 @@ class AgentEnvironmentMessage(Message):
         return cast(int, self.get("target"))
 
     @property
-    def agent_water(self) -> int:
-        """Get the 'agent_water' content from the message."""
-        enforce(self.is_set("agent_water"), "'agent_water' content is not set.")
-        return cast(int, self.get("agent_water"))
+    def content(self) -> bytes:
+        """Get the 'content' content from the message."""
+        enforce(self.is_set("content"), "'content' content is not set.")
+        return cast(bytes, self.get("content"))
 
     @property
-    def command(self) -> CustomCommand:
-        """Get the 'command' content from the message."""
-        enforce(self.is_set("command"), "'command' content is not set.")
-        return cast(CustomCommand, self.get("command"))
+    def error_code(self) -> CustomErrorCode:
+        """Get the 'error_code' content from the message."""
+        enforce(self.is_set("error_code"), "'error_code' content is not set.")
+        return cast(CustomErrorCode, self.get("error_code"))
 
     @property
-    def neighbour_ids(self) -> FrozenSet[int]:
-        """Get the 'neighbour_ids' content from the message."""
-        enforce(self.is_set("neighbour_ids"), "'neighbour_ids' content is not set.")
-        return cast(FrozenSet[int], self.get("neighbour_ids"))
+    def error_data(self) -> Dict[str, bytes]:
+        """Get the 'error_data' content from the message."""
+        enforce(self.is_set("error_data"), "'error_data' content is not set.")
+        return cast(Dict[str, bytes], self.get("error_data"))
 
     @property
-    def tile_water(self) -> int:
-        """Get the 'tile_water' content from the message."""
-        enforce(self.is_set("tile_water"), "'tile_water' content is not set.")
-        return cast(int, self.get("tile_water"))
-
-    @property
-    def water_quantity(self) -> int:
-        """Get the 'water_quantity' content from the message."""
-        enforce(self.is_set("water_quantity"), "'water_quantity' content is not set.")
-        return cast(int, self.get("water_quantity"))
+    def error_msg(self) -> str:
+        """Get the 'error_msg' content from the message."""
+        enforce(self.is_set("error_msg"), "'error_msg' content is not set.")
+        return cast(str, self.get("error_msg"))
 
     def _is_consistent(self) -> bool:
-        """Check that the message follows the agent_environment protocol."""
+        """Check that the message follows the default protocol."""
         try:
             enforce(
                 type(self.dialogue_reference) == tuple,
@@ -194,7 +182,7 @@ class AgentEnvironmentMessage(Message):
             # Light Protocol Rule 2
             # Check correct performative
             enforce(
-                type(self.performative) == AgentEnvironmentMessage.Performative,
+                type(self.performative) == DefaultMessage.Performative,
                 "Invalid 'performative'. Expected either of '{}'. Found '{}'.".format(
                     self.valid_performatives, self.performative
                 ),
@@ -203,44 +191,49 @@ class AgentEnvironmentMessage(Message):
             # Check correct contents
             actual_nb_of_contents = len(self._body) - DEFAULT_BODY_SIZE
             expected_nb_of_contents = 0
-            if self.performative == AgentEnvironmentMessage.Performative.TICK:
+            if self.performative == DefaultMessage.Performative.BYTES:
+                expected_nb_of_contents = 1
+                enforce(
+                    type(self.content) == bytes,
+                    "Invalid type for content 'content'. Expected 'bytes'. Found '{}'.".format(
+                        type(self.content)
+                    ),
+                )
+            elif self.performative == DefaultMessage.Performative.ERROR:
                 expected_nb_of_contents = 3
                 enforce(
-                    type(self.tile_water) == int,
-                    "Invalid type for content 'tile_water'. Expected 'int'. Found '{}'.".format(
-                        type(self.tile_water)
+                    type(self.error_code) == CustomErrorCode,
+                    "Invalid type for content 'error_code'. Expected 'ErrorCode'. Found '{}'.".format(
+                        type(self.error_code)
                     ),
                 )
                 enforce(
-                    type(self.agent_water) == int,
-                    "Invalid type for content 'agent_water'. Expected 'int'. Found '{}'.".format(
-                        type(self.agent_water)
+                    type(self.error_msg) == str,
+                    "Invalid type for content 'error_msg'. Expected 'str'. Found '{}'.".format(
+                        type(self.error_msg)
                     ),
                 )
                 enforce(
-                    type(self.neighbour_ids) == frozenset,
-                    "Invalid type for content 'neighbour_ids'. Expected 'frozenset'. Found '{}'.".format(
-                        type(self.neighbour_ids)
+                    type(self.error_data) == dict,
+                    "Invalid type for content 'error_data'. Expected 'dict'. Found '{}'.".format(
+                        type(self.error_data)
                     ),
                 )
-                enforce(
-                    all(type(element) == int for element in self.neighbour_ids),
-                    "Invalid type for frozenset elements in content 'neighbour_ids'. Expected 'int'.",
-                )
-            elif self.performative == AgentEnvironmentMessage.Performative.ACTION:
-                expected_nb_of_contents = 2
-                enforce(
-                    type(self.command) == CustomCommand,
-                    "Invalid type for content 'command'. Expected 'Command'. Found '{}'.".format(
-                        type(self.command)
-                    ),
-                )
-                enforce(
-                    type(self.water_quantity) == int,
-                    "Invalid type for content 'water_quantity'. Expected 'int'. Found '{}'.".format(
-                        type(self.water_quantity)
-                    ),
-                )
+                for key_of_error_data, value_of_error_data in self.error_data.items():
+                    enforce(
+                        type(key_of_error_data) == str,
+                        "Invalid type for dictionary keys in content 'error_data'. Expected 'str'. Found '{}'.".format(
+                            type(key_of_error_data)
+                        ),
+                    )
+                    enforce(
+                        type(value_of_error_data) == bytes,
+                        "Invalid type for dictionary values in content 'error_data'. Expected 'bytes'. Found '{}'.".format(
+                            type(value_of_error_data)
+                        ),
+                    )
+            elif self.performative == DefaultMessage.Performative.END:
+                expected_nb_of_contents = 0
 
             # Check correct content count
             enforce(

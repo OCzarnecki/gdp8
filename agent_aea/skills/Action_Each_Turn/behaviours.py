@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021 gdp8
+#   Copyright 2018-2019 Fetch.AI Limited
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,10 +17,35 @@
 #
 # ------------------------------------------------------------------------------
 
-"""This module contains the support resources for the agent_agent protocol."""
+"""This package contains a scaffold of a behaviour."""
 
-from gdp.agent_aea.protocols.agent_agent.message import AgentAgentMessage
-from gdp.agent_aea.protocols.agent_agent.serialization import AgentAgentSerializer
+from aea.skills.behaviours import OneShotBehaviour
 
 
-AgentAgentMessage.serializer = AgentAgentSerializer
+class SendActionToEnvAgent(OneShotBehaviour):
+    """This class scaffolds a behaviour."""
+
+    def setup(self) -> None:
+        """
+        Implement the setup.
+
+        :return: None
+        """
+        raise NotImplementedError
+
+    def act(self) -> None:
+        """
+        Implement the act.
+
+        :return: None
+        """
+
+        raise NotImplementedError
+
+    def teardown(self) -> None:
+        """
+        Implement the task teardown.
+
+        :return: None
+        """
+        raise NotImplementedError
