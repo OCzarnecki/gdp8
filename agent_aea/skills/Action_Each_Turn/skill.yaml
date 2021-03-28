@@ -2,14 +2,16 @@ name: Action_Each_Turn
 author: Chun
 version: 0.1.0
 type: skill
-description: The scaffold skill is a scaffold for your own skill implementation.
+description: This skill recieves info from environment agent every turn, make a decision
+  by communicating with other agent and makes a decision to return to an environment
+  agent.
 license: Apache-2.0
 aea_version: '>=0.11.0, <0.12.0'
 fingerprint:
   __init__.py: QmZDFWwWewDQWVasLBrfiuzuffSjYjETKebGpR7eRgM6Nj
-  behaviours.py: QmWEcE9A6yn6TU5tKNkLFCFPgMeFrH41Ry26EWHo6si1jT
-  handlers.py: QmUQgyeCG7tFWatHVPWekC8DVCiAK5JRAN3qMFDsaSK99g
-  my_model.py: QmPaZ6G37Juk63mJj88nParaEp71XyURts8AmmX1axs24V
+  behaviours.py: QmYHwVn4eKbfxuvGbeb1oVtz6pawYatYUpLdQwa3sW3FSW
+  handlers.py: QmT7YcRxq7uHf4utirHBhRsSPHeXonAyC8QDjLhVxLjYKW
+  strategy.py: QmbiCQKwR5fqJht26ctmeSGS4vN5GkZaVUN4J5ieHZGox6
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
