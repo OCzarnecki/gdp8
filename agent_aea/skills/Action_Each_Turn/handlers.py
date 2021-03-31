@@ -30,7 +30,11 @@ from gdp.agent_aea.protocols.agent_environment.dialogues import AgentEnvironment
 
 from gdp.agent_aea.protocols.default.message import DefaultMessage
 from gdp.agent_aea.protocols.default.dialogues import DefaultDialogues
-from gdp.agent_aea.skills.Action_Each_Turn.strategy import GenericStrategy
+from gdp.agent_aea.skills.Action_Each_Turn.strategy import BasicStrategy
+
+
+# Handler will Update my model (strategy class) depending on what it has received
+# Unimplemented: self.context.agent_environment_dialogues, self.context.default_dialogues
 
 
 class EnvironmentMessageHandler(Handler):
@@ -92,61 +96,17 @@ class EnvironmentMessageHandler(Handler):
         self.context.outbox.put_message(message=default_msg)
 
     def _handle_(self, agent_environment_message: AgentEnvironmentMessage, agent_environment_dialogue):
-        # Actual function where Environment messages are received from. Then make decision, to find out neighbour
-        # water information or just return a command to send back to the agent_environment agent
-        strategy = cast(GenericStrategy, self.context.strategy)  # ??????????
-        # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
-        # True = Go on, False = stop
-        x = strategy.receive_agent_env_info(agent_environment_message.tile_water,
-                                            agent_environment_message.agent_water,
-                                            agent_environment_message.neighbour_ids,
-                                            agent_environment_message.round_no)
-        if x:
-            strategy.next_round_start
-            strategy.clear_water_query
-            neighbour_id, command, water_quantity, round_no = strategy.make_decision
-            # either ask for water info or return decision of action for this turn
-            # neighbour_id = None if decide to return action to environment agent
-            # command, water_quantity = None if decide to ask for water info
-            if neighbour_id is None:
-                strategy.round_done
-                raise NotImplementedError
-                # search if there is a env message received the requires attention (If necessary)
-            else:
-                raise NotImplementedError
-
-    def _handle_delayed(self, agent_environment_message: AgentEnvironmentMessage, agent_environment_dialogue):
-        # Actual function where Environment messages are received from. Then make decision, to find out neighbour
-        # water information or just return a command to send back to the agent_environment agent
-        strategy = cast(GenericStrategy, self.context.strategy)  # ??????????
-        # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
-        # True = Go on, False = stop
-        x = strategy.receive_agent_env_info(agent_environment_message.tile_water,
-                                            agent_environment_message.agent_water,
-                                            agent_environment_message.neighbour_ids,
-                                            agent_environment_message.round_no)
-        if x:
-            neighbour_id, command, water_quantity, round_no = strategy.make_decision
-            # either ask for water info or return decision of action for this turn
-            # neighbour_id = None if decide to return action to environment agent
-            # command, water_quantity = None if decide to ask for water info
-            if neighbour_id is None:
-                strategy.round_done
-                raise NotImplementedError
-                # search if there is a env message received the requires attention
-                if strategy.is_there_env_messages_waiting:
-                    env_message = strategy.find_env_message_to_be_handled
-                    self._handle_(env_message)
-            else:
-                raise NotImplementedError
+        # Update my_model to get ready for next round
+        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy.receive_agent_env_info(agent_environment_message, agent_environment_dialogue)
 
     def _handle_invalid(self, agent_environment_message: AgentEnvironmentMessage, agent_environment_dialogue) -> None:
-            pass
-            # self.context.logger.warning(
-            #     "cannot handle agent environment message of performative={} in dialogue={}.".format(
-            #         agent_environment_message.performative, agent_environment_dialogue,
-            #     )
-            # )
+        pass
+        # self.context.logger.warning(
+        #     "cannot handle agent environment message of performative={} in dialogue={}.".format(
+        #         agent_environment_message.performative, agent_environment_dialogue,
+        #     )
+        # )
 
 
 class AgentMessageHandler(Handler):
@@ -177,7 +137,11 @@ class AgentMessageHandler(Handler):
             return
 
         if agent_agent_message.performative == AgentAgentMessage.Performative.WATER_STATUS:
-            self._handle_(agent_agent_message, agent_agent_dialogue)
+            # water status returned
+            self._handle_returned_water_info(agent_agent_message, agent_agent_dialogue)
+        elif agent_agent_message.performative == AgentAgentMessage.Performative.INITIATIVE: # ????????
+            # water status asked
+            self._handle_water_query(agent_agent_message, agent_agent_dialogue)
         else:
             self._handle_invalid(agent_agent_message, agent_agent_dialogue)
 
@@ -206,24 +170,18 @@ class AgentMessageHandler(Handler):
         )
         self.context.outbox.put_message(message=default_msg)
 
-    def _handle_(self, agent_agent_message: AgentAgentMessage, agent_agent_dialogue):
+    def _handle_returned_water_info(self, agent_agent_message: AgentAgentMessage, agent_agent_dialogue):
         # Actual function where agent messages are used.
-        strategy = cast(GenericStrategy, self.context.strategy)  # ??????????
+        strategy = cast(BasicStrategy, self.context.strategy)  # ??????????
         # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
         # True = Go on, False = stop
-        x = strategy.receive_agent_agent_info(agent_agent_message.water,
-                                              agent_agent_message.sender,
-                                              agent_agent_message.round_no)
-        if x:
-            neighbour_id, command, water_quantity, round_no = strategy.make_decision
-            # either ask for water info or return decision of action for this turn
-            # neighbour_id = None if decide to return action to environment agent
-            # command, water_quantity = None if decide to ask for water info
-            if neighbour_id is None:
-                strategy.round_done = True
-                raise NotImplementedError
-            else:
-                raise NotImplementedError
+        strategy.receive_agent_agent_info(agent_agent_message)
+
+    def _handle_water_query(self, agent_agent_message: AgentAgentMessage, agent_agent_dialogue):
+        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy.agent_message_asking_for_my_water.append(
+            [agent_agent_message, agent_agent_dialogue]
+        )
 
     def _handle_invalid(self, agent_agent_message: AgentAgentMessage, agent_agent_dialogue) -> None:
         pass
