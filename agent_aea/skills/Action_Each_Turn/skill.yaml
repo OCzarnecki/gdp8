@@ -18,19 +18,19 @@ contracts: []
 protocols: []
 skills: []
 behaviours:
-  scaffold:
-    args:
-      foo: bar
-    class_name: MyScaffoldBehaviour
+  agent_behaviour:
+    args: {}
+    class_name: AgentLogicBehaviour
 handlers:
-  scaffold:
-    args:
-      foo: bar
-    class_name: MyScaffoldHandler
+  enviornment_message_handler:
+    args: {}
+    class_name: EnvironmentMessageHandler
+  agent_message_handler:
+    args: {}
+    class_name: AgentMessageHandler
 models:
-  scaffold:
-    args:
-      foo: bar
-    class_name: MyModel
+  strategy:
+    args: {}
+    class_name: BasicStrategy
 dependencies: {}
 is_abstract: false

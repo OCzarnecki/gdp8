@@ -24,7 +24,7 @@ from aea.skills.base import Model
 from gdp.agent_aea.protocols.agent_environment.custom_types import Command
 
 
-class GenericStrategy(Model):
+class BasicStrategy(Model):
     """
     This class defines the strategy for the agent
     Generic Strategy is to gather agent water amount before making a decision

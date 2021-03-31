@@ -22,7 +22,7 @@
 from aea.skills.behaviours import OneShotBehaviour
 
 
-class SendActionToEnvAgent(OneShotBehaviour):
+class AgentLogicBehaviour(OneShotBehaviour):
     """This class scaffolds a behaviour."""
 
     def setup(self) -> None:
