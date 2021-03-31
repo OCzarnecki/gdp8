@@ -23,6 +23,7 @@ from typing import cast
 from aea.skills.base import Model
 
 from gdp.agent_aea.protocols.agent_agent import AgentAgentMessage
+from gdp.agent_aea.protocols.agent_agent.dialogues import AgentAgentDialogue
 from gdp.agent_aea.protocols.agent_environment.custom_types import Command
 
 
@@ -39,9 +40,8 @@ class BasicStrategy(Model):
     agent_water = None
     neighbour_id = None
     neighbour_water_amount = None
-    # neighbour_id and neighbour_water_amount will be list of the same length.
-    # amount of water neighbour_id[n] has = neighbour_water_amount[n]
-    # If unknown, = None
+    # neighbour_water_amount are list of twos of agent_id and their info which = None initially,
+    # = "Asking" if a message has been sent to ask
     current_env_message = None
     current_env_dialogue = None
     round_no = 0
@@ -61,14 +61,44 @@ class BasicStrategy(Model):
         self.agent_water = agent_environment_message.agent_water
         self.neighbour_id = list(agent_environment_message.neighbour_ids)
         self.neighbour_water_amount = [[i, None] for i in self.neighbour_id]
+        self.is_round_done = False
 
     def receive_agent_agent_info(self, agent_agent_message: AgentAgentMessage) -> None:
-        assert self.round_no == agent_agent_message.round_no
-        message = cast(AgentAgentMessage, agent_agent_message)
-        if not self.round_done:
-            # Use info
-            index = self.neighbour_water_amount.index([agent_agent_message.target, None])
-            self.neighbour_water_amount[index] = [agent_agent_message.target, agent_agent_message.water]
+        # If round number is of prev round. discard
+        # If round number is of future round. something is wrong cuz you should not be able to
+        # request anything
+        assert self.round_no >= agent_agent_message.round_no
+        if self.round_no == agent_agent_message.round_no:
+            if not self.round_done:
+                # Use info
+                index = self.neighbour_water_amount.index([agent_agent_message.target, "Asking"])
+                self.neighbour_water_amount[index] = [agent_agent_message.target, agent_agent_message.water]
+
+    def deal_with_an_agent_asking_for_water_info(self) -> bool:
+        # Return true if a request was dealt with, return false if there were no request
+        if not self.agent_message_asking_for_my_water:
+            # no request
+            return False
+        else:
+            # there is request, test round no, deal with it if correct
+            request, *self.agent_message_asking_for_my_water = self.agent_message_asking_for_my_water
+            [message_, dialogue_] = request
+            message = cast(AgentAgentMessage, message_)
+            dialogue = cast(AgentAgentDialogue, dialogue_)
+            if message.round_no == self.round_no:
+                dialogue.reply(
+                    performative=AgentAgentMessage.Performative.WATER_STATUS,
+                    target_message=message,
+                    water_status=self.agent_water
+                )
+            return True
+
+    def enough_info_to_make_decision(self) -> bool:
+        # currently, ALL neighbour info asked before making decision
+        for i in self.neighbour_water_amount:
+            if i[1] is None or i[1] == "Asking":
+                return False
+        return True
 
 
 

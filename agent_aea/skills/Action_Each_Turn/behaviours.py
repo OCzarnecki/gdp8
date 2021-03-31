@@ -18,12 +18,19 @@
 # ------------------------------------------------------------------------------
 
 """This package contains a scaffold of a behaviour."""
+from typing import cast
 
-from aea.skills.behaviours import OneShotBehaviour
+from aea.skills.behaviours import TickerBehaviour
+
+from gdp.agent_aea.skills.Action_Each_Turn.strategy import BasicStrategy
 
 
-class AgentLogicBehaviour(OneShotBehaviour):
-    """This class scaffolds a behaviour."""
+class AgentLogicBehaviour(TickerBehaviour):
+    """Behaviour looks at if actions required in each tick:
+       is there agent asking for water info? if so, tell them
+       is the round done (on my end)? if so, stop
+       is there enough info for making a decision? if so, do so,
+       if not, might have to send message to ask for info"""
 
     def setup(self) -> None:
         """
@@ -34,13 +41,21 @@ class AgentLogicBehaviour(OneShotBehaviour):
         raise NotImplementedError
 
     def act(self) -> None:
-        """
-        Implement the act.
 
-        :return: None
-        """
+        strategy = cast(BasicStrategy, self.context.strategy)
 
-        raise NotImplementedError
+        there_is_agent_asking_for_water_info = True
+        while there_is_agent_asking_for_water_info:
+            there_is_agent_asking_for_water_info = strategy.deal_with_an_agent_asking_for_water_info
+
+        if not strategy.is_round_done:
+            info_is_enough = strategy.enough_info_to_make_decision
+            if info_is_enough:
+                raise NotImplementedError
+                strategy.make_decision
+            else:
+                raise NotImplementedError
+                strategy.potentially_ask_for_info
 
     def teardown(self) -> None:
         """
