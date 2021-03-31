@@ -51,11 +51,11 @@ class AgentLogicBehaviour(TickerBehaviour):
         if not strategy.is_round_done:
             info_is_enough = strategy.enough_info_to_make_decision
             if info_is_enough:
-                raise NotImplementedError
-                strategy.make_decision
+                strategy.make_decision_send_to_env()
             else:
-                raise NotImplementedError
-                strategy.potentially_ask_for_info
+                asking_for_info = True
+                while asking_for_info:
+                    asking_for_info = strategy.potentially_ask_for_info
 
     def teardown(self) -> None:
         """

@@ -23,8 +23,7 @@ from typing import cast
 from aea.skills.base import Model
 
 from gdp.agent_aea.protocols.agent_agent import AgentAgentMessage
-from gdp.agent_aea.protocols.agent_agent.dialogues import AgentAgentDialogue
-from gdp.agent_aea.protocols.agent_environment.custom_types import Command
+from gdp.agent_aea.protocols.agent_agent.dialogues import AgentAgentDialogue, AgentAgentDialogues
 
 
 # Next round env message SHOULD NEVER be able to come when is_round_done = false.
@@ -44,8 +43,8 @@ class BasicStrategy(Model):
     # = "Asking" if a message has been sent to ask
     current_env_message = None
     current_env_dialogue = None
-    round_no = 0
-    is_round_done = False
+    round_no = -1
+    is_round_done = True
     agent_messages_returned_waiting_for_response = []  # Storing any messages of future round
     agent_message_asking_for_my_water = []  # Storing any messages of future round
 
@@ -86,11 +85,12 @@ class BasicStrategy(Model):
             message = cast(AgentAgentMessage, message_)
             dialogue = cast(AgentAgentDialogue, dialogue_)
             if message.round_no == self.round_no:
-                dialogue.reply(
+                return_message = dialogue.reply(
                     performative=AgentAgentMessage.Performative.WATER_STATUS,
                     target_message=message,
                     water_status=self.agent_water
                 )
+                self.context.outbox.put_message(return_message)
             return True
 
     def enough_info_to_make_decision(self) -> bool:
@@ -100,31 +100,45 @@ class BasicStrategy(Model):
                 return False
         return True
 
+    def potentially_ask_for_info(self) -> bool:
+        # currently, ALL info has to be asked for
+        # return true if a message asking for water is sent
+        # false otherwise
+        for i in self.neighbour_water_amount:
+            if i[1] is None:
+                i[1] = "Asking"
+                agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)
+                raise NotImplementedError
+                # message sent to another agent
+                # agent_agent_message, _ = agent_agent_dialogues.create(
+                #     counterparty=?????,
+                #     performative=AgentAgentMessage.Performative.??????,
+                #     ledger_id=strategy.ledger_id,
+                #     address=cast(str, self.context.agent_addresses.get(strategy.ledger_id)),
+                # )
+                # self.outbox.
+                return True
+        return False
 
-
-
-
-
-
-
-
-# ------------------------------------------------------------------------------------------------
-    def return_self_water_info(self):
-        raise NotImplementedError
-
-    def make_decision(self) -> [int, Command, int, int]:
-        # either ask for water info or return decision of action for this turn
-        # neighbour_id = None if decide to return action to environment agent
-        # command, water_quantity = None if decide to ask for water info
+    def make_decision_send_to_env(self) -> None:
+        # info enough to make decision
         # ******************************************************************************************
         # Current decision method:
         # Get all neighbour water info, calculate average with self and offer/request the difference
         # ******************************************************************************************
-        enough_found = self.enough_found
-        if enough_found:
-            return self.decide_what_to_return_to_env_agent
-        else:
-            return self.decide_what_info_to_search_for
+        sum_of_all_agents = self.agent_water
+        for i in self.neighbour_water_amount:
+            sum_of_all_agents += i[0]
+        average = (sum_of_all_agents + self.agent_water) / (len(self.neighbour_water_amount) + 1)
+        difference = int(self.agent_water - average)
+        # difference > 0 => offer water, vice versa, difference ALWAYS underestimated if not accurate
+        raise NotImplementedError
+        # return to env agent
+        self.is_round_done = True
+
+    '''
+    def return_self_water_info(self):
+        raise NotImplementedError
 
     def enough_found(self) -> bool:
         # Has enough info been received for decision making?
@@ -173,3 +187,4 @@ class BasicStrategy(Model):
     def clear_water_query(self) -> (list[int], int):
         # second int = water rn, send to everyone in list[int]
         raise NotImplementedError
+    '''

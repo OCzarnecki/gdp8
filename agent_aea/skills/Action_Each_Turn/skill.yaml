@@ -32,5 +32,14 @@ models:
   strategy:
     args: {}
     class_name: BasicStrategy
+  default_dialogues:
+    args: {}
+    class_name: DefaultDialogues
+  agent_agent_dialogues:
+    args: {}
+    class_name: AgentAgentDialogues
+  agent_env_dialogues:
+    args: {}
+    class_name: AgentEnvDialogues
 dependencies: {}
 is_abstract: false

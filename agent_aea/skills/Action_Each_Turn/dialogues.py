@@ -39,3 +39,9 @@ class DefaultDialogues(Model, BaseDefaultDialogues):
             self_address=self.context.agent_address,
             role_from_first_message=role_from_first_message,
         )
+
+    class AgentAgentDialogues(Model, BaseDefaultDialogues):
+        raise NotImplementedError
+
+    class AgentEnvDialogues(Model, BaseDefaultDialogues):
+        raise NotImplementedError
