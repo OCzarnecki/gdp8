@@ -1,19 +1,19 @@
 name: agent_environment
 author: gdp8
 version: 0.1.0
-protocol_specification_id: gdp8/agent_environment_message:0.1.0
+protocol_specification_id: gdp8/agent_environment_communication:0.1.0
 type: protocol
 description: Agent-environment messages
 license: Apache-2.0
 aea_version: '>=0.11.0, <0.12.0'
 fingerprint:
-  __init__.py: QmQjfnEpaZcSscr5AETbcXb5Rk842atUFkuLuaXoJcTac6
-  agent_environment.proto: QmSAkH7iHuq2q9SE68csSf18dMYRDHpRjNCUdrFvC8FUmm
-  agent_environment_pb2.py: QmVYsUFuUbXbxjN3CRmNJHsJwHbe5KuXd9x2Vo7q9RSfth
+  __init__.py: QmfStVhigA3NoV4mmj2QuoYRCAmQhZB46SgbDfFa9CS2kG
+  agent_environment.proto: QmeanFHY7NV5Z4nDY6R9xoJoHs3ob86PHeu24t5jrjNtuR
+  agent_environment_pb2.py: QmfT1ouSRCBPM4tcoggrwX54hdCmyXRLcsAYP3V6AJRvjJ
   custom_types.py: QmfSepVjXiC8ND3Q4DM26TUjXnCZ3YRz6H42mseY1QjGTa
-  dialogues.py: QmTJS6Z4QqcbVP7LooBqGyyyzD9YwHt4Yq7Q7C14vxXZw9
-  message.py: QmQ9RWPHDuRJP7exG2Diwzsp1ZPf9gd6iNnQ72B5qzE3F3
-  serialization.py: Qme8KKrxdd8MaUJxGo76yrrEJzqRS6nV4mRnoT9hVa6vGZ
+  dialogues.py: QmNXz32kafKZWKD9oV4boNuR6oNb28Nw1xYv7s7P1VgWxo
+  message.py: Qmb4PwwBcUqaqGuFkwoqEeHzU4mypZPhrvYpGkis6SUUrw
+  serialization.py: QmPZfRXpuRbcoJXvzoQWTejWtiwcq3NnDpDexVLXkKx9yK
 fingerprint_ignore_patterns: []
 dependencies:
   protobuf: {}

@@ -8,12 +8,12 @@ license: Apache-2.0
 aea_version: '>=0.11.0, <0.12.0'
 fingerprint:
   __init__.py: QmfStVhigA3NoV4mmj2QuoYRCAmQhZB46SgbDfFa9CS2kG
-  agent_environment.proto: QmSAkH7iHuq2q9SE68csSf18dMYRDHpRjNCUdrFvC8FUmm
-  agent_environment_pb2.py: QmVYsUFuUbXbxjN3CRmNJHsJwHbe5KuXd9x2Vo7q9RSfth
+  agent_environment.proto: QmeanFHY7NV5Z4nDY6R9xoJoHs3ob86PHeu24t5jrjNtuR
+  agent_environment_pb2.py: QmfT1ouSRCBPM4tcoggrwX54hdCmyXRLcsAYP3V6AJRvjJ
   custom_types.py: QmfSepVjXiC8ND3Q4DM26TUjXnCZ3YRz6H42mseY1QjGTa
   dialogues.py: QmNXz32kafKZWKD9oV4boNuR6oNb28Nw1xYv7s7P1VgWxo
-  message.py: QmWc4AQF8xoC4irPmchaagamwFStxYVWWQ8fvi3mqgsxZZ
-  serialization.py: QmWnSPM1eVVwMhq4UxJqVCaCbkRAkvDYb7MGUnhF1NHkNe
+  message.py: Qmb4PwwBcUqaqGuFkwoqEeHzU4mypZPhrvYpGkis6SUUrw
+  serialization.py: QmPZfRXpuRbcoJXvzoQWTejWtiwcq3NnDpDexVLXkKx9yK
 fingerprint_ignore_patterns: []
 dependencies:
   protobuf: {}

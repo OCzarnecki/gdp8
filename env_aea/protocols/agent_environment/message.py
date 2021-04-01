@@ -71,6 +71,7 @@ class AgentEnvironmentMessage(Message):
             "performative",
             "target",
             "tile_water",
+            "turn_number",
             "water_quantity",
         )
 
@@ -152,6 +153,12 @@ class AgentEnvironmentMessage(Message):
         return cast(int, self.get("tile_water"))
 
     @property
+    def turn_number(self) -> int:
+        """Get the 'turn_number' content from the message."""
+        enforce(self.is_set("turn_number"), "'turn_number' content is not set.")
+        return cast(int, self.get("turn_number"))
+
+    @property
     def water_quantity(self) -> int:
         """Get the 'water_quantity' content from the message."""
         enforce(self.is_set("water_quantity"), "'water_quantity' content is not set.")
@@ -204,11 +211,17 @@ class AgentEnvironmentMessage(Message):
             actual_nb_of_contents = len(self._body) - DEFAULT_BODY_SIZE
             expected_nb_of_contents = 0
             if self.performative == AgentEnvironmentMessage.Performative.TICK:
-                expected_nb_of_contents = 3
+                expected_nb_of_contents = 4
                 enforce(
                     type(self.tile_water) == int,
                     "Invalid type for content 'tile_water'. Expected 'int'. Found '{}'.".format(
                         type(self.tile_water)
+                    ),
+                )
+                enforce(
+                    type(self.turn_number) == int,
+                    "Invalid type for content 'turn_number'. Expected 'int'. Found '{}'.".format(
+                        type(self.turn_number)
                     ),
                 )
                 enforce(

@@ -19,8 +19,8 @@
 
 """This module contains the support resources for the agent_agent protocol."""
 
-from gdp.agent_aea.protocols.agent_agent.message import AgentAgentMessage
-from gdp.agent_aea.protocols.agent_agent.serialization import AgentAgentSerializer
+from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
+from packages.gdp8.protocols.agent_agent.serialization import AgentAgentSerializer
 
 
 AgentAgentMessage.serializer = AgentAgentSerializer

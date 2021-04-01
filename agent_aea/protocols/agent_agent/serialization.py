@@ -25,8 +25,8 @@ from aea.mail.base_pb2 import DialogueMessage
 from aea.mail.base_pb2 import Message as ProtobufMessage
 from aea.protocols.base import Message, Serializer
 
-from gdp.agent_aea.protocols.agent_agent import agent_agent_pb2
-from gdp.agent_aea.protocols.agent_agent.message import AgentAgentMessage
+from packages.gdp8.protocols.agent_agent import agent_agent_pb2
+from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
 
 
 class AgentAgentSerializer(Serializer):
@@ -57,6 +57,11 @@ class AgentAgentSerializer(Serializer):
             water = msg.water
             performative.water = water
             agent_agent_msg.water_status.CopyFrom(performative)
+        elif performative_id == AgentAgentMessage.Performative.REQUEST_INFO:
+            performative = agent_agent_pb2.AgentAgentMessage.Request_Info_Performative()  # type: ignore
+            turn_number = msg.turn_number
+            performative.turn_number = turn_number
+            agent_agent_msg.request_info.CopyFrom(performative)
         else:
             raise ValueError("Performative not valid: {}".format(performative_id))
 
@@ -91,6 +96,9 @@ class AgentAgentSerializer(Serializer):
         if performative_id == AgentAgentMessage.Performative.WATER_STATUS:
             water = agent_agent_pb.water_status.water
             performative_content["water"] = water
+        elif performative_id == AgentAgentMessage.Performative.REQUEST_INFO:
+            turn_number = agent_agent_pb.request_info.turn_number
+            performative_content["turn_number"] = turn_number
         else:
             raise ValueError("Performative not valid: {}.".format(performative_id))
 

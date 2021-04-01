@@ -43,13 +43,14 @@ class AgentAgentMessage(Message):
     class Performative(Message.Performative):
         """Performatives for the agent_agent protocol."""
 
+        REQUEST_INFO = "request_info"
         WATER_STATUS = "water_status"
 
         def __str__(self) -> str:
             """Get the string representation."""
             return str(self.value)
 
-    _performatives = {"water_status"}
+    _performatives = {"request_info", "water_status"}
     __slots__: Tuple[str, ...] = tuple()
 
     class _SlotsCls:
@@ -58,6 +59,7 @@ class AgentAgentMessage(Message):
             "message_id",
             "performative",
             "target",
+            "turn_number",
             "water",
         )
 
@@ -113,6 +115,12 @@ class AgentAgentMessage(Message):
         """Get the target of the message."""
         enforce(self.is_set("target"), "target is not set.")
         return cast(int, self.get("target"))
+
+    @property
+    def turn_number(self) -> int:
+        """Get the 'turn_number' content from the message."""
+        enforce(self.is_set("turn_number"), "'turn_number' content is not set.")
+        return cast(int, self.get("turn_number"))
 
     @property
     def water(self) -> int:
@@ -172,6 +180,14 @@ class AgentAgentMessage(Message):
                     type(self.water) == int,
                     "Invalid type for content 'water'. Expected 'int'. Found '{}'.".format(
                         type(self.water)
+                    ),
+                )
+            elif self.performative == AgentAgentMessage.Performative.REQUEST_INFO:
+                expected_nb_of_contents = 1
+                enforce(
+                    type(self.turn_number) == int,
+                    "Invalid type for content 'turn_number'. Expected 'int'. Found '{}'.".format(
+                        type(self.turn_number)
                     ),
                 )
 

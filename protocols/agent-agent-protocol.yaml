@@ -9,13 +9,16 @@ aea_version: '>=0.11.0, <0.12.0'
 speech_acts:
   water_status: 
     water: pt:int
+  request_info:
+    turn_number: pt:int
 ...
 ---
-initiation: [water_status]
+initiation: [request_info]
 reply:
+  request_info: [water_status]
   water_status: []
 termination: [water_status]
-roles: {informer, recipient}
+roles: {info_requester, info_provider}
 end_states: [message_sent]
 keep_terminal_state_dialogues: false
 ...

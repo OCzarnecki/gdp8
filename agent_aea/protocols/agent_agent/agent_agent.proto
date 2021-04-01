@@ -9,8 +9,13 @@ message AgentAgentMessage{
     int32 water = 1;
   }
 
+  message Request_Info_Performative{
+    int32 turn_number = 1;
+  }
+
 
   oneof performative{
-    Water_Status_Performative water_status = 5;
+    Request_Info_Performative request_info = 5;
+    Water_Status_Performative water_status = 6;
   }
 }

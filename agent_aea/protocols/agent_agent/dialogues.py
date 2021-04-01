@@ -31,23 +31,26 @@ from aea.common import Address
 from aea.protocols.base import Message
 from aea.protocols.dialogue.base import Dialogue, DialogueLabel, Dialogues
 
-from gdp.agent_aea.protocols.agent_agent.message import AgentAgentMessage
+from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
 
 
 class AgentAgentDialogue(Dialogue):
     """The agent_agent dialogue class maintains state of a dialogue and manages it."""
 
-    INITIAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.WATER_STATUS})
+    INITIAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.REQUEST_INFO})
     TERMINAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.WATER_STATUS})
     VALID_REPLIES = {
+        AgentAgentMessage.Performative.REQUEST_INFO: frozenset(
+            {AgentAgentMessage.Performative.WATER_STATUS}
+        ),
         AgentAgentMessage.Performative.WATER_STATUS: frozenset(),
     }
 
     class Role(Dialogue.Role):
         """This class defines the agent's role in a agent_agent dialogue."""
 
-        INFORMER = "informer"
-        RECIPIENT = "recipient"
+        INFO_PROVIDER = "info_provider"
+        INFO_REQUESTER = "info_requester"
 
     class EndState(Dialogue.EndState):
         """This class defines the end states of a agent_agent dialogue."""

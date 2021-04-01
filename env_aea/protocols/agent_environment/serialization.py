@@ -57,6 +57,8 @@ class AgentEnvironmentSerializer(Serializer):
             performative = agent_environment_pb2.AgentEnvironmentMessage.Tick_Performative()  # type: ignore
             tile_water = msg.tile_water
             performative.tile_water = tile_water
+            turn_number = msg.turn_number
+            performative.turn_number = turn_number
             agent_water = msg.agent_water
             performative.agent_water = agent_water
             neighbour_ids = msg.neighbour_ids
@@ -103,6 +105,8 @@ class AgentEnvironmentSerializer(Serializer):
         if performative_id == AgentEnvironmentMessage.Performative.TICK:
             tile_water = agent_environment_pb.tick.tile_water
             performative_content["tile_water"] = tile_water
+            turn_number = agent_environment_pb.tick.turn_number
+            performative_content["turn_number"] = turn_number
             agent_water = agent_environment_pb.tick.agent_water
             performative_content["agent_water"] = agent_water
             neighbour_ids = agent_environment_pb.tick.neighbour_ids

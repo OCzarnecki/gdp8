@@ -9,6 +9,7 @@ aea_version: '>=0.11.0, <0.12.0'
 speech_acts:
   tick: 
     tile_water: pt:int
+    turn_number: pt:int
     agent_water: pt:int
     neighbour_ids: pt:set[pt:int]
   action:

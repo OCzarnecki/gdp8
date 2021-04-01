@@ -17,7 +17,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     package="aea.gdp8.agent_environment_communication.v0_1_0",
     syntax="proto3",
     serialized_options=None,
-    serialized_pb=b'\n\x17\x61gent_environment.proto\x12/aea.gdp8.agent_environment_communication.v0_1_0"\xa3\x05\n\x17\x41gentEnvironmentMessage\x12n\n\x06\x61\x63tion\x18\x05 \x01(\x0b\x32\\.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Action_PerformativeH\x00\x12j\n\x04tick\x18\x06 \x01(\x0b\x32Z.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_PerformativeH\x00\x1a\xb3\x01\n\x07\x43ommand\x12m\n\x07\x63ommand\x18\x01 \x01(\x0e\x32\\.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Command.CommandEnum"9\n\x0b\x43ommandEnum\x12\x07\n\x03NOP\x10\x00\x12\x0e\n\nSEND_WATER\x10\x01\x12\x11\n\rRECEIVE_WATER\x10\x02\x1aS\n\x11Tick_Performative\x12\x12\n\ntile_water\x18\x01 \x01(\x05\x12\x13\n\x0b\x61gent_water\x18\x02 \x01(\x05\x12\x15\n\rneighbour_ids\x18\x03 \x03(\x05\x1a\x90\x01\n\x13\x41\x63tion_Performative\x12\x61\n\x07\x63ommand\x18\x01 \x01(\x0b\x32P.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Command\x12\x16\n\x0ewater_quantity\x18\x02 \x01(\x05\x42\x0e\n\x0cperformativeb\x06proto3',
+    serialized_pb=b'\n\x17\x61gent_environment.proto\x12/aea.gdp8.agent_environment_communication.v0_1_0"\xb8\x05\n\x17\x41gentEnvironmentMessage\x12n\n\x06\x61\x63tion\x18\x05 \x01(\x0b\x32\\.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Action_PerformativeH\x00\x12j\n\x04tick\x18\x06 \x01(\x0b\x32Z.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_PerformativeH\x00\x1a\xb3\x01\n\x07\x43ommand\x12m\n\x07\x63ommand\x18\x01 \x01(\x0e\x32\\.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Command.CommandEnum"9\n\x0b\x43ommandEnum\x12\x07\n\x03NOP\x10\x00\x12\x0e\n\nSEND_WATER\x10\x01\x12\x11\n\rRECEIVE_WATER\x10\x02\x1ah\n\x11Tick_Performative\x12\x12\n\ntile_water\x18\x01 \x01(\x05\x12\x13\n\x0bturn_number\x18\x02 \x01(\x05\x12\x13\n\x0b\x61gent_water\x18\x03 \x01(\x05\x12\x15\n\rneighbour_ids\x18\x04 \x03(\x05\x1a\x90\x01\n\x13\x41\x63tion_Performative\x12\x61\n\x07\x63ommand\x18\x01 \x01(\x0b\x32P.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Command\x12\x16\n\x0ewater_quantity\x18\x02 \x01(\x05\x42\x0e\n\x0cperformativeb\x06proto3',
 )
 
 
@@ -111,8 +111,8 @@ _AGENTENVIRONMENTMESSAGE_TICK_PERFORMATIVE = _descriptor.Descriptor(
             file=DESCRIPTOR,
         ),
         _descriptor.FieldDescriptor(
-            name="agent_water",
-            full_name="aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_Performative.agent_water",
+            name="turn_number",
+            full_name="aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_Performative.turn_number",
             index=1,
             number=2,
             type=5,
@@ -129,10 +129,28 @@ _AGENTENVIRONMENTMESSAGE_TICK_PERFORMATIVE = _descriptor.Descriptor(
             file=DESCRIPTOR,
         ),
         _descriptor.FieldDescriptor(
-            name="neighbour_ids",
-            full_name="aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_Performative.neighbour_ids",
+            name="agent_water",
+            full_name="aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_Performative.agent_water",
             index=2,
             number=3,
+            type=5,
+            cpp_type=1,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="neighbour_ids",
+            full_name="aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_Performative.neighbour_ids",
+            index=3,
+            number=4,
             type=5,
             cpp_type=1,
             label=3,
@@ -156,7 +174,7 @@ _AGENTENVIRONMENTMESSAGE_TICK_PERFORMATIVE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[],
     serialized_start=506,
-    serialized_end=589,
+    serialized_end=610,
 )
 
 _AGENTENVIRONMENTMESSAGE_ACTION_PERFORMATIVE = _descriptor.Descriptor(
@@ -211,8 +229,8 @@ _AGENTENVIRONMENTMESSAGE_ACTION_PERFORMATIVE = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=592,
-    serialized_end=736,
+    serialized_start=613,
+    serialized_end=757,
 )
 
 _AGENTENVIRONMENTMESSAGE = _descriptor.Descriptor(
@@ -280,7 +298,7 @@ _AGENTENVIRONMENTMESSAGE = _descriptor.Descriptor(
         ),
     ],
     serialized_start=77,
-    serialized_end=752,
+    serialized_end=773,
 )
 
 _AGENTENVIRONMENTMESSAGE_COMMAND.fields_by_name[

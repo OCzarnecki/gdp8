@@ -1,5 +1,5 @@
 name: Action_Each_Turn
-author: Chun
+author: gdp8
 version: 0.1.0
 type: skill
 description: This skill recieves info from environment agent every turn, make a decision
@@ -9,9 +9,10 @@ license: Apache-2.0
 aea_version: '>=0.11.0, <0.12.0'
 fingerprint:
   __init__.py: QmZDFWwWewDQWVasLBrfiuzuffSjYjETKebGpR7eRgM6Nj
-  behaviours.py: QmYHwVn4eKbfxuvGbeb1oVtz6pawYatYUpLdQwa3sW3FSW
-  handlers.py: QmT7YcRxq7uHf4utirHBhRsSPHeXonAyC8QDjLhVxLjYKW
-  strategy.py: QmbiCQKwR5fqJht26ctmeSGS4vN5GkZaVUN4J5ieHZGox6
+  behaviours.py: QmV3CWGbxQsToMbTN4kk4CSMcE8JTAW9NXoTjG3t3XFR1T
+  dialogues.py: QmddFVAkHbfTFQ8vGmsKNGX8pZpierssEHnrHwarDTsq8C
+  handlers.py: QmRq7c5rv75xrnGArdfx6XN9vPkr4ZBW2yNqTfGHGxev2K
+  strategy.py: QmcNxoea9LmyiLGVESUx7DDwpY4LzKNgXr1HrWL3MbcPi8
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
@@ -22,24 +23,24 @@ behaviours:
     args: {}
     class_name: AgentLogicBehaviour
 handlers:
-  enviornment_message_handler:
-    args: {}
-    class_name: EnvironmentMessageHandler
   agent_message_handler:
     args: {}
     class_name: AgentMessageHandler
+  enviornment_message_handler:
+    args: {}
+    class_name: EnvironmentMessageHandler
 models:
-  strategy:
-    args: {}
-    class_name: BasicStrategy
-  default_dialogues:
-    args: {}
-    class_name: DefaultDialogues
   agent_agent_dialogues:
     args: {}
     class_name: AgentAgentDialogues
   agent_env_dialogues:
     args: {}
     class_name: AgentEnvDialogues
+  default_dialogues:
+    args: {}
+    class_name: DefaultDialogues
+  strategy:
+    args: {}
+    class_name: BasicStrategy
 dependencies: {}
 is_abstract: false
