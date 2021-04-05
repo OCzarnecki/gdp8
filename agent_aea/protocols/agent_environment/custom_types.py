@@ -23,8 +23,9 @@
 class Command:
     """This class represents an instance of Command."""
 
-    def __init__(self):
+    def __init__(self, command_: str):
         """Initialise an instance of Command."""
+        self.command = command_
         raise NotImplementedError
 
     @staticmethod
