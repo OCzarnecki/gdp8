@@ -5,12 +5,12 @@ protocol_specification_id: gdp8/agent_agent_communication:0.1.0
 type: protocol
 description: Agent-agent messages
 license: Apache-2.0
-aea_version: '>=0.11.0, <0.12.0'
+aea_version: '>=0.11.0, <=1.0.0'
 fingerprint:
   __init__.py: QmVBVDFUBjy29wh12jkHTE3U7vyanPeJ5mHjjqsLLLYc9T
   agent_agent.proto: QmSqSHnsn9WawhbBXU6FRR74Q4XhoZfhN4EB5bZRiEazdR
   agent_agent_pb2.py: QmYDiHuPrjgyHrbzw5nFQcFE8sGh6Yey8KH5AMH7tMXSy1
-  dialogues.py: QmfXUoB1YZHEbkRjx2iViA7Wkztdyp4Y8iGK5rQYE5WeJ7
+  dialogues.py: QmdoVyum4jkRqXRSjoWZehGiaC9vhHCv8TDHLLGdtqFy2G
   message.py: QmSGF9xHDdAFDbBH4ikCeg4rbeFA7qVY2Xge84gXXBd7VY
   serialization.py: QmTbZRv3rbNiERe7F2MJ66EfABy678WYYDrBavq9EUGrNA
 fingerprint_ignore_patterns: []

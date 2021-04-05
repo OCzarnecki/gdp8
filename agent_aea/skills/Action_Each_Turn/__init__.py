@@ -22,4 +22,4 @@
 from aea.configurations.base import PublicId
 
 
-PUBLIC_ID = PublicId.from_str("Chun/Action_Each_Turn:0.1.0")
+PUBLIC_ID = PublicId.from_str("gdp8/Action_Each_Turn:0.1.0")

@@ -1,11 +1,11 @@
 name: default
-author: fetchai
+author: gdp8
 version: 0.13.0
-protocol_specification_id: fetchai/default:0.1.0
+protocol_specification_id: gdp8/default:0.1.0
 type: protocol
 description: A protocol for exchanging any bytes message.
 license: Apache-2.0
-aea_version: '>=0.11.0, <0.12.0'
+aea_version: '>=0.11.0, <=1.0.0'
 fingerprint:
   README.md: QmXxh7yds1Ltm8YoHevUU58aNX6xCirKXbBPfBgpVxAcXY
   __init__.py: QmT6AvBFMz9uW86ZzxrsagGj6Pah1XhHcDsPKMjB7EnAWf

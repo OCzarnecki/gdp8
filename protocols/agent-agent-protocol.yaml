@@ -5,7 +5,7 @@ version: 0.1.0
 description: Agent-agent messages
 protocol_specification_id: gdp8/agent_agent_communication:0.1.0
 license: Apache-2.0
-aea_version: '>=0.11.0, <0.12.0'
+aea_version: '>=0.11.0, <=1.0.0'
 speech_acts:
   water_status: 
     water: pt:int

@@ -5,13 +5,13 @@ protocol_specification_id: gdp8/agent_environment_communication:0.1.0
 type: protocol
 description: Agent-environment messages
 license: Apache-2.0
-aea_version: '>=0.11.0, <0.12.0'
+aea_version: '>=0.11.0, <=1.0.0'
 fingerprint:
   __init__.py: QmfStVhigA3NoV4mmj2QuoYRCAmQhZB46SgbDfFa9CS2kG
   agent_environment.proto: QmeanFHY7NV5Z4nDY6R9xoJoHs3ob86PHeu24t5jrjNtuR
   agent_environment_pb2.py: QmfT1ouSRCBPM4tcoggrwX54hdCmyXRLcsAYP3V6AJRvjJ
-  custom_types.py: QmfSepVjXiC8ND3Q4DM26TUjXnCZ3YRz6H42mseY1QjGTa
-  dialogues.py: QmNXz32kafKZWKD9oV4boNuR6oNb28Nw1xYv7s7P1VgWxo
+  custom_types.py: QmcmUjX2bDRn327ASS1yP7C5zcLhhxB4EtzADhtXtvZdn6
+  dialogues.py: QmTJS6Z4QqcbVP7LooBqGyyyzD9YwHt4Yq7Q7C14vxXZw9
   message.py: Qmb4PwwBcUqaqGuFkwoqEeHzU4mypZPhrvYpGkis6SUUrw
   serialization.py: QmPZfRXpuRbcoJXvzoQWTejWtiwcq3NnDpDexVLXkKx9yK
 fingerprint_ignore_patterns: []
