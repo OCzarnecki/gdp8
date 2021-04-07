@@ -28,8 +28,9 @@ class State():
         self.agents = []
         self.cells = []
         self.time = 0
-        self.max_time = 0
-        self.load(0)
+        self.max_time = 30
+        self.max_agent = 50
+        self.load()
 
         # test code
         self.x_size = 2
@@ -37,6 +38,6 @@ class State():
         self.agents = [Agent(0, 0, 0, 0)]
         self.cells = [Cell(i, j, 0) for i in [0, 1] for j in [0, 1]]
 
-    def load(self, time):
+    def load(self):
         # update state to use a new simulation time
         pass
