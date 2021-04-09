@@ -3,7 +3,7 @@ author: gdp8
 version: 0.1.0
 license: Apache-2.0
 description: This agent provides is the environment simulation for the other agents.
-aea_version: '>=0.11.0, <0.12.0'
+aea_version: '>=0.11.0, <=1.0.0'
 fingerprint: {}
 fingerprint_ignore_patterns: []
 connections: []
@@ -15,13 +15,13 @@ protocols:
 - gdp8/agent_environment:0.1.0
 skills: []
 default_ledger: fetchai
+required_ledgers: []
 default_routing: {}
 connection_private_key_paths: {}
 private_key_paths: {}
 logging_config:
   disable_existing_loggers: false
   version: 1
-registry_path: ..\packages
 dependencies:
   aea-ledger-fetchai: {}
 default_connection: null
