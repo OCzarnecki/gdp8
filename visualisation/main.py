@@ -1,4 +1,4 @@
-import sys, pygame
+import sys, pygame, json
 from simulationState import State
 """
 Plan:
@@ -23,8 +23,16 @@ Notes:
 pygame.init()
 pygame.display.set_caption('AEA Desert')
 pygame.font.init()
-SIZE = (300, 600)
+WIDTH = 900
+HEIGHT = 600
+SIZE = (WIDTH, HEIGHT)
 SCREEN = pygame.display.set_mode(SIZE)
+
+# the maximum amount of water that any agent can have
+MAX_INVENTORY = 100
+
+def colorPercentage(n):
+    return 255 * (n / 100.0)
 
 class WorldPainting():
     """
@@ -39,21 +47,24 @@ class WorldPainting():
 
     def draw(self, state):
         for cell in state.cells:
-            self.drawCell(cell)
+            self.drawCell(cell, state.max_water_capacity)
         for agent in state.agents:
             self.drawAgent(agent)
 
-    def drawCell(self, cell): # just draws blue
-        x = cell.x * self.tileWidth
-        y = cell.y * self.tileWidth
-        rect = pygame.Rect(x, y, self.tileWidth, self.tileWidth)
-        pygame.draw.rect(self.surface, (0, 0, 255), rect)
+    def drawCell(self, cell, max_water_capacity):
+        if (max_water_capacity != 0):
+            x = cell.x * self.tileWidth
+            y = cell.y * self.tileWidth
+            rect = pygame.Rect(x, y, self.tileWidth, self.tileWidth)
+            pygame.draw.rect(self.surface, (0, 0, colorPercentage((cell.water/max_water_capacity)*100)), rect)
 
     def drawAgent(self, agent):
         center_x = (agent.x + 0.5) * self.tileWidth
         center_y = (agent.y + 0.5) * self.tileWidth
         center = (center_x, center_y)
-        pygame.draw.circle(self.surface, (127, 127, 0), center, self.tileWidth / 3.)
+        pygame.draw.circle(self.surface,
+            (colorPercentage(100 - agent.inventory), colorPercentage(agent.inventory), 0),
+            center, self.tileWidth / 3.)
 
 class Camera():
     """
@@ -125,7 +136,7 @@ class Slider():
 class UserInterface():
 
     def __init__(self):
-        self.rect_background = pygame.Rect(0, 400, 300, 200)
+        self.rect_background = pygame.Rect(0, 400, WIDTH, 200)
         self.K_L_DOWN = False
         self.K_R_DOWN = False
 
@@ -185,7 +196,9 @@ class UserInterface():
 
 
 if __name__ == "__main__":
-    state = State("")
+
+    state = State("/Users/tancrede/Desktop/projects/aea/gdp/visualisation/data.json")
+
     painting = WorldPainting(state)
     camera = Camera()
     ui = UserInterface()
