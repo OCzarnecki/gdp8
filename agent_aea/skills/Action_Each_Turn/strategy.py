@@ -56,7 +56,9 @@ class BasicStrategy(Model):
         # ENV messages should only be allowed to arrive when last round is done and should forever be
         # coming in the right sequence (1 then 2 then 3...)
         # Assert correct round and ready to accept
-        assert (agent_environment_message.turn_number == self.round_no + 1)
+        # Assert last round done
+        assert agent_environment_message.turn_number == self.round_no + 1
+        assert self.is_round_done
         self.round_no += 1
         self.current_env_message = agent_environment_message
         self.current_env_dialogue = agent_environment_dialogue
