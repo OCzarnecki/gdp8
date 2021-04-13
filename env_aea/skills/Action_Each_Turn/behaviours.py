@@ -66,13 +66,16 @@ class EnvironmentLogicBehaviour(Behaviour):
         ):
             ##should end up with a list of all agents and their adress at the end of this phase
             ##connect the env to each agent
+            environment.phase = Phase.START_SIMULATION
             return None
 
         elif (
             environment.phase.value == Phase.START_SIMULATION
         ):
-            ## maybe there is something to be done for the first turn of the simulation
-            return None
+            ## maybe there is something to be done for the first turn of the simulation, 
+            ## if not this can be skipped
+            environment.phase = Phase.START_NEXT_SIMULATION_TURN
+            
         elif (
             environment.phase.value == Phase.START_NEXT_SIMULATION_TURN.value
         ):
@@ -95,9 +98,11 @@ class EnvironmentLogicBehaviour(Behaviour):
             environment.phase.value == Phase.SIMULATION_CANCELLED.value
         ):
             ## the simulation has been canceled
+            environment.end_simulation()
             ## save the env state
             ## kill all agents
             ## end simulation
+            # -> Who does the above ? 
             return None
         else: 
             ##there has been an issue, the env should be in one of those phases

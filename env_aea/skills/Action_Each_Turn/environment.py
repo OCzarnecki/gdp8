@@ -99,10 +99,15 @@ class Environment(Model):
 
     def save_action(self, agent_adress, action, water_content) -> None:
         """Saves the agent's action for this turn."""
+        ## The handler can also pass the whole message if you prefer
         raise NotImplementedError
 
     def start_next_simulation_turn(self) -> None:
         """Starts the next simulation turn."""
         # turn_number +=1
         # implement logic for the actions taken by the agents 
+        raise NotImplementedError
+
+    def end_simulation(self) -> None:
+        """Is there anything particular to be done at the end of the simulation? save state of environment?..."""
         raise NotImplementedError
