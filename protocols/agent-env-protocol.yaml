@@ -13,7 +13,7 @@ speech_acts:
     agent_water: pt:int
     neighbour_ids: pt:set[pt:int]
   action:
-    command: ct:Command
+    command: ct:Command ## not sure about the type of the command yet, it will probably be a String
     water_quantity: pt:int
 ...
 ---
