@@ -13,7 +13,8 @@ protocols:
 - gdp8/default:0.13.0
 - gdp8/signing:0.11.0
 - gdp8/state_update:0.11.0
-skills: []
+skills:
+- gdp8/Action_Each_Turn:0.1.0
 default_ledger: fetchai
 required_ledgers: []
 default_routing: {}
