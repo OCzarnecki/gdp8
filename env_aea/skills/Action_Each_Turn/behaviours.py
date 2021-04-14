@@ -25,9 +25,12 @@
 from aea.skills.base import Behaviour
 from typing import Any, Optional, cast
 
+from packages.fetchai.protocols.oef_search.message import OefSearchMessage
+from packages.fetchai.skills.tac_control.dialogues import (
+    OefSearchDialogues,
+)
 
-
-from env_aea.skills.Action_Each_Turn.environment import Environment, Phase
+from gdp.env_aea.skills.Action_Each_Turn.environment import Environment, Phase
 from gdp.agent_aea.protocols.agent_environment.message import AgentEnvironmentMessage
 from gdp.agent_aea.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
 
@@ -39,13 +42,17 @@ class EnvironmentLogicBehaviour(Behaviour):
         - notifies the environment when it's ok to move to next turn of the simulation
    """
 
+    def __init__(self, **kwargs: Any):
+        """Instantiate the behaviour."""
+        super().__init__(**kwargs)
+        self._registered_description = None  # type: Optional[Description]
+
     def setup(self) -> None:
         """
         Implement the setup.
-
         :return: None
         """
-        raise NotImplementedError
+        self._register_agent()
 
     def act(self) -> None:
         """
@@ -54,33 +61,42 @@ class EnvironmentLogicBehaviour(Behaviour):
 
         :return: None
         """
-        environment = cast(Environment, self.context.simulation)
+        environment = cast(Environment, self.context.environment)
 
         if (
             environment.phase.value == Phase.PRE_SIMULATION.value
         ):
-            ##create all agents
-            return None
+            environment.phase = Phase.SIMULATION_REGISTRATION
+            self._register_env()
+            self.context.logger.info(
+                "Environment open for registration" #until: {}".format(parameters.start_time)
+            )
         elif (
-            environment.phase.value == Phase.SIMULATION_SETUP.value
+            environment.phase.value == Phase.SIMULATION_REGISTRATION.value
         ):
-            ##should end up with a list of all agents and their adress at the end of this phase
+            ##should end up with a list of all agents and their address at the end of this phase
             ##connect the env to each agent
-            environment.phase = Phase.START_SIMULATION
-            return None
-
+            if environment.registration.nb_agents < environment.nb_agents:
+                #wait
+                return
+            ##elif registration delay expired : cancel simulation
+            else:
+                environment.phase = Phase.SIMULATION_SETUP
+                environment.create()
+                self._unregister_env()
+                environment.phase = Phase.START_NEXT_SIMULATION_TURN
         elif (
             environment.phase.value == Phase.START_SIMULATION
         ):
             ## maybe there is something to be done for the first turn of the simulation, 
             ## if not this can be skipped
             environment.phase = Phase.START_NEXT_SIMULATION_TURN
-            
+
         elif (
             environment.phase.value == Phase.START_NEXT_SIMULATION_TURN.value
         ):
             environment.phase = Phase.COLLECTING_AGENTS_REPLY
-            self.send_tick_messages(environment)
+            self._send_tick_messages(environment)
 
         elif (
             environment.phase.value == Phase.COLLECTING_AGENTS_REPLY.value
@@ -99,6 +115,7 @@ class EnvironmentLogicBehaviour(Behaviour):
         ):
             ## the simulation has been canceled
             environment.end_simulation()
+            self._cancel_simulation()
             ## save the env state
             ## kill all agents
             ## end simulation
@@ -118,7 +135,87 @@ class EnvironmentLogicBehaviour(Behaviour):
         """
         raise NotImplementedError
 
-    def send_tick_messages(self, environment: Environment) -> None:
+
+    def _register_agent(self) -> None:
+        """
+        Register the agent's location.
+        :return: None
+        """
+        oef_search_dialogues = cast(
+            OefSearchDialogues, self.context.oef_search_dialogues
+        )
+        oef_search_msg, _ = oef_search_dialogues.create(
+            counterparty=self.context.search_service_address,
+            performative=OefSearchMessage.Performative.REGISTER_SERVICE,
+            #service_description=???,
+        )
+        self.context.outbox.put_message(message=oef_search_msg)
+        self.context.logger.info("registering environment agent on SOEF.")
+
+    def _register_env(self) -> None:
+        """
+        Register on the OEF as an Environment agent.
+        :return: None.
+        """
+        environment = cast(Environment, self.context.environment)
+        description = environment.get_register_env_description()
+        oef_search_dialogues = cast(
+            OefSearchDialogues, self.context.oef_search_dialogues
+        )
+        oef_search_msg, _ = oef_search_dialogues.create(
+            counterparty=self.context.search_service_address,
+            performative=OefSearchMessage.Performative.REGISTER_SERVICE,
+            service_description=description,
+        )
+        self.context.outbox.put_message(message=oef_search_msg)
+        self.context.logger.info("registering Environment model on SOEF.")
+        
+    def _unregister_env(self) -> None:
+        """
+        Unregister from the OEF as an environment agent.
+        :return: None.
+        """
+        environment = cast(Environment, self.context.environment)
+        description = environment.get_unregister_env_description()##
+        oef_search_dialogues = cast(
+            OefSearchDialogues, self.context.oef_search_dialogues
+        )
+        oef_search_msg, _ = oef_search_dialogues.create(
+            counterparty=self.context.search_service_address,##
+            performative=OefSearchMessage.Performative.UNREGISTER_SERVICE,
+            service_description=description,
+        )
+        self.context.outbox.put_message(message=oef_search_msg)
+        self._registered_description = None
+        self.context.logger.info("unregistering Environment model from SOEF.")
+
+    def _cancel_simulation(self, environment: Environment) -> None:
+        """Notify agents that the simulation is cancelled."""
+        self.context.logger.info("notifying agents that the simulation is cancelled.")
+
+        agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
+        for agent_address in environment.registration.agent_addr_to_name.keys():##
+            _agent_environment_dialogues = agent_environment_dialogues.get_dialogues_with_counterparty(
+                agent_address##
+            )
+            if len(_agent_environment_dialogues) != 1:
+                raise ValueError("Error when retrieving dialogue.")
+            agent_environment_dialogue = _agent_environment_dialogues[0]
+            last_msg = agent_environment_dialogue.last_message
+            if last_msg is None:  # pragma: nocover
+                raise ValueError("Error when retrieving last message.")
+            env_msg = agent_environment_dialogue.reply(
+                performative=AgentEnvironmentMessage.Performative.CANCELLED,
+            )
+            self.context.outbox.put_message(message=env_msg)
+
+        if environment.phase == Phase.START_NEXT_SIMULATION_TURN 
+            or environment.phase == Phase.COLLECTING_AGENTS_REPLY
+            or environment.phase == Phase.AGENTS_REPLY_RECEIVED:
+            self.context.is_active = False ##when was it set to true ?
+
+
+    def _send_tick_messages(self, environment: Environment) -> None:
         """Collects data from the env and sends tick messages to all agents alive for current turn of simulation."""
         ##todo: add log stuff
         ##todo: things with connection, dialogues ?
