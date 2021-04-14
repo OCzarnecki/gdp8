@@ -38,7 +38,7 @@ class AgentLogicBehaviour(TickerBehaviour):
 
         :return: None
         """
-        raise NotImplementedError
+        pass
 
     def act(self) -> None:
 
@@ -63,4 +63,4 @@ class AgentLogicBehaviour(TickerBehaviour):
 
         :return: None
         """
-        raise NotImplementedError
+        pass

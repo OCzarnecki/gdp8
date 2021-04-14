@@ -172,7 +172,7 @@ class AgentMessageHandler(Handler):
 
     def _handle_returned_water_info(self, agent_agent_message: AgentAgentMessage, agent_agent_dialogue):
         # Actual function where agent messages are used.
-        strategy = cast(BasicStrategy, self.context.strategy)  # ??????????
+        strategy = cast(BasicStrategy, self.context.strategy)
         # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
         # True = Go on, False = stop
         strategy.receive_agent_agent_info(agent_agent_message)
