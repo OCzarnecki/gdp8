@@ -14,6 +14,16 @@ git clone https://OlafC@bitbucket.org/OlafC/gdp.git
 ```
 Then, follow the [AEA Framework Installation Instructions](https://docs.fetch.ai/aea/quickstart/#option-2-automated-install-script).
 
+# Testing
+From the root directory run
+```
+python -m unittest
+```
+This will autodiscover all tests in the `tests` subdirectory, as long as
+* all test classes are importable from the project root
+* all files containing test classes start with `test_`
+* all test methods start with `test_`
+
 ### Contribution guidelines ###
 
 * Everything happens on master
