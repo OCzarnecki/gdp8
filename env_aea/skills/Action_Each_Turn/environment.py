@@ -26,10 +26,15 @@ from aea.skills.base import Model
 from aea.common import Address
 
 
+from enum import Enum, auto
+from itertools import product
 from typing import Any, Dict, List, Optional, cast
-from enum import Enum
+
 
 import agent_aea
+
+
+import random
 
 class Phase(Enum):
     """This class defines the phases of the simulation."""
@@ -42,13 +47,232 @@ class Phase(Enum):
     AGENTS_REPLY_RECEIVED = "agents_reply_received"
     SIMULATION_CANCELLED = "simulation_cancelled"
 
+class CommandType(Enum):
+    """ Enum of possible types of command """
+    OFFER_WATER = auto()
+    REQUEST_WATER = auto()
+    IDLE = auto()
+
+class Command:
+    """ Abstract superclass of all command objects"""
+    def __init__(self, command_type):
+        self.command_type = command_type
+
+class OfferWaterCommand(Command):
+    def __init__(self, quantity):
+        super().__init__(CommandType.OFFER_WATER)
+        self.quantity = quantity
+
+class ReceiveWaterCommand(Command):
+    def __init__(self, quantity):
+        super().__init__(CommandType.REQUEST_WATER)
+        self.quantity = quantity
+
+class IdleCommand(Command):
+    def __init__(self):
+        super().__init__(CommandType.IDLE)
+
+class Agent:
+    """ Representation of the properties an agent has in the
+        environment. Does not include framework properties like
+        addresses etc. """
+    def __init__(self, agent_id, initial_water, pos_x, pos_y):
+        self.agent_id = agent_id
+        self.water = initial_water
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.next_command = None
+
+    def queue_command(self, command):
+        """ Set the command that the agent wants to execute this
+            turn. Overwrites previous commands. Must be one of
+            the command objects defined above, deriving Command. 
+        """
+        if command == None:
+            command = IdleCommand()
+        self.next_command = command
+
+class SimulationState():
+    """ Captures the entire state of the simulation at a given
+        time, and implements methods for querying and modifying
+        it """
+    def __init__(self,
+                 size_x,
+                 size_y,
+                 initial_oasis_water,
+                 oasis_count,
+                 agent_count,
+                 initial_agent_water,
+                 agent_mining_speed,
+                 agent_max_capacity):
+        self.size_x = size_x    # Width of cell grid
+        self.size_y = size_y    # Height of cell grid
+        self._agent_mining_speed = agent_mining_speed
+        self._agent_max_capacity = agent_max_capacity
+        self._generate_water(initial_oasis_water, oasis_count)
+        self._init_agents(agent_count, initial_agent_water)
+        self.turn_number = 0
+        # Alocate datastructures used in update_simulation once
+        self._needs = [[0] * size_y for _ in range(size_x)]
+        self._transfers = [[0] * size_y for _ in range(size_x)]
+
+    def get_agent_by_id(self, agent_id):
+        """ Retrieve agent by agent id. Crash and burn if
+            invalid. """
+        return self._agents_by_id[agent_id]
+
+    def get_agent_by_pos(self, x, y):
+        """ Returns the agent at grid position (x, y) or None if
+            the grid cell is empty. Coords must be within range.
+            """
+        return self._agent_grid[x][y]
+
+    def get_cell_water(self, x, y):
+        """ Return the current water contents of a grid cell. """
+        return self._water[x][y]
+
+    def get_agents_alive(self):
+        """ Return a list of all agents that are currently alive.
+            """
+        return [agent for agent in self._agents_by_id if agent.water > 0]
+
+    def update_simulation(self):
+        """ Advance the simulation by one turn, and prepare data
+            for the next one. """
+        self.turn_number += 1
+        self._transfer_water()
+        for agent in self._agents_by_id:
+            # Charge water cost
+            agent.water -= 1
+            # Clear command
+            agent.next_command = None
+
+    def _transfer_water(self):
+        """ Update the agents' water inventory by one turn. This
+            includes both mining, and the resolution of transfers
+            the agents make among themselves. If requests or
+            offers for water are not consistent with each other,
+            arbitrary tiebreaking will be applied. The details
+            are not specified. In particular, there is no
+            guarantee for optimality. """
+        # Algorithm description:
+        # Maintain needs for all cells. Needs are positive if the
+        # agent at the cell requested water, negative if it
+        # offered water, and 0 otherwise or if the cell does not
+        # contain an agent. The needs are modified towards 0
+        # while the algorithm is running.
+        #
+        # Also maintain transfers, indicating how much water
+        # should be transfered to or from an agent after water
+        # has been mined. The transfers are the output of the
+        # algorithm.
+        #
+        # Iterate over all agents. If their needs are negative,
+        # greedily try to meet negative needs of neighbours.
+        # Adjust needs accordingly, and keep track of transfers
+        # made. Make sure that the transfer satisfies all the
+        # constraints (amounts offered, amounts requested, max
+        # capacity, capacity that can be transfered).
+        
+        # Init data structures
+        for x in range(self.size_x):
+            for y in range(self.size_y):
+                self._transfers[x][y] = 0
+                agent = self.get_agent_by_pos(x, y)
+                self._needs[x][y] = 0
+                if agent != None and agent.next_command != None:
+                    if agent.next_command.type == CommandType.REQUEST_WATER:
+                        self._needs[x][y] = agent.next_command.quantity
+                    elif agent.next_command.type == CommandType.OFFER_WATER:
+                        self._needs[x][y] = max(-1 * agent.next_command.quantity,
+                                                agent.water + self._minable_at(x, y))
+        
+        # Compute transfers
+        agent_positions = [(agent.pos_x, agent.pos_y) for agent in self._agents_by_id]
+        for (x, y) in agent_positions:
+            # Action is only needed for agents who send water
+            if self._needs[x][y] < 0:
+                agent = self.get_agent_by_pos(x, y)
+                neighbour_coords = [(x + dx, y + dy)
+                    for dx in [-1, 1]
+                    for dy in [-1, 1]
+                    if 0 <= dx < self.size_x
+                    and 0 <= dy < self.size_y]
+                for (dst_x, dst_y) in neighbour_coords:
+                    dst_agent = self.get_agent_by_pos(dst_x, dst_y)
+                    if dst_agent != None and self._needs[dst_x][dst_y] > 0:
+                        transfer_amount = min(self._agent_max_capacity 
+                                                - dst_agent.water 
+                                                - self._minable_at(dst_x, dst_y) 
+                                                + self._transfers[dst_x][dst_y],
+                                              self._needs[dst_x][dst_y],
+                                              -1 * self._needs[x][y],
+                                              agent.water + self._minable_at(x, y) + self._transfers[x][y])
+                        transfer_amount = max(transfer_amount, 0)
+                        self._needs[x][y] += transfer_amount
+                        self._needs[pos_x][pos_y] -= transfer_amount
+                        self._transfers[x][y] -= transfer_amount
+                        self._transfers[x][y] += transfer_amount
+        
+        # Apply transfers and mine water
+        for (x, y) in agent_positions:
+            agent = self.get_agent_by_pos(x, y)
+            # Mine water
+            minable = self._minable_at(x, y)
+            if minable > 0:
+                to_mine = min(self._agent_max_capacity - agent.water, minable)
+                self._water[x][y] -= to_mine
+                agent.water += to_mine
+            # Transfer water
+            agent.water += self._transfers[x][y]
+
+    def _minable_at(self, x, y):
+        """ Determine how much an agent with enough spare
+            capacity could mine at position (x, y). """
+        return min(self._water[x][y], self._agent_mining_speed)
+
+    def _generate_water(self, initial_oasis_water, oasis_count):
+        """ Terrain generation. Populate the grid with water. """
+        # Currently just uniformly distribute 1x1 oases.
+        # Might do a gaussain blur later for coolness and interest.
+        self._water = [[0] * self.size_y for _ in range(self.size_x)]
+        for (x, y) in self._unique_random_coords(oasis_count):
+            self._water[x][y] = initial_oasis_water
+
+    def _init_agents(self, agent_count, initial_agent_water):
+        """ Initiate IDs and locations for agents. """
+        # Distribute agents uniformly.
+        current_id = 0
+        self._agents_by_id = []
+        self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
+        for (x, y) in self._unique_random_coords(agent_count):
+            agent = Agent(current_id, initial_agent_water, x, y)
+            self._agents_by_id.append(agent)
+            self._agent_grid[x][y] = agent
+            current_id += 1
+
+    def _unique_random_coords(self, count):
+        """ Returns a list of `count` unique, uniformly distributed, random,
+            integer coordinates, that lie within this simulations grid """
+        possible_coords = list(product(range(self.size_x), range(self.size_y)))
+        return random.sample(possible_coords, count)
+
 class Environment(Model): 
-    """This class scaffolds a model of the environment."""
-
+    """Model of the environment."""
     def __init__(self, **kwargs: Any) -> None:
-
         self._phase = Phase.PRE_SIMULATION
-
+        self.state = SimulationState(
+                kwargs['size_x'],
+                kwargs['size_y'],
+                kwargs['initial_oasis_water'],
+                kwargs['oasis_count'],
+                42, # TODO figure out where to get this
+                kwargs['initial_agent_water'],
+                kwargs['agent_mining_speed'],
+                kwargs['agent_max_capacity']
+            )
+        self._agents_replied = set()
+        # TODO ID <-> addres/framework_agent_object assignment
 
     @property
     def phase(self) -> Phase:
@@ -64,50 +288,80 @@ class Environment(Model):
     @property
     def turn_number(self) -> int:
         """Get the current turn number of the simulation."""
-        raise NotImplementedError
+        return self.state.turn_number
 
     @property
     def water_content(self, agent_address) -> int:
         """Get the water_content of the cell of the agent."""
-        raise NotImplementedError 
-    
+        agent_id = self.address_to_id(agent_address)
+        agent = self.state.get_agent_by_id(agent_id)
+        return self.state.get_cell_water(agent.pos_x, agent.pos_y)
+
     @property
     def agent_water(self, agent_address) -> int:
         """Get the amount of water the agent has in its inventory."""
-        raise NotImplementedError
-    
-    @property
-    def neighbour_ids(self, agent_address) -> list(agent_address):
-        """Get the list of addresses of the agents neighbours."""
-        raise NotImplementedError
+        agent_id = self.address_to_id(agent_address)
+        return self.state.get_agent_by_id(agent_id)
 
     @property
-    def agents_alive(self) -> list(agent_aea):
+    def neighbour_ids(self, agent_address):
+        """Get the list of addresses of the agents neighbours."""
+        # TODO rename method to 'neighbours'
+        agent = self.state.get_agent_by_id(self.address_to_id(agent_address))
+        neighbour_coords = [(agent.pos_x + x, agent.pos_y + y)
+            for x in [-1, 1]
+            for y in [-1, 1]
+            if 0 <= x < self.state.size_x
+            and 0 <= y < self.state.size_y]
+        possible_agents = [self.state.get_agent_by_pos(x, y) for (x, y) in neighbour_coords]
+        return [self.id_to_address(agent.agent_id) for agent in possible_agents if agent != None]
+
+    @property
+    def agents_alive(self):
         # actually doesn't really matter if it is a list(address) or list... What I need is a list with the 
         # address of all agents alive to send them the tick message
         """Get a list of agents still alive in the simulation."""
-        raise NotImplementedError
-    
+        return [self.id_to_address(agent.agent_id) for agent in self.state.get_agents_alive()]
+
     @property
     def agents_reply_received(self) -> bool:
         """Get true if the env received a reply from all agents still alive this turn"""
-        raise NotImplementedError
+        return len(self._agents_replied) == 42 # TODO figure out where to get this
 
     def remove_dead_agents(self) -> None:
         """Removes all agents who haven't replied this turn from the list of agents alive."""
-        raise NotImplementedError
+        # Nothing to do, currently.
+        pass
 
     def save_action(self, agent_adress, action, water_content) -> None:
         """Saves the agent's action for this turn."""
-        ## The handler can also pass the whole message if you prefer
-        raise NotImplementedError
+        agent_id = self.address_to_id(agent_address)
+        agent = self.state.get_agent_by_id(agent_id)
+        self._agents_replied.add(agent_id)
+        command = None
+        if action == "offer_water":
+            command = OfferWaterCommand(water_content)
+        elif action == "receive_water":
+            command = ReceiveWaterCommand(water_content)
+        else:
+            self.context.logger.warning("could not parse action string {}".format(action))
+        agent.queue_command(action, command)
 
     def start_next_simulation_turn(self) -> None:
         """Starts the next simulation turn."""
-        # turn_number +=1
-        # implement logic for the actions taken by the agents 
-        raise NotImplementedError
+        # TODO rename to 'update_simulation' or something, because this will need to be called
+        # on the last turn, and has nothing to do with preparing the next turn
+
+        self.state.update_simulation()
+        self._agents_replied.clear()
 
     def end_simulation(self) -> None:
-        """Is there anything particular to be done at the end of the simulation? save state of environment?..."""
+        """Cleanup."""
+        # Nothing to do, currently.
+        pass
+
+    def address_to_id(self, agent_address):
+        raise NotImplementedError
+
+    def id_to_address(self, agent_id):
         raise NotImplementedError

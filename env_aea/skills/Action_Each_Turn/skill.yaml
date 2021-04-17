@@ -28,7 +28,13 @@ handlers:
 models:
   environment:
     args:
-      foo: bar
+      initial_agent_water: 100
+      initial_oasis_water: 2000
+      oasis_count: 15
+      size_x: 20
+      size_y: 20
+      agent_mining_speed: 20
+      agent_max_capacity: 150
     class_name: Environment
 dependencies: {}
 is_abstract: false
