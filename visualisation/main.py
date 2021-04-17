@@ -28,9 +28,6 @@ HEIGHT = 600
 SIZE = (WIDTH, HEIGHT)
 SCREEN = pygame.display.set_mode(SIZE)
 
-# the maximum amount of water that any agent can have
-MAX_INVENTORY = 100
-
 def colorPercentage(n):
     return 255 * (n / 100.0)
 
@@ -151,7 +148,7 @@ class UserInterface():
 
     def draw_tutorial_label(self, screen, state):
             small_text = pygame.font.SysFont("Times New Roman", 16)
-            tutorial_text = "Left/Right keys to change time".format(state.time)
+            tutorial_text = "Left/Right keys to change time"
             tutorial_label = small_text.render(tutorial_text, False, (0,0,0))
             screen.blit(tutorial_label, (0, 400))
 
@@ -167,13 +164,14 @@ class UserInterface():
         screen.blit(time_slider.render(), (0, 500))
 
     def draw_agent_slider(self, screen, state):
-        agent_prop = len(state.agents) / state.max_agent
+        agent_prop = state.count_survivors() / state.max_agent
+
         agent_slider = Slider(
             300,
             agent_prop,
             "survivors: ",
             " {}".format(state.max_agent),
-            str(len(state.agents))
+            str(state.count_survivors())
         )
         screen.blit(agent_slider.render(), (0, 420))
 
@@ -182,11 +180,11 @@ class UserInterface():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT and not self.K_L_DOWN:
                 self.K_L_DOWN = True
-                state.time = max(0, state.time-1)
+                state.load(max(0, state.time-1))
                 print("Time {}".format(state.time))
             elif event.key == pygame.K_RIGHT and not self.K_R_DOWN:
                 self.K_R_DOWN = True
-                state.time = min(state.max_time, state.time+1)
+                state.load(min(state.max_time, state.time+1))
                 print("Time {}".format(state.time))
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT and self.K_L_DOWN:
@@ -197,7 +195,7 @@ class UserInterface():
 
 if __name__ == "__main__":
 
-    state = State("/Users/tancrede/Desktop/projects/aea/gdp/visualisation/data.json")
+    state = State("example_logs/spiral.json")
 
     painting = WorldPainting(state)
     camera = Camera()
@@ -212,7 +210,6 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT: sys.exit()
             ui.process(event, state)
 
-        state.load()
         painting.draw(state)
 
         SCREEN.fill((0,0,0))

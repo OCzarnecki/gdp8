@@ -1,0 +1,71 @@
+{
+    "map_width":2,
+    "map_height":2,
+    "max_water_capacity":300
+}
+{
+    "tick_number":0,
+    "agents": [
+        {
+            "id":0,
+            "x":0,
+            "y":0,
+            "inventory":50
+        }
+    ],
+    "cells": [
+        {
+            "x":0,
+            "y":0,
+            "water":200
+        },
+        {
+            "x":0,
+            "y":1,
+            "water":100
+        },
+        {
+            "x":1,
+            "y":0,
+            "water":300
+        },
+        {
+            "x":1,
+            "y":1,
+            "water":0
+        }
+    ]
+}
+{
+    "tick_number":1,
+    "agents": [
+        {
+            "id":0,
+            "x":0,
+            "y":0,
+            "inventory":100
+        }
+    ],
+    "cells": [
+        {
+            "x":0,
+            "y":0,
+            "water":0
+        },
+        {
+            "x":0,
+            "y":1,
+            "water":100
+        },
+        {
+            "x":1,
+            "y":0,
+            "water":50
+        },
+        {
+            "x":1,
+            "y":1,
+            "water":300
+        }
+    ]
+}
