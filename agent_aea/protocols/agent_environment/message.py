@@ -19,16 +19,13 @@
 
 """This module contains agent_environment's message definition."""
 
+# pylint: disable=too-many-statements,too-many-locals,no-member,too-few-public-methods,too-many-branches,not-an-iterable,unidiomatic-typecheck,unsubscriptable-object
 import logging
 from typing import Any, FrozenSet, Set, Tuple, cast
 
 from aea.configurations.base import PublicId
 from aea.exceptions import AEAEnforceError, enforce
 from aea.protocols.base import Message
-
-from packages.gdp8.protocols.agent_environment.custom_types import (
-    Command as CustomCommand,
-)
 
 
 _default_logger = logging.getLogger(
@@ -45,8 +42,6 @@ class AgentEnvironmentMessage(Message):
     protocol_specification_id = PublicId.from_str(
         "gdp8/agent_environment_communication:0.1.0"
     )
-
-    Command = CustomCommand
 
     class Performative(Message.Performative):
         """Performatives for the agent_environment protocol."""
@@ -72,7 +67,6 @@ class AgentEnvironmentMessage(Message):
             "target",
             "tile_water",
             "turn_number",
-            "water_quantity",
         )
 
     def __init__(
@@ -135,10 +129,10 @@ class AgentEnvironmentMessage(Message):
         return cast(int, self.get("agent_water"))
 
     @property
-    def command(self) -> CustomCommand:
+    def command(self) -> str:
         """Get the 'command' content from the message."""
         enforce(self.is_set("command"), "'command' content is not set.")
-        return cast(CustomCommand, self.get("command"))
+        return cast(str, self.get("command"))
 
     @property
     def neighbour_ids(self) -> FrozenSet[int]:
@@ -158,41 +152,35 @@ class AgentEnvironmentMessage(Message):
         enforce(self.is_set("turn_number"), "'turn_number' content is not set.")
         return cast(int, self.get("turn_number"))
 
-    @property
-    def water_quantity(self) -> int:
-        """Get the 'water_quantity' content from the message."""
-        enforce(self.is_set("water_quantity"), "'water_quantity' content is not set.")
-        return cast(int, self.get("water_quantity"))
-
     def _is_consistent(self) -> bool:
         """Check that the message follows the agent_environment protocol."""
         try:
             enforce(
-                type(self.dialogue_reference) == tuple,
+                isinstance(self.dialogue_reference, tuple),
                 "Invalid type for 'dialogue_reference'. Expected 'tuple'. Found '{}'.".format(
                     type(self.dialogue_reference)
                 ),
             )
             enforce(
-                type(self.dialogue_reference[0]) == str,
+                isinstance(self.dialogue_reference[0], str),
                 "Invalid type for 'dialogue_reference[0]'. Expected 'str'. Found '{}'.".format(
                     type(self.dialogue_reference[0])
                 ),
             )
             enforce(
-                type(self.dialogue_reference[1]) == str,
+                isinstance(self.dialogue_reference[1], str),
                 "Invalid type for 'dialogue_reference[1]'. Expected 'str'. Found '{}'.".format(
                     type(self.dialogue_reference[1])
                 ),
             )
             enforce(
-                type(self.message_id) == int,
+                type(self.message_id) is int,
                 "Invalid type for 'message_id'. Expected 'int'. Found '{}'.".format(
                     type(self.message_id)
                 ),
             )
             enforce(
-                type(self.target) == int,
+                type(self.target) is int,
                 "Invalid type for 'target'. Expected 'int'. Found '{}'.".format(
                     type(self.target)
                 ),
@@ -201,7 +189,7 @@ class AgentEnvironmentMessage(Message):
             # Light Protocol Rule 2
             # Check correct performative
             enforce(
-                type(self.performative) == AgentEnvironmentMessage.Performative,
+                isinstance(self.performative, AgentEnvironmentMessage.Performative),
                 "Invalid 'performative'. Expected either of '{}'. Found '{}'.".format(
                     self.valid_performatives, self.performative
                 ),
@@ -213,45 +201,39 @@ class AgentEnvironmentMessage(Message):
             if self.performative == AgentEnvironmentMessage.Performative.TICK:
                 expected_nb_of_contents = 4
                 enforce(
-                    type(self.tile_water) == int,
+                    type(self.tile_water) is int,
                     "Invalid type for content 'tile_water'. Expected 'int'. Found '{}'.".format(
                         type(self.tile_water)
                     ),
                 )
                 enforce(
-                    type(self.turn_number) == int,
+                    type(self.turn_number) is int,
                     "Invalid type for content 'turn_number'. Expected 'int'. Found '{}'.".format(
                         type(self.turn_number)
                     ),
                 )
                 enforce(
-                    type(self.agent_water) == int,
+                    type(self.agent_water) is int,
                     "Invalid type for content 'agent_water'. Expected 'int'. Found '{}'.".format(
                         type(self.agent_water)
                     ),
                 )
                 enforce(
-                    type(self.neighbour_ids) == frozenset,
+                    isinstance(self.neighbour_ids, frozenset),
                     "Invalid type for content 'neighbour_ids'. Expected 'frozenset'. Found '{}'.".format(
                         type(self.neighbour_ids)
                     ),
                 )
                 enforce(
-                    all(type(element) == int for element in self.neighbour_ids),
+                    all(type(element) is int for element in self.neighbour_ids),
                     "Invalid type for frozenset elements in content 'neighbour_ids'. Expected 'int'.",
                 )
             elif self.performative == AgentEnvironmentMessage.Performative.ACTION:
-                expected_nb_of_contents = 2
+                expected_nb_of_contents = 1
                 enforce(
-                    type(self.command) == CustomCommand,
-                    "Invalid type for content 'command'. Expected 'Command'. Found '{}'.".format(
+                    isinstance(self.command, str),
+                    "Invalid type for content 'command'. Expected 'str'. Found '{}'.".format(
                         type(self.command)
-                    ),
-                )
-                enforce(
-                    type(self.water_quantity) == int,
-                    "Invalid type for content 'water_quantity'. Expected 'int'. Found '{}'.".format(
-                        type(self.water_quantity)
                     ),
                 )
 
