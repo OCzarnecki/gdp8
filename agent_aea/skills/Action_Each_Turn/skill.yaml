@@ -9,10 +9,10 @@ license: Apache-2.0
 aea_version: '>=0.11.0, <=1.0.0'
 fingerprint:
   __init__.py: QmUSZRbdCbjzvwuGTGYWzSEXvPFv2h8GyeawhPo4v8KZ3A
-  behaviours.py: QmV3CWGbxQsToMbTN4kk4CSMcE8JTAW9NXoTjG3t3XFR1T
+  behaviours.py: QmdhtNytSKUerMM4omN6YtKitHb3c8e3dcq4gGvveJWfKY
   dialogues.py: QmddFVAkHbfTFQ8vGmsKNGX8pZpierssEHnrHwarDTsq8C
-  handlers.py: QmUPdvib6mw3QP19Suzcs3oyueiZVxo6CyUYp4M2vFwQqK
-  strategy.py: Qmdsf39y2WdtpLrLbiMsqoqomVbHS4s23wrED8pbypJNoh
+  handlers.py: QmaqaaMTjh1hwK7q3kprQpNGpbvL3nCqdDmogpVszoVCFc
+  strategy.py: QmZf4LrFGouRLtBh5BWbtHp2HwUsauo1i1g1omMgSdjri8
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
@@ -26,7 +26,7 @@ handlers:
   agent_message_handler:
     args: {}
     class_name: AgentMessageHandler
-  enviornment_message_handler:
+  environment_message_handler:
     args: {}
     class_name: EnvironmentMessageHandler
 models:
