@@ -190,7 +190,7 @@ class SimulationState():
                         self._needs[x][y] = -1 * min(agent.next_command.quantity,
                                                 agent.water + self._minable_at(x, y))
         # Compute transfers
-        agent_positions = [(agent.pos_x, agent.pos_y) for agent in self._agents_by_id]
+        agent_positions = [(agent.pos_x, agent.pos_y) for agent in self.get_agents_alive()]
         for (x, y) in agent_positions:
             # Action is only needed for agents who send water
             if self._needs[x][y] < 0:
