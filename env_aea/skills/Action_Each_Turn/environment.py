@@ -334,15 +334,29 @@ class Environment(Model):
 
     def save_action(self, agent_adress, action, water_content) -> None:
         """Saves the agent's action for this turn."""
-        # TODO make this conform to new format
         agent_id = self.address_to_id(agent_address)
         agent = self.state.get_agent_by_id(agent_id)
         self._agents_replied.add(agent_id)
         command = None
-        if action == "offer_water":
-            command = OfferWaterCommand(water_content)
-        elif action == "receive_water":
-            command = ReceiveWaterCommand(water_content)
+        tokens = action.split(".")
+        if len(tokens) == 0:
+            self.context.logger.warning("got empty action string")
+        elif tokens[0] == "offer_water":
+            if len(tokens) != 2:
+                self.context.logger.warning("could not parse action string {}".format(action))
+            else:
+                try:
+                    command = OfferWaterCommand(int(tokens[1]))
+                except ValueError:
+                    self.context.logger.warning("could not parse action string {}".format(action))
+        elif tokens[0] == "receive_water":
+            if len(tokens) != 2:
+                self.context.logger.warning("could not parse action string {}".format(action))
+            else:
+                try:
+                    command = ReceiveWaterCommand(int(tokens[1]))
+                except ValueError:
+                    self.context.logger.warning("could not parse action string {}".format(action))
         else:
             self.context.logger.warning("could not parse action string {}".format(action))
         agent.queue_command(action, command)
