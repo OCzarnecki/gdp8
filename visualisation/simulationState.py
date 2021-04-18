@@ -32,7 +32,6 @@ class State():
         self.x_size = self.data[0]['map_width']
         self.y_size = self.data[0]['map_height']
         self.max_water_capacity = self.data[0]['max_water_capacity']
-        self.max_inventory = 100
 
         self.time = 0 # read only
 
