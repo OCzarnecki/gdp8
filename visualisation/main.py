@@ -28,8 +28,8 @@ HEIGHT = 600
 SIZE = (WIDTH, HEIGHT)
 SCREEN = pygame.display.set_mode(SIZE)
 
-def colorPercentage(n):
-    return 255 * (n / 100.0)
+def colorPercentage(n, scale):
+    return 255 * (n / scale)
 
 class WorldPainting():
     """
@@ -53,15 +53,13 @@ class WorldPainting():
             x = cell.x * self.tileWidth
             y = cell.y * self.tileWidth
             rect = pygame.Rect(x, y, self.tileWidth, self.tileWidth)
-            pygame.draw.rect(self.surface, (0, 0, colorPercentage((cell.water/max_water_capacity)*100)), rect)
+            pygame.draw.rect(self.surface, (0, 0, colorPercentage(cell.water, max_water_capacity)), rect)
 
     def drawAgent(self, agent, max_inventory):
         center_x = (agent.x + 0.5) * self.tileWidth
         center_y = (agent.y + 0.5) * self.tileWidth
         center = (center_x, center_y)
-        pygame.draw.circle(self.surface,
-            (colorPercentage(max_inventory - agent.inventory), colorPercentage(agent.inventory), 0),
-            center, self.tileWidth / 3.)
+        pygame.draw.circle(self.surface, (colorPercentage(max_inventory - agent.inventory, max_inventory), colorPercentage(agent.inventory, max_inventory), 0), center, self.tileWidth / 3.)
 
 class Camera():
     """
