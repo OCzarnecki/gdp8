@@ -189,26 +189,19 @@ class SimulationState():
                     elif agent.next_command.command_type == CommandType.OFFER_WATER:
                         self._needs[x][y] = -1 * min(agent.next_command.quantity,
                                                 agent.water + self._minable_at(x, y))
-        print("Transfers (after init):")
-        print(self._transfers)
-        print("Needs (after init):")
-        print(self._needs)
         # Compute transfers
         agent_positions = [(agent.pos_x, agent.pos_y) for agent in self._agents_by_id]
         for (x, y) in agent_positions:
             # Action is only needed for agents who send water
             if self._needs[x][y] < 0:
-                print(f"Considering agent at ({x}, {y})")
                 agent = self.get_agent_by_pos(x, y)
                 neighbour_coords = [(x + dx, y + dy)
                     for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
                     if 0 <= x + dx < self.size_x
                     and 0 <= y + dy < self.size_y]
-                print(f" - Possible coords: \n   {neighbour_coords}")
                 for (dst_x, dst_y) in neighbour_coords:
                     dst_agent = self.get_agent_by_pos(dst_x, dst_y)
                     if dst_agent != None and self._needs[dst_x][dst_y] > 0:
-                        print(f" - Destination agent is at ({x}, {y})")
                         transfer_amount = min(self._agent_max_capacity 
                                                 - dst_agent.water 
                                                 - self._minable_at(dst_x, dst_y) 
@@ -217,16 +210,10 @@ class SimulationState():
                                               -1 * self._needs[x][y],
                                               agent.water + self._minable_at(x, y) + self._transfers[x][y])
                         transfer_amount = max(transfer_amount, 0)
-                        print(f"    - Transfer amount: {transfer_amount}")
                         self._needs[x][y] += transfer_amount
                         self._needs[dst_x][dst_y] -= transfer_amount
                         self._transfers[x][y] -= transfer_amount
                         self._transfers[dst_x][dst_y] += transfer_amount
-        print("Transfers (after computing transfers):")
-        print(self._transfers)
-        print("Needs (after computing transfers):")
-        print(self._needs)
-        
         # Apply transfers and mine water
         for (x, y) in agent_positions:
             agent = self.get_agent_by_pos(x, y)
