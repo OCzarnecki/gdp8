@@ -27,7 +27,6 @@ WIDTH = 900
 HEIGHT = 600
 SIZE = (WIDTH, HEIGHT)
 SCREEN = pygame.display.set_mode(SIZE)
-MAX_INVENTORY = 100
 
 def colorPercentage(n):
     return 255 * (n / 100.0)
@@ -47,7 +46,7 @@ class WorldPainting():
         for cell in state.cells:
             self.drawCell(cell, state.max_water_capacity)
         for agent in state.agents:
-            self.drawAgent(agent)
+            self.drawAgent(agent, state.max_inventory)
 
     def drawCell(self, cell, max_water_capacity):
         if (max_water_capacity != 0):
@@ -56,12 +55,12 @@ class WorldPainting():
             rect = pygame.Rect(x, y, self.tileWidth, self.tileWidth)
             pygame.draw.rect(self.surface, (0, 0, colorPercentage((cell.water/max_water_capacity)*100)), rect)
 
-    def drawAgent(self, agent):
+    def drawAgent(self, agent, max_inventory):
         center_x = (agent.x + 0.5) * self.tileWidth
         center_y = (agent.y + 0.5) * self.tileWidth
         center = (center_x, center_y)
         pygame.draw.circle(self.surface,
-            (colorPercentage(MAX_INVENTORY - agent.inventory), colorPercentage(agent.inventory), 0),
+            (colorPercentage(max_inventory - agent.inventory), colorPercentage(agent.inventory), 0),
             center, self.tileWidth / 3.)
 
 class Camera():
@@ -196,7 +195,7 @@ class UserInterface():
 
 if __name__ == "__main__":
 
-    state = State("/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/spiral.json")
+    state = State("/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/test.json")
 
     painting = WorldPainting(state)
     camera = Camera()

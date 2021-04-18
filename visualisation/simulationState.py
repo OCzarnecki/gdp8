@@ -9,7 +9,7 @@ class Cell():
 
 class Agent():
 
-    def __init__(self, id, x, y, inventory):
+    def __init__(self, x, y, inventory, id):
         self.id = id
         self.x = x
         self.y = y
@@ -29,9 +29,10 @@ class State():
         self.readable = readable
 
         self.data = self.read_file() # read only
-        self.x_size = self.data[0]['map_width']
-        self.y_size = self.data[0]['map_height']
-        self.max_water_capacity = self.data[0]['max_water_capacity']
+        self.x_size = self.data[0]['x_size']
+        self.y_size = self.data[0]['y_size']
+        self.max_water_capacity = self.data[0]['max_water_capacity_cell']
+        self.max_inventory = self.data[0]['max_water_capacity_agent']
 
         self.time = 0 # read only
 
@@ -51,7 +52,7 @@ class State():
         d = self.data[time+1]
         assert(d['tick_number'] == time)
         for agent in d['agents']:
-            self.agents.append(Agent(agent['id'], agent['x'], agent['y'], agent['inventory']))
+            self.agents.append(Agent(agent['x'], agent['y'], agent['inventory'], agent['id']))
         for cell in d['cells']:
             self.cells.append(Cell(cell['x'], cell['y'], cell['water']))
 
