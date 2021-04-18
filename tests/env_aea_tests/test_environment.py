@@ -308,3 +308,8 @@ class TestSimulationState(unittest.TestCase):
         self.assertEqual(19 + 19 + 5, left_agent.water + right_agent.water)
         self.assertEqual(19 - 5, center_agent.water)
 
+    def test_running_simulation_for_a_long_time(self):
+        state = self.create_state_with_defaults()
+        for _ in range(5000):
+            state.update_simulation()
+
