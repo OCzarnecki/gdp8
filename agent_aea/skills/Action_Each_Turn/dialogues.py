@@ -24,8 +24,9 @@ class DefaultDialogues(Model, BaseDefaultDialogues):
         """
         Model.__init__(self, **kwargs)
 
-        # pylint: disable=unused-argument
-        def role_from_first_message(message: Message, receiver_address: Address) -> BaseDialogue.Role:
+        def role_from_first_message(  # pylint: disable=unused-argument
+                message: Message, receiver_address: Address
+        ) -> BaseDialogue.Role:
             """Infer the role of the agent from an incoming/outgoing first message
 
             :param message: an incoming/outgoing first message
@@ -40,8 +41,4 @@ class DefaultDialogues(Model, BaseDefaultDialogues):
             role_from_first_message=role_from_first_message,
         )
 
-    class AgentAgentDialogues(Model, BaseDefaultDialogues):
-        raise NotImplementedError
 
-    class AgentEnvDialogues(Model, BaseDefaultDialogues):
-        raise NotImplementedError
