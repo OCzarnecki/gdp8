@@ -28,6 +28,8 @@ HEIGHT = 600
 SIZE = (WIDTH, HEIGHT)
 SCREEN = pygame.display.set_mode(SIZE)
 
+small_text = pygame.font.SysFont("Times New Roman", 16)
+
 def colorPercentage(n, scale):
     return 255 * (n / scale)
 
@@ -73,10 +75,10 @@ class Camera():
         self.y = y
         self.size = SIZE
 
-    def draw(self, screen, painting):
+    def draw(self, painting):
         # int because blit only allows int
         paintingLocation = (int(0-self.x), int(0-self.y))
-        screen.blit(painting.surface, paintingLocation)
+        SCREEN.blit(painting.surface, paintingLocation)
 
 class Slider():
 
@@ -136,21 +138,20 @@ class UserInterface():
         self.K_R_DOWN = False
 
 
-    def draw(self, screen, state):
+    def draw(self, state):
         beige = (240, 209, 116)
-        pygame.draw.rect(screen, beige, self.rect_background)
+        pygame.draw.rect(SCREEN, beige, self.rect_background)
 
-        self.draw_tutorial_label(screen, state)
-        self.draw_time_slider(screen, state)
-        self.draw_agent_slider(screen, state)
+        self.draw_tutorial_label(state)
+        self.draw_time_slider(state)
+        self.draw_agent_slider(state)
 
-    def draw_tutorial_label(self, screen, state):
-            small_text = pygame.font.SysFont("Times New Roman", 16)
+    def draw_tutorial_label(self, state):
             tutorial_text = "Left/Right keys to change time"
             tutorial_label = small_text.render(tutorial_text, False, (0,0,0))
-            screen.blit(tutorial_label, (0, 400))
+            SCREEN.blit(tutorial_label, (0, 400))
 
-    def draw_time_slider(self, screen, state):
+    def draw_time_slider(self, state):
         time_prop = state.time / state.max_time
         time_slider = Slider(
             300,
@@ -159,9 +160,9 @@ class UserInterface():
             " {}".format(state.max_time),
             str(state.time)
         )
-        screen.blit(time_slider.render(), (0, 500))
+        SCREEN.blit(time_slider.render(), (0, 500))
 
-    def draw_agent_slider(self, screen, state):
+    def draw_agent_slider(self, state):
         agent_prop = state.count_survivors() / state.max_agent
 
         agent_slider = Slider(
@@ -171,7 +172,7 @@ class UserInterface():
             " {}".format(state.max_agent),
             str(state.count_survivors())
         )
-        screen.blit(agent_slider.render(), (0, 420))
+        SCREEN.blit(agent_slider.render(), (0, 420))
 
 
     def process(self, event, state): # updates state time based on pygame.event
@@ -211,6 +212,6 @@ if __name__ == "__main__":
         painting.draw(state)
 
         SCREEN.fill((0,0,0))
-        camera.draw(SCREEN, painting)
-        ui.draw(SCREEN, state)
+        camera.draw(painting)
+        ui.draw(state)
         pygame.display.flip()
