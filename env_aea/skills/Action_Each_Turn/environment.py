@@ -20,10 +20,21 @@
 """This package contains a scaffold of a class modeling the environment.It is shared  
 equally across the Handler, Behaviour and Task classes on the context level.
 Some of the code is an adaptation of the model of a TAC game:
-https://github.com/fetchai/agents-aea/blob/main/packages/fetchai/skills/tac_control/game.py"""
+https://github.com/fetchai/agents-aea/blob/main/packages/fetchai/skills/tac_control/game.py
+
+TODO @blanche: find solution for the register and unregister function: _remove_service_data and set_service_data
+
+
+"""
 
 from aea.skills.base import Model
 from aea.common import Address
+from aea.helpers.search.generic import (
+    AGENT_LOCATION_MODEL,
+    AGENT_REMOVE_SERVICE_MODEL,
+    AGENT_SET_SERVICE_MODEL,
+)
+from aea.helpers.search.models import 
 
 
 from typing import Any, Dict, List, Optional, cast
@@ -35,8 +46,7 @@ class Phase(Enum):
     """This class defines the phases of the simulation."""
 
     PRE_SIMULATION = "pre_simulation"
-    SIMULATION_SETUP = "simulation_setup"
-    START_SIMULATION = "start_simulation"
+    SIMULATION_REGISTRATION = "simulation_registration"
     START_NEXT_SIMULATION_TURN = "start_next_simulation_turn"
     COLLECTING_AGENTS_REPLY = "collecting_agents_reply"
     AGENTS_REPLY_RECEIVED = "agents_reply_received"
@@ -60,6 +70,7 @@ class Environment(Model):
         """Set the simulation phase."""
         self.context.logger.debug("Simulation phase set to: {}".format(phase))
         self._phase = phase
+
     
     @property
     def turn_number(self) -> int:
@@ -111,3 +122,82 @@ class Environment(Model):
     def end_simulation(self) -> None:
         """Is there anything particular to be done at the end of the simulation? save state of environment?..."""
         raise NotImplementedError
+
+
+    ##########################FUNCTIONS NEEDED JSUT FOR THE AGENTS######### 
+    ## they are stored in the participant/game.py for instance
+
+
+    """def __init__(self, **kwargs: Any):
+        """Instantiate the game class."""
+        self._expected_controller_addr = kwargs.pop(
+            "expected_controller_addr", None
+        )  # type: Optional[str]
+
+        self._search_query = kwargs.pop("search_query", DEFAULT_SEARCH_QUERY)
+        if "search_value" not in self._search_query:  # pragma: nocover
+            raise ValueError("search_value not found in search_query")
+        self._expected_version_id = self._search_query["search_value"]
+        location = kwargs.pop("location", DEFAULT_LOCATION)
+        self._agent_location = Location(
+            latitude=location["latitude"], longitude=location["longitude"]
+        )
+        self._radius = kwargs.pop("search_radius", DEFAULT_SEARCH_RADIUS)
+        self._phase = Phase.PRE_GAME
+"""
+
+    def update_expected_controller_addr(self, controller_addr: Address) -> None:
+        """
+        Overwrite the expected controller address.
+        :param controller_addr: the address of the controller
+        :return: None
+        """
+        self.context.logger.warning(
+            "TAKE CARE! Circumventing controller identity check! For added security provide the expected controller key as an argument to the Game instance and check against it."
+        )
+        self._expected_controller_addr = controller_addr
+
+    
+    def get_env_query(self) -> Query:
+        """
+        Get the query for the environment.
+        :return: the query
+        """
+        close_to_my_service = Constraint(
+            "location", ConstraintType("distance", (self._agent_location, self._radius))
+        )
+        service_key_filter = Constraint(
+            self._search_query["search_key"],
+            ConstraintType(
+                self._search_query["constraint_type"],
+                self._search_query["search_value"],
+            ),
+        )
+        query = Query([close_to_my_service, service_key_filter],)
+        return query
+
+    def update_environment_phase(self, phase: Phase) -> None:
+        raise NotImplementedError
+
+    def update_expected_environment_addr(self, environment_addr: Address) -> None:
+        raise NotImplementedError
+
+    def get_environment_query(self) -> query:
+        raise NotImplementedError
+    
+    def get_register_env_description(self) -> Description:
+        """Get the env description for registering."""
+        description = Description(
+            self.context.parameters.set_service_data,## we don't have a Param class yet, need to figure out what this description is for and if we actually need it
+            data_model=AGENT_SET_SERVICE_MODEL,
+        )
+        return description
+    
+    def get_unregister_env_description(self) -> Description:
+        """Get the env description for unregistering."""
+        description = Description(
+            self.context.parameters.remove_service_data,##same issue as the register_env_description() above
+            data_model=AGENT_REMOVE_SERVICE_MODEL,
+        )
+        return description
+        ##############################################
