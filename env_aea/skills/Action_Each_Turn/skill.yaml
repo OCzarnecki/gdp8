@@ -7,9 +7,9 @@ license: Apache-2.0
 aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   __init__.py: QmUSZRbdCbjzvwuGTGYWzSEXvPFv2h8GyeawhPo4v8KZ3A
-  behaviours.py: QmNgDDAmBzWBeBF7e5gUCny38kdqVVfpvHGaAZVZcMtm9Q
-  handlers.py: QmTHd2YX941T76eS39SSdfiafXBYehL2oibugnVmmp4Tvy
-  my_model.py: QmPaZ6G37Juk63mJj88nParaEp71XyURts8AmmX1axs24V
+  behaviours.py: QmXCPgLaSTpE3ZNxs2V3opGQKHYaiC9PeLwSkuqp5MK7hf
+  environment.py: QmNskqaiaCk3iKaF3uVbL6SrxAMBkcm4vf3NMDMqK6dK6p
+  handlers.py: QmVyb2eHPfQmc5yk8AdkTKPcTzcgdqde1sJA8nVrdqbtfQ
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
@@ -28,7 +28,13 @@ handlers:
 models:
   environment:
     args:
-      foo: bar
+      initial_agent_water: 100
+      initial_oasis_water: 2000
+      oasis_count: 15
+      size_x: 20
+      size_y: 20
+      agent_mining_speed: 20
+      agent_max_capacity: 150
     class_name: Environment
 dependencies: {}
 is_abstract: false

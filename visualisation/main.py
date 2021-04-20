@@ -28,11 +28,10 @@ HEIGHT = 600
 SIZE = (WIDTH, HEIGHT)
 SCREEN = pygame.display.set_mode(SIZE)
 
-# the maximum amount of water that any agent can have
-MAX_INVENTORY = 100
+small_text = pygame.font.SysFont("Times New Roman", 16)
 
-def colorPercentage(n):
-    return 255 * (n / 100.0)
+def colorPercentage(n, scale):
+    return 255 * (n / scale)
 
 class WorldPainting():
     """
@@ -49,22 +48,20 @@ class WorldPainting():
         for cell in state.cells:
             self.drawCell(cell, state.max_water_capacity)
         for agent in state.agents:
-            self.drawAgent(agent)
+            self.drawAgent(agent, state.max_inventory)
 
     def drawCell(self, cell, max_water_capacity):
         if (max_water_capacity != 0):
             x = cell.x * self.tileWidth
             y = cell.y * self.tileWidth
             rect = pygame.Rect(x, y, self.tileWidth, self.tileWidth)
-            pygame.draw.rect(self.surface, (0, 0, colorPercentage((cell.water/max_water_capacity)*100)), rect)
+            pygame.draw.rect(self.surface, (0, 0, colorPercentage(cell.water, max_water_capacity)), rect)
 
-    def drawAgent(self, agent):
+    def drawAgent(self, agent, max_inventory):
         center_x = (agent.x + 0.5) * self.tileWidth
         center_y = (agent.y + 0.5) * self.tileWidth
         center = (center_x, center_y)
-        pygame.draw.circle(self.surface,
-            (colorPercentage(100 - agent.inventory), colorPercentage(agent.inventory), 0),
-            center, self.tileWidth / 3.)
+        pygame.draw.circle(self.surface, (colorPercentage(max_inventory - agent.inventory, max_inventory), colorPercentage(agent.inventory, max_inventory), 0), center, self.tileWidth / 3.)
 
 class Camera():
     """
@@ -78,10 +75,10 @@ class Camera():
         self.y = y
         self.size = SIZE
 
-    def draw(self, screen, painting):
+    def draw(self, painting):
         # int because blit only allows int
         paintingLocation = (int(0-self.x), int(0-self.y))
-        screen.blit(painting.surface, paintingLocation)
+        SCREEN.blit(painting.surface, paintingLocation)
 
 class Slider():
 
@@ -141,21 +138,20 @@ class UserInterface():
         self.K_R_DOWN = False
 
 
-    def draw(self, screen, state):
+    def draw(self, state):
         beige = (240, 209, 116)
-        pygame.draw.rect(screen, beige, self.rect_background)
+        pygame.draw.rect(SCREEN, beige, self.rect_background)
 
-        self.draw_tutorial_label(screen, state)
-        self.draw_time_slider(screen, state)
-        self.draw_agent_slider(screen, state)
+        self.draw_tutorial_label(state)
+        self.draw_time_slider(state)
+        self.draw_agent_slider(state)
 
-    def draw_tutorial_label(self, screen, state):
-            small_text = pygame.font.SysFont("Times New Roman", 16)
-            tutorial_text = "Left/Right keys to change time".format(state.time)
+    def draw_tutorial_label(self, state):
+            tutorial_text = "Left/Right keys to change time"
             tutorial_label = small_text.render(tutorial_text, False, (0,0,0))
-            screen.blit(tutorial_label, (0, 400))
+            SCREEN.blit(tutorial_label, (0, 400))
 
-    def draw_time_slider(self, screen, state):
+    def draw_time_slider(self, state):
         time_prop = state.time / state.max_time
         time_slider = Slider(
             300,
@@ -164,29 +160,30 @@ class UserInterface():
             " {}".format(state.max_time),
             str(state.time)
         )
-        screen.blit(time_slider.render(), (0, 500))
+        SCREEN.blit(time_slider.render(), (0, 500))
 
-    def draw_agent_slider(self, screen, state):
-        agent_prop = len(state.agents) / state.max_agent
+    def draw_agent_slider(self, state):
+        agent_prop = state.count_survivors() / state.max_agent
+
         agent_slider = Slider(
             300,
             agent_prop,
             "survivors: ",
             " {}".format(state.max_agent),
-            str(len(state.agents))
+            str(state.count_survivors())
         )
-        screen.blit(agent_slider.render(), (0, 420))
+        SCREEN.blit(agent_slider.render(), (0, 420))
 
 
     def process(self, event, state): # updates state time based on pygame.event
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT and not self.K_L_DOWN:
                 self.K_L_DOWN = True
-                state.time = max(0, state.time-1)
+                state.load(max(0, state.time-1))
                 print("Time {}".format(state.time))
             elif event.key == pygame.K_RIGHT and not self.K_R_DOWN:
                 self.K_R_DOWN = True
-                state.time = min(state.max_time, state.time+1)
+                state.load(min(state.max_time, state.time+1))
                 print("Time {}".format(state.time))
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT and self.K_L_DOWN:
@@ -197,7 +194,7 @@ class UserInterface():
 
 if __name__ == "__main__":
 
-    state = State("/Users/tancrede/Desktop/projects/aea/gdp/visualisation/data.json")
+    state = State("/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/test.json")
 
     painting = WorldPainting(state)
     camera = Camera()
@@ -212,10 +209,9 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT: sys.exit()
             ui.process(event, state)
 
-        state.load()
         painting.draw(state)
 
         SCREEN.fill((0,0,0))
-        camera.draw(SCREEN, painting)
-        ui.draw(SCREEN, state)
+        camera.draw(painting)
+        ui.draw(state)
         pygame.display.flip()

@@ -19,6 +19,7 @@
 
 """Serialization module for agent_environment protocol."""
 
+# pylint: disable=too-many-statements,too-many-locals,no-member,too-few-public-methods,redefined-builtin
 from typing import Any, Dict, cast
 
 from aea.mail.base_pb2 import DialogueMessage
@@ -26,7 +27,6 @@ from aea.mail.base_pb2 import Message as ProtobufMessage
 from aea.protocols.base import Message, Serializer
 
 from packages.gdp8.protocols.agent_environment import agent_environment_pb2
-from packages.gdp8.protocols.agent_environment.custom_types import Command
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 
 
@@ -67,9 +67,7 @@ class AgentEnvironmentSerializer(Serializer):
         elif performative_id == AgentEnvironmentMessage.Performative.ACTION:
             performative = agent_environment_pb2.AgentEnvironmentMessage.Action_Performative()  # type: ignore
             command = msg.command
-            Command.encode(performative.command, command)
-            water_quantity = msg.water_quantity
-            performative.water_quantity = water_quantity
+            performative.command = command
             agent_environment_msg.action.CopyFrom(performative)
         else:
             raise ValueError("Performative not valid: {}".format(performative_id))
@@ -113,11 +111,8 @@ class AgentEnvironmentSerializer(Serializer):
             neighbour_ids_frozenset = frozenset(neighbour_ids)
             performative_content["neighbour_ids"] = neighbour_ids_frozenset
         elif performative_id == AgentEnvironmentMessage.Performative.ACTION:
-            pb2_command = agent_environment_pb.action.command
-            command = Command.decode(pb2_command)
+            command = agent_environment_pb.action.command
             performative_content["command"] = command
-            water_quantity = agent_environment_pb.action.water_quantity
-            performative_content["water_quantity"] = water_quantity
         else:
             raise ValueError("Performative not valid: {}.".format(performative_id))
 

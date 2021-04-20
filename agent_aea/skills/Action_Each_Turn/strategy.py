@@ -24,7 +24,6 @@ from aea.skills.base import Model
 
 from gdp.agent_aea.protocols.agent_agent.message import AgentAgentMessage
 from gdp.agent_aea.protocols.agent_agent.dialogues import AgentAgentDialogue, AgentAgentDialogues
-from gdp.agent_aea.protocols.agent_environment.custom_types import Command
 from gdp.agent_aea.protocols.agent_environment.message import AgentEnvironmentMessage
 from gdp.agent_aea.protocols.agent_environment.dialogues import AgentEnvironmentDialogue
 
@@ -147,19 +146,15 @@ class BasicStrategy(Model):
         difference = int(self.agent_water - average)
         # difference > 0 => offer water, vice versa, difference ALWAYS underestimated if not accurate
         if difference > 0:
-            decision: Command = "OFFER_WATER"
-            water: int = difference
+            decision: str = "send_water" + "." + str(difference)
         elif difference == 0:
-            decision: Command = "NOP"
-            water: int = difference
+            decision: str = "NULL"
         else:  # difference > 0
-            decision: Command = "SEND_WATER"
-            water: int = -difference
+            decision: str = "receive_water" + "." + str(-difference)
         return_agent_env_message = self.current_env_dialogue.reply(
             performative=AgentEnvironmentMessage.Performative.ACTION,
             target_message=self.current_env_message,
             command=decision,
-            water_quantity=water,
         )
         self.context.outbox.put_message(message=return_agent_env_message)
         self.is_round_done = True
