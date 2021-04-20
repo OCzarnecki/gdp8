@@ -69,21 +69,20 @@ class EnvironmentLogicBehaviour(Behaviour):
             environment.phase = Phase.SIMULATION_REGISTRATION
             self._register_env()
             self.context.logger.info(
-                "Environment open for registration" #until: {}".format(parameters.start_time)
+                "Environment open for registration" ##until: {}".format(parameters.start_time)
             )
         elif (
             environment.phase.value == Phase.SIMULATION_REGISTRATION.value
         ):
             ##should end up with a list of all agents and their address at the end of this phase
-            ##connect the env to each agent
             if environment.registration.nb_agents < environment.nb_agents:
                 #wait
                 return
             ##elif registration delay expired : cancel simulation
             else:
-                environment.phase = Phase.SIMULATION_SETUP
                 environment.create()
                 self._unregister_env()
+                # tell the env that the simulation starts?
                 environment.phase = Phase.START_NEXT_SIMULATION_TURN
         elif (
             environment.phase.value == Phase.START_SIMULATION
