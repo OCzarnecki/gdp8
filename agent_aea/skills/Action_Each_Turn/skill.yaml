@@ -19,10 +19,18 @@ contracts: []
 protocols: []
 skills: []
 behaviours:
+  env_search:
+    args:
+      tick_interval: 5
+    class_name: EnvSearchBehaviour
   agent_behaviour:
-    args: {}
+    args:
+      tick_interval: 2
     class_name: AgentLogicBehaviour
 handlers:
+  oef:
+    args: {}
+    class_name: OefSearchHandler
   agent_message_handler:
     args: {}
     class_name: AgentMessageHandler
