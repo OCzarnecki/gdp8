@@ -22,9 +22,6 @@ equally across the Handler, Behaviour and Task classes on the context level.
 Some of the code is an adaptation of the model of a TAC game:
 https://github.com/fetchai/agents-aea/blob/main/packages/fetchai/skills/tac_control/game.py
 
-TODO @blanche: find solution for the register and unregister function: _remove_service_data and set_service_data
-
-
 """
 
 from aea.skills.base import Model
@@ -267,10 +264,44 @@ class SimulationState():
         possible_coords = list(product(range(self.size_x), range(self.size_y)))
         return random.sample(possible_coords, count)
 
+class Registration:
+    """Class managing the registration of the simulation."""
+
+    def __init__(self) -> None:
+        """Instantiate the registration class."""
+        self._agent_addr_to_id = {}  # type: Dict[str, int]
+
+    @property
+    def agent_addr_to_id(self) -> Dict[str, int]:
+        """Get the registered agent addresses and their ids."""
+        return self._agent_addr_to_id
+
+    @property
+    def nb_agents(self) -> int:
+        """Get the number of registered agents."""
+        return len(self._agent_addr_to_id)
+
+    def register_agent(self, agent_addr: Address) -> None:
+        """
+        Register an agent.
+        :param agent_addr: the Address of the agent
+        :return: None
+        """
+        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id) ##??? give it a new id
+
+    def unregister_agent(self, agent_addr: Address) -> None:
+        """
+        Register an agent.
+        :param agent_addr: the Address of the agent
+        :return: None
+        """
+        self._agent_addr_to_id.pop(agent_addr)
+
 class Environment(Model): 
     """Model of the environment."""
     def __init__(self, **kwargs: Any) -> None:
         self._phase = Phase.PRE_SIMULATION
+        self._registration = Registration()
         self.state = SimulationState(
                 kwargs['size_x'],
                 kwargs['size_y'],
@@ -282,6 +313,7 @@ class Environment(Model):
                 kwargs['agent_max_capacity']
             )
         self._agents_replied = set()
+
         # TODO ID <-> addres/framework_agent_object assignment
 
     @property
@@ -295,7 +327,11 @@ class Environment(Model):
         self.context.logger.debug("Simulation phase set to: {}".format(phase))
         self._phase = phase
 
-    
+    @property
+    def registration(self) -> Registration:
+        """Get the registration."""
+        return self._registration
+
     @property
     def turn_number(self) -> int:
         """Get the current turn number of the simulation."""
@@ -327,11 +363,11 @@ class Environment(Model):
         return [self.id_to_address(agent.agent_id) for agent in possible_agents if agent != None]
 
     @property
-    def agents_alive(self):
-        # actually doesn't really matter if it is a list(address) or list... What I need is a list with the 
-        # address of all agents alive to send them the tick message
+    def agents_alive(self) -> Dict[str, str]:
         """Get a list of agents still alive in the simulation."""
         return [self.id_to_address(agent.agent_id) for agent in self.state.get_agents_alive()]
+        #-> I actually prefer if we could return a similar dict as agent_addr_to_id
+
 
     @property
     def agents_reply_received(self) -> bool:
@@ -390,82 +426,3 @@ class Environment(Model):
 
     def id_to_address(self, agent_id):
         raise NotImplementedError
-
-
-    ##########################FUNCTIONS NEEDED JSUT FOR THE AGENTS######### 
-    ## they are stored in the participant/game.py for instance
-
-
-    """def __init__(self, **kwargs: Any):
-        """Instantiate the game class."""
-        self._expected_controller_addr = kwargs.pop(
-            "expected_controller_addr", None
-        )  # type: Optional[str]
-
-        self._search_query = kwargs.pop("search_query", DEFAULT_SEARCH_QUERY)
-        if "search_value" not in self._search_query:  # pragma: nocover
-            raise ValueError("search_value not found in search_query")
-        self._expected_version_id = self._search_query["search_value"]
-        location = kwargs.pop("location", DEFAULT_LOCATION)
-        self._agent_location = Location(
-            latitude=location["latitude"], longitude=location["longitude"]
-        )
-        self._radius = kwargs.pop("search_radius", DEFAULT_SEARCH_RADIUS)
-        self._phase = Phase.PRE_GAME
-"""
-
-    def update_expected_controller_addr(self, controller_addr: Address) -> None:
-        """
-        Overwrite the expected controller address.
-        :param controller_addr: the address of the controller
-        :return: None
-        """
-        self.context.logger.warning(
-            "TAKE CARE! Circumventing controller identity check! For added security provide the expected controller key as an argument to the Game instance and check against it."
-        )
-        self._expected_controller_addr = controller_addr
-
-    
-    def get_env_query(self) -> Query:
-        """
-        Get the query for the environment.
-        :return: the query
-        """
-        close_to_my_service = Constraint(
-            "location", ConstraintType("distance", (self._agent_location, self._radius))
-        )
-        service_key_filter = Constraint(
-            self._search_query["search_key"],
-            ConstraintType(
-                self._search_query["constraint_type"],
-                self._search_query["search_value"],
-            ),
-        )
-        query = Query([close_to_my_service, service_key_filter],)
-        return query
-
-    def update_environment_phase(self, phase: Phase) -> None:
-        raise NotImplementedError
-
-    def update_expected_environment_addr(self, environment_addr: Address) -> None:
-        raise NotImplementedError
-
-    def get_environment_query(self) -> query:
-        raise NotImplementedError
-    
-    def get_register_env_description(self) -> Description:
-        """Get the env description for registering."""
-        description = Description(
-            self.context.parameters.set_service_data,## we don't have a Param class yet, need to figure out what this description is for and if we actually need it
-            data_model=AGENT_SET_SERVICE_MODEL,
-        )
-        return description
-    
-    def get_unregister_env_description(self) -> Description:
-        """Get the env description for unregistering."""
-        description = Description(
-            self.context.parameters.remove_service_data,##same issue as the register_env_description() above
-            data_model=AGENT_REMOVE_SERVICE_MODEL,
-        )
-        return description
-        ##############################################

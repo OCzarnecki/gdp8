@@ -44,7 +44,7 @@ from gdp.env_aea.skills.Action_Each_Turn.environment import Environment, Phase
 class EnvironmentHandler(Handler):
     """This class handles oef messages."""
 
-    SUPPORTED_PROTOCOL = AgentEnvironmentMessage.protocol_id##check the tac protocol: TacMessage.protocol_id is ours ok compared to it?
+    SUPPORTED_PROTOCOL = AgentEnvironmentMessage.protocol_id
 
     def setup(self) -> None:
         """
@@ -133,8 +133,9 @@ class EnvironmentHandler(Handler):
             )
             return
 
-        parameters = cast(Parameters, self.context.parameters)
-        agent_name = agent_env_msg.agent_name## do we have a whitelist with the name of the agents ? or an id ? 
+        ## we can implement a whitelist if undesired agents try to register
+        """parameters = cast(Parameters, self.context.parameters)
+        ##agent_name = agent_env_msg.agent_name## do we have a whitelist with the name of the agents ? or an id ? 
         if len(parameters.whitelist) != 0 and agent_name not in parameters.whitelist:
             self.context.logger.warning(
                 "agent name not in whitelist: '{}'".format(agent_name)
@@ -145,13 +146,13 @@ class EnvironmentHandler(Handler):
                 error_description= "agent not in whitelist",
             )
             self.context.outbox.put_message(message=error_msg)
-            return
+            return"""
 
         environment = cast(Environment, self.context.environment)##why do it again ?
-        if agent_env_msg.sender in environment.registration.agent_addr_to_name:## need to check type of the agent address
+        if agent_env_msg.sender in environment.registration.agent_addr_to_id:
             self.context.logger.warning(
                 "agent already registered: '{}'".format(
-                    environment.registration.agent_addr_to_name[agent_env_msg.sender],
+                    environment.registration.agent_addr_to_id[agent_env_msg.sender],
                 )
             )
             error_msg = agent_environment_dialogue.reply(
@@ -162,20 +163,8 @@ class EnvironmentHandler(Handler):
             self.context.outbox.put_message(message=error_msg)
             return
 
-        if agent_name in environment.registration.agent_addr_to_name.values():
-            self.context.logger.warning(
-                "agent with this name already registered: '{}'".format(agent_name)
-            )
-            error_msg = agent_environment_dialogue.reply(
-                performative=AgentEnvironmentMessage.Performative.AGENT_ENV_ERROR,
-                target_message=agent_env_msg,
-                error_description="agent name already registered",
-            )
-            self.context.outbox.put_message(message=error_msg)
-            return
-
-        environment.registration.register_agent(agent_env_msg.sender, agent_name)
-        self.context.logger.info("agent registered: '{}'".format(agent_name))
+        environment.registration.register_agent(agent_env_msg.sender)
+        self.context.logger.info("agent registered: '{}'".format(agent_env_msg.sender))
 
     def _on_unregister(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """
@@ -195,7 +184,7 @@ class EnvironmentHandler(Handler):
             )
             return
 
-        if agent_env_msg.sender not in environment.registration.agent_addr_to_name:
+        if agent_env_msg.sender not in environment.registration.agent_addr_to_id:
             self.context.logger.warning(
                 "agent not registered: '{}'".format(agent_env_msg.sender)
             )
@@ -208,12 +197,12 @@ class EnvironmentHandler(Handler):
         else:
             self.context.logger.debug(
                 "agent unregistered: '{}'".format(
-                    environment.conf.agent_addr_to_name[agent_env_msg.sender],
+                    environment.registration.agent_addr_to_id[agent_env_msg.sender],
                 )
             )
             environment.registration.unregister_agent(agent_env_msg.sender)
 
-    def _handle_valid_tick_reply(self, agent_environment_message: AgentEnvironmentMessage, agent_environment_dialogue):
+    def _handle_valid_tick_reply(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue):
         """
         Handle a valid tick message reply. (we suppose that all replies are valid, but can add a check if needed)
 
@@ -223,13 +212,16 @@ class EnvironmentHandler(Handler):
         :param tick_reply: the tick message reply
         :return: None
         """
+        environment = cast(Environment, self.context.environment)
         self.context.logger.info(
-            "handling tick message reply"##could add some element to identify which message it is handling
+            "handling tick message reply: '{}'".format(
+                    environment.registration.agent_addr_to_id[agent_env_msg.sender],
+                    )
         )
         # Agents reply should only be handled if they concern the current turn. 
-        assert(agent_environment_message.turn_number == self.context.environment.turn_number)
+        assert(agent_env_msg.turn_number == self.context.environment.turn_number)
 
-        self.context.environment.save_action(agent_environment_dialogue.sender, agent_environment_message.action, agent_environment_message.water_content)
+        self.context.environment.save_action(agent_environment_dialogue.sender, agent_env_msg.action, agent_env_msg.water_content)
         
     def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """
