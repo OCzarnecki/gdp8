@@ -154,12 +154,13 @@ class OefSearchHandler(Handler):
         :param agent_addresses: list of agent addresses
         :return: None
         """
-        environment = cast(Environment, self.context.environment)
+        ##Can add this if the oef replies more than once, but we will need to implement phases of the game
+        """environment = cast(Environment, self.context.environment)<- not the same environment as the one in env_aea tho ! 
         if environment.phase.value != Phase.PRE_SIMULATION.value:
             self.context.logger.debug(
                 "ignoring controller search result, the simulation as already started."
             )
-            return
+            return"""
 
         if len(agent_addresses) == 0:
             self.context.logger.info("couldn't find the environment. Retrying...")
@@ -178,9 +179,6 @@ class OefSearchHandler(Handler):
         :param environment_addr: the address of the environment.
         :return: None
         """
-        environment = cast(Environment, self.context.environment)
-        environment.update_expected_environment_addr(environment_addr)##
-        environment.update_environment_phase(Phase.SIMULATION_REGISTRATION)##
         agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
         agent_env_msg, agent_environment_dialogue = agent_environment_dialogues.create(
             counterparty=environment_addr,
@@ -188,9 +186,9 @@ class OefSearchHandler(Handler):
             agent_name=self.context.agent_name,## do we have a variable for the agent name? what is its use?
         )
         agent_environment_dialogue = cast(AgentEnvironmentDialogue, agent_environment_dialogue)
-        environment.agent_environment_dialogue = agent_environment_dialogue
         self.context.outbox.put_message(message=agent_env_msg)
-        self.context.behaviours.env_search.is_active = False## Do we need to do something particular to add behaviour to the context?
+        self.context.behaviours.env_search.is_active = False
+        self.context.behaviours.env_search.environmentFound = True##
         
 class EnvironmentMessageHandler(Handler):
     """This class handles oef messages, from the environment."""
@@ -221,14 +219,14 @@ class EnvironmentMessageHandler(Handler):
             return
 
         #handle message
-        environment = cast(Environment, self.context.environment)
+        #environment = cast(Environment, self.context.environment)##
         self.context.logger.debug(
             "handling environment response. performative={}".format(agent_env_msg.performative)
         )
-        if agent_env_msg.sender != environment.expected_controller_addr:
+        """if agent_env_msg.sender != environment.expected_controller_addr:
             raise ValueError(
                 "The sender of the message is not the environment agent we registered with."
-            )
+            )"""
 
         if agent_env_msg.performative == AgentEnvironmentMessage.Performative.TICK:
             self._on_tick(agent_env_msg, agent_environment_dialogue)
@@ -251,7 +249,7 @@ class EnvironmentMessageHandler(Handler):
             "received invalid environment message={}, unidentified dialogue.".format(agent_env_msg)
         )
 
-    def _on_tick(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue):
+    def _on_tick(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue: AgentEnvironmentDialogue):
         """ 
         Handle a tick message from the environment from an identified dialogue.
         
@@ -261,17 +259,17 @@ class EnvironmentMessageHandler(Handler):
         """
         # Update my_model to get ready for next round
         self.context.logger.info(
-            "received a tick message from the environment."
+            "received tick message from the environment."
             )
 
         strategy = cast(BasicStrategy, self.context.strategy)
         strategy.receive_agent_env_info(agent_env_msg, agent_environment_dialogue)
 
-    def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue) -> None:
+    def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """
         Handle an oef search message.
 
-        :param agent_env_msg: the agent environmet message
+        :param agent_env_msg: the agent environment message
         :param agent_environment_dialogue: the agent environment dialogue
         :return: None
         """
@@ -290,7 +288,6 @@ class AgentMessageHandler(Handler):
 
         :return: None
         """
-        pass
 
     def handle(self, message: Message) -> None:
         """
@@ -299,23 +296,23 @@ class AgentMessageHandler(Handler):
         :param message: the message
         :return: None
         """
-        agent_agent_message = cast(AgentAgentMessage, message)
+        agent_agent_msg = cast(AgentAgentMessage, message)
 
-        agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)  # ??????????
+        agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)##????
         agent_agent_dialogue = cast(AgentAgentDialogue,
-                                    agent_agent_dialogues.update(agent_agent_message))
+                                    agent_agent_dialogues.update(agent_agent_msg))
         if agent_agent_dialogue is None:
-            self._handle_unidentified_dialogue(agent_agent_message)
+            self._handle_unidentified_dialogue(agent_agent_msg)
             return
 
-        if agent_agent_message.performative == AgentAgentMessage.Performative.WATER_STATUS:
+        if agent_agent_msg.performative == AgentAgentMessage.Performative.WATER_STATUS:
             # water status returned
-            self._handle_returned_water_info(agent_agent_message, agent_agent_dialogue)
-        elif agent_agent_message.performative == AgentAgentMessage.Performative.REQUEST_INFO:
+            self._handle_returned_water_info(agent_agent_msg, agent_agent_dialogue)
+        elif agent_agent_msg.performative == AgentAgentMessage.Performative.REQUEST_INFO:
             # water status asked
-            self._handle_water_query(agent_agent_message, agent_agent_dialogue)
+            self._handle_water_query(agent_agent_msg, agent_agent_dialogue)
         else:
-            self._handle_invalid(agent_agent_message, agent_agent_dialogue)
+            self._handle_invalid(agent_agent_msg, agent_agent_dialogue)
 
     def teardown(self) -> None:
         """
@@ -323,42 +320,48 @@ class AgentMessageHandler(Handler):
 
         :return: None
         """
-        pass
 
-    def _handle_unidentified_dialogue(self, agent_agent_message: AgentAgentMessage) -> None:
+    def _handle_unidentified_dialogue(self, agent_agent_msg: AgentAgentMessage) -> None:
         """
-
+        Handle an unidentified dialogue.
+        :param agent_env_msg: the message
         """
-        # self.context.logger.info(
-        #     "received invalid agent_agent message={}, unidentified dialogue.".format(agent_agent_message)
-        # )
+        self.context.logger.info(
+            "received invalid agent_agent message={}, unidentified dialogue.".format(agent_agent_msg)
+        )
         default_dialogues = cast(DefaultDialogues, self.context.default_dialogues)
         default_msg, _ = default_dialogues.create(
-            counterparty=agent_agent_message.sender,
+            counterparty=agent_agent_msg.sender,
             performative=DefaultMessage.Performative.ERROR,
             error_code=DefaultMessage.ErrorCode.INVALID_DIALOGUE,
             error_msg="Invalid dialogue.",
-            error_data={"Agent Environment Message": agent_agent_message.encode()},
+            error_data={"Agent Environment Message": agent_agent_msg.encode()},
         )
         self.context.outbox.put_message(message=default_msg)
 
-    def _handle_returned_water_info(self, agent_agent_message: AgentAgentMessage, agent_agent_dialogue):
+    def _handle_returned_water_info(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
         # Actual function where agent messages are used.
         strategy = cast(BasicStrategy, self.context.strategy)
         # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
         # True = Go on, False = stop
-        strategy.receive_agent_agent_info(agent_agent_message)
+        strategy.receive_agent_agent_info(agent_agent_msg)
 
-    def _handle_water_query(self, agent_agent_message: AgentAgentMessage, agent_agent_dialogue):
+    def _handle_water_query(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
         strategy = cast(BasicStrategy, self.context.strategy)
         strategy.agent_message_asking_for_my_water.append(
-            [agent_agent_message, agent_agent_dialogue]
+            [agent_agent_msg, agent_agent_dialogue]
         )
 
-    def _handle_invalid(self, agent_agent_message: AgentAgentMessage, agent_agent_dialogue) -> None:
-        pass
-        # self.context.logger.warning(
-        #     "cannot handle agent agent message of performative={} in dialogue={}.".format(
-        #         agent_agent_message.performative, agent_agent_dialogue,
-        #     )
-        # )
+    def _handle_invalid(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue) -> None:
+        """
+        Handle a invalid agent_agent message.
+
+        :param agent_agent_msg: the agent agent message
+        :param agent_agent_dialogue: the agent agent dialogue
+        :return: None
+        """
+        self.context.logger.warning(
+            "cannot handle environment message of performative={} in dialogue={}.".format(
+                agent_agent_msg.performative, agent_agent_dialogue
+            )
+        )
