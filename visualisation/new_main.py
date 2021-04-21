@@ -32,9 +32,17 @@ def clamp_norm(v, n_max):
     vy = v[1]
     n = math.sqrt(vx**2 + vy**2)
     if n == 0:
-        return 0
+        return np.array([0, 0])
     f = min(n, n_max) / n
     return np.array([f * vx, f * vy])
+
+def message_to_screen(msg, x, y, color=WHITE):
+    screen_txt = font.render(msg, False, color)
+    SCREEN.blit(screen_txt, [x, y])
+
+def draw_stats(time, survivors):
+    message_to_screen("Day n°: " + str(time), 10, 10)
+    message_to_screen("Survivors: " + str(survivors), 10, 25)
 
 #drawing on the screen : we draw each cells and each agent
 def draw_window(state):
@@ -42,17 +50,17 @@ def draw_window(state):
         drawCell(cell, state.max_water_capacity, state.pit_max_radius)
     for agent in state.agents:
         drawAgent(agent, state.max_inventory)
+    draw_stats(state.time, len(state.agents))
 
 
 #drawing the cells : we are drawing the water resources on the map
 def drawCell(cell, max_water_capacity, pit_max_radius):
         #drawing a water pit, its radius depends on the number of left water
-        pygame.draw.circle(SCREEN, (0, 0, 255), cell.pos, pit_radius(pit_max_radius, cell.water / max_water_capacity))
+        pygame.draw.circle(SCREEN, (0, 0, 255), cell.pos, pit_radius(pit_max_radius, cell.water / float(max_water_capacity)))
 
 #drawing the agents : 
 def drawAgent(agent, max_inventory):
     #an agent will be represented as a circle on the screen
-    #pygame.draw.circle(SCREEN, (127, 127, 0), agent.pos, AGENT_RADIUS)
     pygame.draw.circle(SCREEN,
         (colorPercentage(max_inventory - agent.inventory, max_inventory), colorPercentage(agent.inventory, max_inventory), 0),
         agent.pos, AGENT_RADIUS)
@@ -75,7 +83,9 @@ def updateAgent(state):
                 #agent.vel[1] = -agent.vel[1]
         #finally update the new positions
         temp = agent.desired_pos - agent.pos
-        desiredDirection = temp / np.linalg.norm(temp)
+        desiredDirection = np.array([0, 0])
+        if temp.all() != desiredDirection.all():
+            desiredDirection = temp / np.linalg.norm(temp)
 
         desiredVelocity = desiredDirection * AGENT_MAX_SPEED
         desiredSteeringForce = (desiredVelocity - agent.vel) * AGENT_STEER_STRENGTH
@@ -84,9 +94,9 @@ def updateAgent(state):
         agent.vel = clamp_norm(agent.vel + acceleration, AGENT_MAX_SPEED) / 1
         agent.pos = agent.pos + agent.vel
 
-def message_to_screen(msg, x, y, color=WHITE):
-    screen_txt = font.render(msg, False, color)
-    SCREEN.blit(screen_txt, [x, y])
+def stats(agent, x, y):
+    message_to_screen("Agent id : " + str(agent.id), agent.pos[0] + x, agent.pos[1] + y)
+    message_to_screen("Water left : " + str(agent.inventory), agent.pos[0] + x, agent.pos[1] + y + 15)
 
 def paused(state) :
 
@@ -107,8 +117,12 @@ def paused(state) :
             dist = math.hypot(agent.pos[0]-pos[0], agent.pos[1]-pos[1])
             #if the distance is lower than the radius, then again change the direction
             if dist < AGENT_RADIUS:
-                message_to_screen("Agent id : " + str(agent.id), agent.pos[0] + 10, agent.pos[1] - 30)
-                message_to_screen("Water left : " + str(agent.inventory), agent.pos[0] + 10, agent.pos[1] - 15)
+                if agent.pos[0] > WIDTH - 50:
+                    stats(agent, -90, -30)
+                elif agent.pos[1] < 50:
+                    stats(agent, 15, 13)
+                else:
+                    stats(agent, 15, -30)
         pygame.display.update()
         
 
@@ -137,7 +151,7 @@ def main():
         SCREEN.fill(BLACK)
         draw_window(state)
         pygame.display.update()
-        #updateAgent(state)
+        updateAgent(state)
         
         
     pygame.quit()
