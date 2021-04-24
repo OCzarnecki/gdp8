@@ -16,7 +16,6 @@
 #   limitations under the License.
 #
 # ------------------------------------------------------------------------------
-
 """This package contains a scaffold of a class modeling the environment.It is shared  
 equally across the Handler, Behaviour and Task classes on the context level.
 Some of the code is an adaptation of the model of a TAC game:
@@ -31,7 +30,8 @@ from aea.helpers.search.generic import (
     AGENT_REMOVE_SERVICE_MODEL,
     AGENT_SET_SERVICE_MODEL,
 )
-from aea.helpers.search.models import 
+# Causes syntax error
+#from aea.helpers.search.models import 
 
 
 from enum import Enum, auto
@@ -114,6 +114,7 @@ class SimulationState():
                  agent_max_capacity):
         self.size_x = size_x    # Width of cell grid
         self.size_y = size_y    # Height of cell grid
+        self._initial_oasis_water = initial_oasis_water
         self._agent_mining_speed = agent_mining_speed
         self._agent_max_capacity = agent_max_capacity
         self._generate_water(initial_oasis_water, oasis_count)
@@ -156,6 +157,37 @@ class SimulationState():
             if (agent.water <= 0
                     and self.get_agent_by_pos(agent.pos_x, agent.pos_y) == agent):
                 self._agent_grid[agent.pos_x][agent.pos_y] = None
+
+    def get_header_object(self):
+        """ Returns an object with the simulation configuration, for
+            creating the log for visualisation. """
+        return {
+                    "x_size": self.size_x,
+                    "y_size": self.size_y,
+                    "max_water_capacity_cell": self._initial_oasis_water,
+                    "max_water_capacity_agent": self._agent_max_capacity
+                }
+    
+    def serialize_current(self):
+        """ Returns the entire current simulation state, in the
+            format for visualisation. """
+        return {
+                    "tick_number": self.turn_number,
+                    "agents": [
+                        {
+                            "x": agent.pos_x,
+                            "y": agent.pos_y,
+                            "inventory": agent.water,
+                            "id": agent.agent_id
+                        } for agent in self.get_agents_alive()],
+                    "cells": [
+                        {
+                            "x": x,
+                            "y": y,
+                            "water": self.get_cell_water(x, y)
+                        } for x in range(self.size_x)
+                          for y in range(self.size_y)]
+                }
 
     def _transfer_water(self):
         """ Update the agents' water inventory by one turn. This
