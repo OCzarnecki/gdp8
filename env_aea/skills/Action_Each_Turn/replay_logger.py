@@ -1,10 +1,14 @@
 from datetime import datetime
-from environment import SimulationState
 import json
+
+from env_aea.skills.Action_Each_Turn.environment import SimulationState
 
 class ReplayLogger:
     """ Responsible for logging simulation state, for later
         visualisation. """
+
+    def __init__(self, filename = None):
+        self._filename = filename
 
     def initialize(self, simulation_state):
         self._open_file()
@@ -17,13 +21,17 @@ class ReplayLogger:
         self._file.close()
 
     def __del__(self):
-        if self._file.is_open():
+        if not self._file.closed:
             self.close()
 
     def _open_file(self):
-        filename = datetime.now().strftime(
-                "logs/simlog_%Y-%m-%d_%H.%M.%S.json")
+        if self._filename == None:
+            filename = datetime.now().strftime(
+                    "logs/simlog_%Y-%m-%d_%H.%M.%S.json")
+        else:
+            filename = self._filename
         self._file = open(filename, "w")
 
     def _dump_json(self, obj):
         json.dump(obj, self._file)
+        self._file.write("\n")

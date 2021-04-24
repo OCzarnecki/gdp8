@@ -33,6 +33,7 @@ from packages.fetchai.skills.tac_control.dialogues import (
 from gdp.env_aea.skills.Action_Each_Turn.environment import Environment, Phase
 from gdp.agent_aea.protocols.agent_environment.message import AgentEnvironmentMessage
 from gdp.agent_aea.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
+from gdp.env_aea.skills.Action_Each_Turn.replay_logger import ReplayLogger
 
 
 class EnvironmentLogicBehaviour(TickerBehaviour):
@@ -45,6 +46,7 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
     def __init__(self, **kwargs: Any):
         """Instantiate the behaviour."""
         super().__init__(**kwargs) ## why ??
+        self._replay_logger = ReplayLogger()
 
     def setup(self) -> None:
         """
@@ -85,8 +87,10 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         elif (
             environment.phase.value == Phase.START_SIMULATION.value
         ):
-            ## maybe there is something to be done for the first turn of the simulation, 
-            ## if not this can be skipped
+            # Set up simulation logging
+            self._replay_logger.initialize(environment.state)
+            # Log initial state
+            self._replay_logger.log_state(environment.state)
             environment.phase = Phase.START_NEXT_SIMULATION_TURN
 
         elif (
@@ -106,6 +110,7 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
 
                 environment.phase = Phase.START_NEXT_SIMULATION_TURN
                 environment.start_next_simulation_turn()
+                self._replay_logger.log_state(environment.state)
 
         elif (
             environment.phase.value == Phase.SIMULATION_CANCELLED.value
