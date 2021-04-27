@@ -1,217 +1,180 @@
-import sys, pygame, json
+import sys, pygame, math, time, random
+import numpy as np
 from simulationState import State
-"""
-Plan:
-to do for first iteration:
-1. Include user interface (a basic version, lower 1/3 of screen) √
-    Features may include:
-        labels for simulation time and how many agents survive
-        a way to reset the visualiser
-2. Interface with JSON to implement State.load
-    create some simulation logs to make sure the visuals are working
-3. Make the initial SCREEN not be noise
-4. Make main loop play the simulation forward in a simple way √
-    ideas:
-        press a button to advance by one time step
-        let the time tick forward every x seconds
-5. Make WorldPainting reflect the water levels of cells and agents
 
-Notes:
-1. coordinates are (0, 0) on topleft in pygame. We may want to flip y coordinates if we want (0, 0) to be bottom left
-2. There is a bug where sometimes pressing left or right crashes with a memory error.
-"""
 pygame.init()
-pygame.display.set_caption('AEA Desert')
-pygame.font.init()
+
 WIDTH = 900
 HEIGHT = 600
 SIZE = (WIDTH, HEIGHT)
 SCREEN = pygame.display.set_mode(SIZE)
+pygame.display.set_caption("Survival")
 
-small_text = pygame.font.SysFont("Times New Roman", 16)
+FPS = 60
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+AGENT_MAX_SPEED = 1
+AGENT_STEER_STRENGTH = 10
+AGENTS_WANDER_STRENGTH = 0.5
+AGENT_RADIUS = 6
+
+font = pygame.font.SysFont("Times New Roman", 13)
 
 def colorPercentage(n, scale):
     return 255 * (n / scale)
 
-class WorldPainting():
-    """
-    contains a surface with everything simulation drawn on
-    relies on State only
-    drawn through camera
-    """
-    def __init__(self, state):
-        self.tileWidth = 64
-        surfaceSize = (self.tileWidth * state.x_size, self.tileWidth * state.y_size)
-        self.surface = pygame.Surface(surfaceSize)
+def pit_radius(pit_max_radius, water_percentage):
+    return pit_max_radius * water_percentage
 
-    def draw(self, state):
-        for cell in state.cells:
-            self.drawCell(cell, state.max_water_capacity)
+def clamp_norm(v, n_max):
+    vx = v[0]
+    vy = v[1]
+    n = math.sqrt(vx**2 + vy**2)
+    if n == 0:
+        return np.array([0, 0])
+    f = min(n, n_max) / n
+    return np.array([f * vx, f * vy])
+
+def message_to_screen(msg, x, y, color=WHITE):
+    screen_txt = font.render(msg, False, color)
+    SCREEN.blit(screen_txt, [x, y])
+
+def draw_controls():
+    pygame.draw.polygon(SCREEN, WHITE, [(820, 20), (820, 40), (810, 30)])
+    pygame.draw.polygon(SCREEN, WHITE, [(860, 20), (860, 40), (870, 30)])
+    rect = pygame.Rect(833, 20, 5, 20)
+    pygame.draw.rect(SCREEN, WHITE, rect)
+    rect2 = pygame.Rect(842, 20, 5, 20)
+    pygame.draw.rect(SCREEN, WHITE, rect2)
+    
+
+def draw_stats(time, survivors):
+    message_to_screen("Day n°: " + str(time), 10, 10)
+    message_to_screen("Survivors: " + str(survivors), 10, 25)
+
+#drawing on the screen : we draw each cells and each agent
+def draw_window(state):
+    for cell in state.cells:
+        drawCell(cell, state.max_water_capacity, state.pit_max_radius)
+    for agent in state.agents:
+        drawAgent(agent, state.max_inventory)
+    draw_stats(state.time, len(state.agents))
+    draw_controls()
+
+
+#drawing the cells : we are drawing the water resources on the map
+def drawCell(cell, max_water_capacity, pit_max_radius):
+        #drawing a water pit, its radius depends on the number of left water
+        pygame.draw.circle(SCREEN, (0, 0, 255), cell.pos, pit_radius(pit_max_radius, cell.water / float(max_water_capacity)))
+
+#drawing the agents : 
+def drawAgent(agent, max_inventory):
+    #an agent will be represented as a circle on the screen
+    pygame.draw.circle(SCREEN,
+        (colorPercentage(max_inventory - agent.inventory, max_inventory), colorPercentage(agent.inventory, max_inventory), 0),
+        agent.pos, AGENT_RADIUS)
+
+def check_pos(pos, dpos, w, h):
+    hdist = math.fabs(pos[0] - dpos[0])
+    vdist = math.fabs(pos[1] - dpos[1])
+    return hdist < w/4 and vdist < h/4
+
+def insideUnitCircle():
+    t = 2 * math.pi * random.random()
+    u = random.random() + random.random()
+    r = u
+    if u > 1:
+        r = 2 - u
+    return np.array([r * math.cos(t), r * math.sin(t)])
+
+def new_pos(agent):
+    desiredVelocity = agent.desired_dir * AGENT_MAX_SPEED
+    desiredSteeringForce = (desiredVelocity - agent.vel) * AGENT_STEER_STRENGTH
+    acceleration = clamp_norm(desiredSteeringForce, AGENT_STEER_STRENGTH) / 1
+
+    agent.vel = clamp_norm(agent.vel + acceleration, AGENT_MAX_SPEED) / 1
+    agent.pos = agent.pos + agent.vel
+
+#updating the states will be done with the logs from the simulation.
+# For visualisation we will for now simulate a very simple behaviour...
+def updateAgent(state):
+    for agent in state.agents:
+        if check_pos(agent.pos, agent.desired_pos, state.tile_width, state.tile_height):
+            agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
+            if agent.desired_dir.all() != np.array([0, 0]).all():
+                agent.desired_dir = agent.desired_dir / np.linalg.norm(agent.desired_dir)
+
+            new_pos(agent)
+        else:
+            temp = agent.desired_pos - agent.pos
+            agent.desired_dir = temp / np.linalg.norm(temp)
+
+            new_pos(agent)
+
+
+def stats(agent, x, y, max_inventory):
+    message_to_screen("Agent id : " + str(agent.id), agent.pos[0] + x, agent.pos[1] + y)
+    message_to_screen("Water left : " + str(math.floor((agent.inventory/max_inventory)*100)) + "%", agent.pos[0] + x, agent.pos[1] + y + 15)
+
+def paused(state) :
+
+    paused = True
+
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    paused = False
+        pos = pygame.mouse.get_pos()
+        SCREEN.fill(BLACK)
+        draw_window(state)
         for agent in state.agents:
-            self.drawAgent(agent, state.max_inventory)
+            #computing the distance between water pit's center and agent's center
+            dist = math.hypot(agent.pos[0]-pos[0], agent.pos[1]-pos[1])
+            #if the distance is lower than the radius, then again change the direction
+            if dist < AGENT_RADIUS:
+                if agent.pos[0] > WIDTH - 50:
+                    stats(agent, -90, -30, state.max_inventory)
+                elif agent.pos[1] < 50:
+                    stats(agent, 15, 13, state.max_inventory)
+                else:
+                    stats(agent, 15, -30, state.max_inventory)
+        pygame.display.update()
+        
 
-    def drawCell(self, cell, max_water_capacity):
-        if (max_water_capacity != 0):
-            x = cell.x * self.tileWidth
-            y = cell.y * self.tileWidth
-            rect = pygame.Rect(x, y, self.tileWidth, self.tileWidth)
-            pygame.draw.rect(self.surface, (0, 0, colorPercentage(cell.water, max_water_capacity)), rect)
+def main():
 
-    def drawAgent(self, agent, max_inventory):
-        center_x = (agent.x + 0.5) * self.tileWidth
-        center_y = (agent.y + 0.5) * self.tileWidth
-        center = (center_x, center_y)
-        pygame.draw.circle(self.surface, (colorPercentage(max_inventory - agent.inventory, max_inventory), colorPercentage(agent.inventory, max_inventory), 0), center, self.tileWidth / 3.)
+    state = State("/Users/tancrede/Desktop/projects/survival_simulation/test.json")
 
-class Camera():
-    """
-    How the world painting is drawn on the window.
-    Top 2/3 of screen.
-    Features can include movement, zoom, filters.
-    """
+    clock = pygame.time.Clock()
+    iteration = 0
+    run = True
+    while run:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    paused(state)
 
-    def __init__(self, x=0., y=0.):
-        self.x = x # relative to world painting
-        self.y = y
-        self.size = SIZE
+        if iteration == 4:
+            state.load()
+            iteration = 0
+        else:
+            iteration += 1
 
-    def draw(self, painting):
-        # int because blit only allows int
-        paintingLocation = (int(0-self.x), int(0-self.y))
-        SCREEN.blit(painting.surface, paintingLocation)
-
-class Slider():
-
-    def __init__(self, length, pos, left_text, right_text, head_text=""):
-        self.length = length
-        self.pos = pos # 0 to 1, left to right position of slider head
-        self.left_text = left_text
-        self.right_text = right_text
-        self.head_text = head_text
-        self.slider_text = pygame.font.SysFont("Times New Roman", 18)
-
-        self.left_label = self.slider_text.render(self.left_text, False, (0,0,0))
-        self.right_label = self.slider_text.render(self.right_text, False, (0,0,0))
-        self.head_label = self.slider_text.render(self.head_text, False, (0,0,0))
-
-    def render(self):
-        length = self.length
-        pos = self.pos
-        slider_text = self.slider_text
-
-        left_text_width, left_text_height = self.slider_text.size(self.left_text)
-        right_text_width, right_text_height = self.slider_text.size(self.right_text)
-        bar_length = length - left_text_width - right_text_width
-        head_text_width, head_text_height = self.slider_text.size(self.head_text)
-
-        # transparent surface
-        ret = pygame.Surface((length, 100), pygame.SRCALPHA, 32)
-        ret = ret.convert_alpha()
-
-        slider_bar = pygame.Rect(left_text_width, 35, bar_length, 30)
-        pygame.draw.rect(ret, (0,0,0), slider_bar)
-
-        head_width = 10 # may be better in instance variable
-        head_height = 50
-        real_head_pos = left_text_width + round(pos * bar_length)
-        head_x = real_head_pos - (head_width // 2)
-        head_y = 50 - (head_height // 2)
-        slider_head = pygame.Rect(head_x, head_y, head_width, head_height)
-        pygame.draw.rect(ret, (0,0,0), slider_head)
-
-        head_label_x = real_head_pos - (head_text_width // 2)
-        head_label_y = 50 + (head_height // 2)
-        ret.blit(self.head_label, (head_label_x, head_label_y))
-
-        left_label_y = 50 - (left_text_height // 2)
-        right_label_y = 50 - (right_text_height // 2)
-        ret.blit(self.left_label, (0, right_label_y))
-        ret.blit(self.right_label, (length-right_text_width, right_label_y))
-        return ret
-
-
-class UserInterface():
-
-    def __init__(self):
-        self.rect_background = pygame.Rect(0, 400, WIDTH, 200)
-        self.K_L_DOWN = False
-        self.K_R_DOWN = False
-
-
-    def draw(self, state):
-        beige = (240, 209, 116)
-        pygame.draw.rect(SCREEN, beige, self.rect_background)
-
-        self.draw_tutorial_label(state)
-        self.draw_time_slider(state)
-        self.draw_agent_slider(state)
-
-    def draw_tutorial_label(self, state):
-            tutorial_text = "Left/Right keys to change time"
-            tutorial_label = small_text.render(tutorial_text, False, (0,0,0))
-            SCREEN.blit(tutorial_label, (0, 400))
-
-    def draw_time_slider(self, state):
-        time_prop = state.time / state.max_time
-        time_slider = Slider(
-            300,
-            time_prop,
-            "time: ",
-            " {}".format(state.max_time),
-            str(state.time)
-        )
-        SCREEN.blit(time_slider.render(), (0, 500))
-
-    def draw_agent_slider(self, state):
-        agent_prop = state.count_survivors() / state.max_agent
-
-        agent_slider = Slider(
-            300,
-            agent_prop,
-            "survivors: ",
-            " {}".format(state.max_agent),
-            str(state.count_survivors())
-        )
-        SCREEN.blit(agent_slider.render(), (0, 420))
-
-
-    def process(self, event, state): # updates state time based on pygame.event
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT and not self.K_L_DOWN:
-                self.K_L_DOWN = True
-                state.load(max(0, state.time-1))
-                print("Time {}".format(state.time))
-            elif event.key == pygame.K_RIGHT and not self.K_R_DOWN:
-                self.K_R_DOWN = True
-                state.load(min(state.max_time, state.time+1))
-                print("Time {}".format(state.time))
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT and self.K_L_DOWN:
-                self.K_L_DOWN = False
-            if event.key == pygame.K_RIGHT and self.K_R_DOWN:
-                self.K_R_DOWN = False
+        SCREEN.fill(BLACK)
+        draw_window(state)
+        pygame.display.update()
+        updateAgent(state)
+        
+        
+    pygame.quit()
 
 
 if __name__ == "__main__":
-
-    state = State("/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/test.json")
-
-    painting = WorldPainting(state)
-    camera = Camera()
-    ui = UserInterface()
-
-    """
-    Main loop, shows how the classes interact.
-    """
-    while 1:
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: sys.exit()
-            ui.process(event, state)
-
-        painting.draw(state)
-
-        SCREEN.fill((0,0,0))
-        camera.draw(painting)
-        ui.draw(state)
-        pygame.display.flip()
+    main()
