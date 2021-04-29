@@ -1,0 +1,46 @@
+name: env_action_each_turn
+author: gdp8
+version: 0.1.0
+type: skill
+description: The scaffold skill is a scaffold for your own skill implementation.
+license: Apache-2.0
+aea_version: '>=1.0.0, <2.0.0'
+fingerprint:
+  __init__.py: QmUSZRbdCbjzvwuGTGYWzSEXvPFv2h8GyeawhPo4v8KZ3A
+  behaviours.py: Qme4YmPKFDEXSTYx8KW2W42UPBsvPQQ6aFWGK5u8bahf7S
+  dialogues.py: QmTT9dvFhWt6qvxjwBfMFDTrgEtgWbvgANYafyRg2BXwcR
+  environment.py: QmZmEaBmkD4bqngf66k1ULJL1tTeHv9BUnEJ1H2dLa9GH7
+  handlers.py: QmbZmbRGiUWtzEzogW7BfMKWrt7iXsQUbL1haf3VmYyfAN
+  replay_logger.py: QmSj4qtbSgAc2tgdCR8hvREtWdJfTWw1uraoQenZfydPR2
+fingerprint_ignore_patterns: []
+connections: []
+contracts: []
+protocols: []
+skills: []
+behaviours:
+  env_logic:
+    args: {}
+    class_name: EnvironmentLogicBehaviour
+handlers:
+  env:
+    args: {}
+    class_name: EnvironmentHandler
+  oef:
+    args: {}
+    class_name: OefSearchHandler
+models:
+  environment:
+    args:
+      agent_max_capacity: 150
+      agent_mining_speed: 20
+      initial_agent_water: 100
+      initial_oasis_water: 2000
+      oasis_count: 15
+      size_x: 20
+      size_y: 20
+    class_name: Environment
+  oef_search_dialogues:
+    args: {}
+    class_name: OefSearchDialogues
+dependencies: {}
+is_abstract: false
