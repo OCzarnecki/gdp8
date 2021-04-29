@@ -26,7 +26,7 @@ from aea.configurations.base import PublicId
 from aea.protocols.base import Message
 from aea.skills.base import Handler
 from packages.fetchai.protocols.oef_search.message import OefSearchMessage##
-from packages.gdp8.skills.Action_Each_Turn.dialogues import (
+from packages.gdp8.skills.env_action_each_turn.dialogues import (
     OefSearchDialogue,
     OefSearchDialogues,
 )

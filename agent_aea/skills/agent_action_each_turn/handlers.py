@@ -24,20 +24,12 @@ from aea.configurations.base import PublicId
 from aea.protocols.base import Message
 from aea.skills.base import Handler
 from packages.fetchai.protocols.oef_search.message import OefSearchMessage
-from packages.fetchai.skills.tac_participation.dialogues import (
-    OefSearchDialogue,
-    OefSearchDialogues,
-)
-from packages.gdp8.protocols.default.message import DefaultMessage
-from packages.gdp8.protocols.default.dialogues import DefaultDialogues
 from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
 from packages.gdp8.protocols.agent_agent.dialogues import AgentAgentDialogue, AgentAgentDialogues
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
 
 from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
-from packages.gdp8.skills.env_action_each_turn.environment import Environment, Phase
-
 
 
 # Handler will Update my model (strategy class) depending on what it has received

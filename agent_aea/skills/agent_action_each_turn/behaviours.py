@@ -25,9 +25,6 @@ from aea.helpers.search.models import Constraint, ConstraintType, Query
 
 
 from packages.fetchai.protocols.oef_search.message import OefSearchMessage
-from packages.fetchai.skills.tac_control.dialogues import (
-    OefSearchDialogues,
-)
 
 from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
 

@@ -9,6 +9,7 @@ class ReplayLogger:
 
     def __init__(self, filename = None):
         self._filename = filename
+        self._file = None
 
     def initialize(self, simulation_state):
         self._open_file()
@@ -21,7 +22,7 @@ class ReplayLogger:
         self._file.close()
 
     def __del__(self):
-        if not self._file.closed:
+        if self._file and not self._file.closed:
             self.close()
 
     def _open_file(self):

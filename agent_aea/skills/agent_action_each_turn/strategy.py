@@ -104,7 +104,7 @@ class BasicStrategy(Model):
     def enough_info_to_make_decision(self) -> bool:
         # currently, ALL neighbour info asked before making decision
         for i in self.neighbour_water_amount:
-            if i[1] is "Unknown" or i[1] == "Asking":
+            if i[1] == "Unknown" or i[1] == "Asking":
                 return False
         return True
 
