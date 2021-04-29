@@ -75,10 +75,11 @@ def drawAgent(agent, max_inventory):
         (colorPercentage(max_inventory - agent.inventory, max_inventory), colorPercentage(agent.inventory, max_inventory), 0),
         agent.pos, AGENT_RADIUS)
 
-def check_pos(pos, dpos, w, h):
-    hdist = math.fabs(pos[0] - dpos[0])
-    vdist = math.fabs(pos[1] - dpos[1])
-    return hdist < w/4 and vdist < h/4
+# checks whether an agent is inside a square of center c, width w and height h
+def check_pos(a_pos, c, w, h):
+    hdist = math.fabs(a_pos[0] - c[0])
+    vdist = math.fabs(a_pos[1] - c[1])
+    return hdist < w and vdist < h
 
 def insideUnitCircle():
     t = 2 * math.pi * random.random()
@@ -96,22 +97,49 @@ def new_pos(agent):
     agent.vel = clamp_norm(agent.vel + acceleration, AGENT_MAX_SPEED) / 1
     agent.pos = agent.pos + agent.vel
 
-#updating the states will be done with the logs from the simulation.
-# For visualisation we will for now simulate a very simple behaviour...
 def updateAgent(state):
     for agent in state.agents:
-        if check_pos(agent.pos, agent.desired_pos, state.tile_width, state.tile_height):
-            agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
-            if agent.desired_dir.all() != np.array([0, 0]).all():
-                agent.desired_dir = agent.desired_dir / np.linalg.norm(agent.desired_dir)
-
-            new_pos(agent)
+        # we check if the agent is near water
+        is_near_water = False
+        cell_pos = np.array([0, 0])
+        cell_water = 0
+        for cell in state.cells:
+            if cell.water != 0 and check_pos(agent.pos, cell.pos, state.tile_width/2, state.tile_height/2):
+                is_near_water = True
+                cell_pos = cell.pos
+                cell_water = cell.water
+                break
+        # case 1) agent is near water...
+        if is_near_water:
+            # 1.1) ...and wants to stay
+            if (cell_pos == agent.desired_pos).all():
+                # then he will stick to the water pit
+                dist = math.hypot(agent.pos[0] - cell_pos[0], agent.pos[1] - cell_pos[1])
+                # if the distance between the agent and the center of the pit is smaller than the radius, we stop
+                if dist <= pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity)):
+                    # deal with the start state where the agent is in the middle of the lake
+                    if (agent.pos == cell_pos).all():
+                        agent.pos[0] = agent.pos[0] - pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity))
+                    agent.desired_dir = np.array([0, 0])
+                else:
+                    temp = agent.desired_pos - agent.pos
+                    agent.desired_dir = temp / np.linalg.norm(temp)
+            # 1.2) ...and wants to leave
+            else:
+                temp = agent.desired_pos - agent.pos
+                agent.desired_dir = temp / np.linalg.norm(temp)
+        # case 2) agent is not near water...
         else:
-            temp = agent.desired_pos - agent.pos
-            agent.desired_dir = temp / np.linalg.norm(temp)
-
-            new_pos(agent)
-
+            # 2.1) ...and wants to stay
+            if check_pos(agent.pos, agent.desired_pos, state.tile_width/4, state.tile_height/4):
+                agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
+                if (agent.desired_dir != np.array([0, 0])).all():
+                    agent.desired_dir = agent.desired_dir / np.linalg.norm(agent.desired_dir)
+            # 2.2) ...and wants to leave
+            else:
+                temp = agent.desired_pos - agent.pos
+                agent.desired_dir = temp / np.linalg.norm(temp)
+        new_pos(agent)
 
 def stats(agent, x, y, max_inventory):
     message_to_screen("Agent id : " + str(agent.id), agent.pos[0] + x, agent.pos[1] + y)
