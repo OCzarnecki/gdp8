@@ -9,7 +9,7 @@ fingerprint:
   __init__.py: QmSwBuAQmvDfLbuUvJ7nfrNCEE8iYzmqZzcTYupPwEsG4G
   behaviours.py: QmcmYDf2dmMVMDc4fWbhjPsZ9XRjYFWPG3Sg4znybUkVfn
   dialogues.py: QmTT9dvFhWt6qvxjwBfMFDTrgEtgWbvgANYafyRg2BXwcR
-  environment.py: QmZmEaBmkD4bqngf66k1ULJL1tTeHv9BUnEJ1H2dLa9GH7
+  environment.py: QmPM3By8v76hyJFd744v4nUa1piJgkiiz7JQuSNCeDSVZD
   handlers.py: QmZf14yW2pyV1HHoKofatjKJAPAdMWHAiYimLjcGLZ6H49
   replay_logger.py: QmZymG35GL7MAuY5pAQadPCWqEPHGJ9ghgD2j2WP8nGV9s
 fingerprint_ignore_patterns: []
@@ -31,6 +31,7 @@ handlers:
 models:
   environment:
     args:
+      agent_count: 1
       agent_max_capacity: 150
       agent_mining_speed: 20
       initial_agent_water: 100

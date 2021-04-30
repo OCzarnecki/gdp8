@@ -278,6 +278,7 @@ class SimulationState():
         """ Initiate IDs and locations for agents. """
         # Distribute agents uniformly.
         current_id = 0
+        self.agent_count = agent_count
         self._agents_by_id = []
         self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
         for (x, y) in self._unique_random_coords(agent_count):
@@ -335,14 +336,20 @@ class Environment(Model):
                 kwargs['size_y'],
                 kwargs['initial_oasis_water'],
                 kwargs['oasis_count'],
-                42, # TODO figure out where to get this
+                kwargs['agent_count'],
                 kwargs['initial_agent_water'],
                 kwargs['agent_mining_speed'],
                 kwargs['agent_max_capacity']
             )
         self._agents_replied = set()
+        super().__init__(**kwargs)
 
         # TODO ID <-> addres/framework_agent_object assignment
+
+    @property
+    def nb_agents(self) -> int:
+        """Get the number of agents in the simulation."""
+        return self.state.agent_count
 
     @property
     def phase(self) -> Phase:
