@@ -14,10 +14,10 @@ FPS = 60
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-AGENT_MAX_SPEED = 1
-AGENT_STEER_STRENGTH = 10
+AGENT_STEER_STRENGTH = 4
 AGENTS_WANDER_STRENGTH = 0.5
-AGENT_RADIUS = 6
+AGENT_RADIUS = 5
+BASIC_SPEED = 4
 
 font = pygame.font.SysFont("Times New Roman", 13)
 
@@ -40,13 +40,17 @@ def message_to_screen(msg, x, y, color=WHITE):
     screen_txt = font.render(msg, False, color)
     SCREEN.blit(screen_txt, [x, y])
 
-def draw_controls():
-    pygame.draw.polygon(SCREEN, WHITE, [(820, 20), (820, 40), (810, 30)])
-    pygame.draw.polygon(SCREEN, WHITE, [(860, 20), (860, 40), (870, 30)])
-    rect = pygame.Rect(833, 20, 5, 20)
-    pygame.draw.rect(SCREEN, WHITE, rect)
-    rect2 = pygame.Rect(842, 20, 5, 20)
-    pygame.draw.rect(SCREEN, WHITE, rect2)
+def draw_speed(speed):
+    message_to_screen("x " + str(speed), 875, 20)
+
+def draw_controls(play):
+    if play:
+        pygame.draw.polygon(SCREEN, WHITE, [(850, 20), (850, 40), (865, 30)])
+    else:
+        rect = pygame.Rect(850, 20, 5, 20)
+        pygame.draw.rect(SCREEN, WHITE, rect)
+        rect = pygame.Rect(860, 20, 5, 20)
+        pygame.draw.rect(SCREEN, WHITE, rect)
     
 
 def draw_stats(time, survivors):
@@ -54,13 +58,14 @@ def draw_stats(time, survivors):
     message_to_screen("Survivors: " + str(survivors), 10, 25)
 
 #drawing on the screen : we draw each cells and each agent
-def draw_window(state):
+def draw_window(state, play=True):
     for cell in state.cells:
         drawCell(cell, state.max_water_capacity, state.pit_max_radius)
     for agent in state.agents:
         drawAgent(agent, state.max_inventory)
     draw_stats(state.time, len(state.agents))
-    draw_controls()
+    draw_controls(play)
+    draw_speed(state.speed)
 
 
 #drawing the cells : we are drawing the water resources on the map
@@ -89,12 +94,12 @@ def insideUnitCircle():
         r = 2 - u
     return np.array([r * math.cos(t), r * math.sin(t)])
 
-def new_pos(agent):
-    desiredVelocity = agent.desired_dir * AGENT_MAX_SPEED
+def new_pos(agent, speed):
+    desiredVelocity = agent.desired_dir * speed
     desiredSteeringForce = (desiredVelocity - agent.vel) * AGENT_STEER_STRENGTH
     acceleration = clamp_norm(desiredSteeringForce, AGENT_STEER_STRENGTH) / 1
 
-    agent.vel = clamp_norm(agent.vel + acceleration, AGENT_MAX_SPEED) / 1
+    agent.vel = clamp_norm(agent.vel + acceleration, speed) / 1
     agent.pos = agent.pos + agent.vel
 
 def updateAgent(state):
@@ -139,7 +144,7 @@ def updateAgent(state):
             else:
                 temp = agent.desired_pos - agent.pos
                 agent.desired_dir = temp / np.linalg.norm(temp)
-        new_pos(agent)
+        new_pos(agent, state.speed)
 
 def stats(agent, x, y, max_inventory):
     message_to_screen("Agent id : " + str(agent.id), agent.pos[0] + x, agent.pos[1] + y)
@@ -153,24 +158,26 @@ def paused(state) :
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                paused = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused = False
-        pos = pygame.mouse.get_pos()
-        SCREEN.fill(BLACK)
-        draw_window(state)
-        for agent in state.agents:
-            #computing the distance between water pit's center and agent's center
-            dist = math.hypot(agent.pos[0]-pos[0], agent.pos[1]-pos[1])
-            #if the distance is lower than the radius, then again change the direction
-            if dist < AGENT_RADIUS:
-                if agent.pos[0] > WIDTH - 50:
-                    stats(agent, -90, -30, state.max_inventory)
-                elif agent.pos[1] < 50:
-                    stats(agent, 15, 13, state.max_inventory)
-                else:
-                    stats(agent, 15, -30, state.max_inventory)
-        pygame.display.update()
+        if paused:
+            pos = pygame.mouse.get_pos()
+            SCREEN.fill(BLACK)
+            draw_window(state, False)
+            for agent in state.agents:
+                #computing the distance between water pit's center and agent's center
+                dist = math.hypot(agent.pos[0]-pos[0], agent.pos[1]-pos[1])
+                #if the distance is lower than the radius, then again change the direction
+                if dist < AGENT_RADIUS:
+                    if agent.pos[0] > WIDTH - 50:
+                        stats(agent, -90, -30, state.max_inventory)
+                    elif agent.pos[1] < 50:
+                        stats(agent, 15, 13, state.max_inventory)
+                    else:
+                        stats(agent, 15, -30, state.max_inventory)
+            pygame.display.update()
         
 
 def main():
@@ -180,6 +187,7 @@ def main():
     clock = pygame.time.Clock()
     iteration = 0
     run = True
+
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
@@ -188,18 +196,23 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused(state)
+                if event.key == pygame.K_RIGHT and state.speed < 4:
+                    state.speed *= 2
+                    iteration = 0
+                if event.key == pygame.K_LEFT and state.speed > 1:
+                    state.speed = math.floor(state.speed / 2)
+                    iteration = 0
+        if run:
+            if iteration == BASIC_SPEED / state.speed:
+                state.load()
+                iteration = 0
+            else:
+                iteration += 1
 
-        if iteration == 4:
-            state.load()
-            iteration = 0
-        else:
-            iteration += 1
-
-        SCREEN.fill(BLACK)
-        draw_window(state)
-        pygame.display.update()
-        updateAgent(state)
-        
+            SCREEN.fill(BLACK)
+            draw_window(state)
+            pygame.display.update()
+            updateAgent(state)
         
     pygame.quit()
 

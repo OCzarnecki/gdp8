@@ -39,6 +39,7 @@ class State():
         self.max_inventory = self.data[0]['max_water_capacity_agent']
 
         self.time = 0 # read only
+        self.speed = 1
 
         # assuming there is one line for each [0, self.max_time]
         self.max_time = len(self.data)-2
