@@ -9,9 +9,8 @@ license: Apache-2.0
 aea_version: '>=1.0.0'
 fingerprint:
   __init__.py: QmW2ruHq4t1ivCWRGF3BDZjHi4sH1ykoYjz1hExRfkWQmL
-  behaviours.py: Qmd2pZLTaiX7KLkygSdj95aysj3rJa1xmWdbYFKQeSf6Le
-  dialogues.py: QmTT9dvFhWt6qvxjwBfMFDTrgEtgWbvgANYafyRg2BXwcR
-  handlers.py: QmfHkWfj1kR3m9yaum7dwALVD2u4eYG7wgNozcTcBTwEaD
+  behaviours.py: Qmbyrhx12LFfcb2kc9noaxic8jZ2bjB1PoGUi52YqJyMxv
+  handlers.py: QmXg3FLTNMfVkhLgNt7ezRw9shEtoX4ZSQNsPC3r58HE7U
   strategy.py: QmfRBV8FAc7NozD8GU4fhg5fCvzJWHcjDxhwcEngnHedDV
 fingerprint_ignore_patterns: []
 connections: []
@@ -23,10 +22,6 @@ behaviours:
     args:
       tick_interval: 2
     class_name: AgentLogicBehaviour
-  env_search:
-    args:
-      tick_interval: 5
-    class_name: EnvSearchBehaviour
 handlers:
   agent_message_handler:
     args: {}
@@ -34,13 +29,7 @@ handlers:
   environment_message_handler:
     args: {}
     class_name: EnvironmentMessageHandler
-  oef:
-    args: {}
-    class_name: OefSearchHandler
 models:
-  oef_search_dialogues:
-    args: {}
-    class_name: OefSearchDialogues
   strategy:
     args: {}
     class_name: BasicStrategy

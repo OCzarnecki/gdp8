@@ -23,11 +23,7 @@ from aea.common import Address
 from aea.configurations.base import PublicId
 from aea.protocols.base import Message
 from aea.skills.base import Handler
-from packages.fetchai.protocols.oef_search.message import OefSearchMessage
-from packages.gdp8.skills.agent_action_each_turn.dialogues import (
-    OefSearchDialogue,
-    OefSearchDialogues,
-)
+
 from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
 from packages.gdp8.protocols.agent_agent.dialogues import AgentAgentDialogue, AgentAgentDialogues
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
@@ -39,155 +35,9 @@ from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
 # Handler will Update my model (strategy class) depending on what it has received
 # Unimplemented: self.context.agent_environment_dialogues, self.context.default_dialogues
 
-class OefSearchHandler(Handler):
-    """This class handles oef messages."""
-
-    SUPPORTED_PROTOCOL = OefSearchMessage.protocol_id
-
-    def setup(self) -> None:
-        """
-        Implement the handler setup.
-        :return: None
-        """
-
-    def handle(self, message: Message) -> None:
-        """
-        Implement the reaction to a message.
-        :param message: the message
-        :return: None
-        """
-        oef_search_msg = cast(OefSearchMessage, message)
-
-        # recover dialogue
-        oef_search_dialogues = cast(
-            OefSearchDialogues, self.context.oef_search_dialogues
-        )
-        oef_search_dialogue = cast(
-            Optional[OefSearchDialogue], oef_search_dialogues.update(oef_search_msg)
-        )
-        if oef_search_dialogue is None:
-            self._handle_unidentified_dialogue(oef_search_msg)
-            return
-
-        # handle message
-        if oef_search_msg.performative == OefSearchMessage.Performative.SEARCH_RESULT:
-            self._on_search_result(oef_search_msg, oef_search_dialogue)
-        elif oef_search_msg.performative == OefSearchMessage.Performative.OEF_ERROR:
-            self._on_oef_error(oef_search_msg, oef_search_dialogue)
-        else:
-            self._handle_invalid(oef_search_msg, oef_search_dialogue)
-
-    def teardown(self) -> None:
-        """
-        Implement the handler teardown.
-        :return: None
-        """
-
-    def _handle_unidentified_dialogue(self, oef_search_msg: OefSearchMessage) -> None:
-        """
-        Handle an unidentified dialogue.
-        :param msg: the message
-        """
-        self.context.logger.warning(
-            "received invalid oef_search message={}, unidentified dialogue.".format(
-                oef_search_msg
-            )
-        )
-
-    def _on_oef_error(
-        self, oef_search_msg: OefSearchMessage, oef_search_dialogue: OefSearchDialogue
-    ) -> None:
-        """
-        Handle an OEF error message.
-        :param oef_search_msg: the oef search msg
-        :param oef_search_dialogue: the dialogue
-        :return: None
-        """
-        self.context.logger.warning(
-            "received OEF Search error: dialogue_reference={}, oef_error_operation={}".format(
-                oef_search_dialogue.dialogue_label.dialogue_reference,
-                oef_search_msg.oef_error_operation,
-            )
-        )
-
-    def _on_search_result(
-        self, oef_search_msg: OefSearchMessage, oef_search_dialogue: OefSearchDialogue
-    ) -> None:
-        """
-        Split the search results from the OEF search node.
-        :param oef_search_msg: the search result
-        :param oef_search_dialogue: the dialogue
-        :return: None
-        """
-        self.context.logger.debug(
-            "on search result: dialogue_reference={} agents={}".format(
-                oef_search_dialogue.dialogue_label.dialogue_reference,
-                oef_search_msg.agents,
-            )
-        )
-        self._on_controller_search_result(oef_search_msg.agents)
-
-    def _handle_invalid(
-        self, oef_search_msg: OefSearchMessage, oef_search_dialogue: OefSearchDialogue
-    ) -> None:
-        """
-        Handle an oef search message.
-        :param oef_search_msg: the oef search message
-        :param oef_search_dialogue: the dialogue
-        :return: None
-        """
-        self.context.logger.warning(
-            "cannot handle oef_search message of performative={} in dialogue={}.".format(
-                oef_search_msg.performative, oef_search_dialogue,
-            )
-        )
-
-    def _on_controller_search_result(
-        self, agent_addresses: Tuple[Address, ...]
-    ) -> None:
-        """
-        Process the search result for a controller.
-        :param agent_addresses: list of agent addresses
-        :return: None
-        """
-        ##Can add this if the oef replies more than once, but we will need to implement phases of the game
-        """environment = cast(Environment, self.context.environment)<- not the same environment as the one in env_aea tho ! 
-        if environment.phase.value != Phase.PRE_SIMULATION.value:
-            self.context.logger.debug(
-                "ignoring controller search result, the simulation as already started."
-            )
-            return"""
-
-        if len(agent_addresses) == 0:
-            self.context.logger.info("couldn't find the environment. Retrying...")
-        elif len(agent_addresses) > 1:
-            self.context.logger.warning(
-                "found more than one environment. Retrying..."
-            )
-        else:
-            self.context.logger.info("found the environment. Registering...")
-            environment_addr = agent_addresses[0]
-            self._register_to_env(environment_addr)
-
-    def _register_to_env(self, environment_addr: Address) -> None:
-        """
-        Register to active environment.
-        :param environment_addr: the address of the environment.
-        :return: None
-        """
-        agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
-        agent_env_msg, agent_environment_dialogue = agent_environment_dialogues.create(
-            counterparty=environment_addr,
-            performative=AgentEnvironmentMessage.Performative.REGISTER,
-            agent_name=self.context.agent_name,## do we have a variable for the agent name? what is its use?
-        )
-        agent_environment_dialogue = cast(AgentEnvironmentDialogue, agent_environment_dialogue)
-        self.context.outbox.put_message(message=agent_env_msg)
-        self.context.behaviours.env_search.is_active = False
-        self.context.behaviours.env_search.environmentFound = True##
         
 class EnvironmentMessageHandler(Handler):
-    """This class handles oef messages, from the environment."""
+    """This class handles messages from the environment."""
 
     SUPPORTED_PROTOCOL = AgentEnvironmentMessage.protocol_id
 
@@ -219,10 +69,6 @@ class EnvironmentMessageHandler(Handler):
         self.context.logger.debug(
             "handling environment response. performative={}".format(agent_env_msg.performative)
         )
-        """if agent_env_msg.sender != environment.expected_controller_addr:
-            raise ValueError(
-                "The sender of the message is not the environment agent we registered with."
-            )"""
 
         if agent_env_msg.performative == AgentEnvironmentMessage.Performative.TICK:
             self._on_tick(agent_env_msg, agent_environment_dialogue)

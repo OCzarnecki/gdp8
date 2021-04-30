@@ -25,11 +25,6 @@ from aea.configurations.base import PublicId
 
 from aea.protocols.base import Message
 from aea.skills.base import Handler
-from packages.fetchai.protocols.oef_search.message import OefSearchMessage##
-from packages.gdp8.skills.env_action_each_turn.dialogues import (
-    OefSearchDialogue,
-    OefSearchDialogues,
-)
 
 from packages.fetchai.protocols.default.message import DefaultMessage
 from packages.fetchai.protocols.default.dialogues import DefaultDialogues
@@ -233,86 +228,5 @@ class EnvironmentHandler(Handler):
         self.context.logger.warning(
             "cannot handle agent_environment message of performative={} in dialogue={}.".format(
                 agent_env_msg.performative, agent_environment_dialogue
-            )
-        )
-
-
-class OefSearchHandler(Handler):
-    """Handle the message exchange with the OEF search node, which is not suppose to send messages to the environment."""
-
-    SUPPORTED_PROTOCOL = OefSearchMessage.protocol_id
-
-    def setup(self) -> None:
-        """
-        Implement the handler setup.
-        :return: None
-        """
-
-    def handle(self, message: Message) -> None:
-        """
-        Implement the reaction to a message.
-
-        :param message: the message
-        :return: None
-        """
-        oef_search_msg = cast(OefSearchMessage, message)
-
-        # recover dialogue
-        oef_search_dialogues = cast(
-            OefSearchDialogues, self.context.oef_search_dialogues
-        )
-        oef_search_dialogue = cast(
-            Optional[OefSearchDialogue], oef_search_dialogues.update(oef_search_msg)
-        )
-        if oef_search_dialogue is None:
-            self._handle_unidentified_dialogue(oef_search_msg)
-            return
-
-        # handle message
-        if oef_search_msg.performative is OefSearchMessage.Performative.OEF_ERROR:
-            self._handle_error(oef_search_msg, oef_search_dialogue)
-        else:
-            self._handle_invalid(oef_search_msg, oef_search_dialogue)
-
-    def teardown(self) -> None:
-        """
-        Implement the handler teardown.
-        :return: None
-        """
-
-    def _handle_unidentified_dialogue(self, oef_search_msg: OefSearchMessage) -> None:
-        """
-        Handle an unidentified dialogue.
-        :param msg: the message
-        """
-        self.context.logger.info(
-            "received invalid oef_search message={}, unidentified dialogue.".format(
-                oef_search_msg
-            )
-        )
-
-    def _handle_error(self, oef_search_msg: OefSearchMessage, oef_search_dialogue: OefSearchDialogue) -> None:
-        """
-        Handle an oef search message.
-        :param oef_search_msg: the oef search message
-        :param oef_search_dialogue: the dialogue
-        :return: None
-        """
-        self.context.logger.info(
-            "received oef_search error message={} in dialogue={}.".format(
-                oef_search_msg, oef_search_dialogue
-            )
-        )
-
-    def _handle_invalid(self, oef_search_msg: OefSearchMessage, oef_search_dialogue: OefSearchDialogue) -> None:
-        """
-        Handle an oef search message.
-        :param oef_search_msg: the oef search message
-        :param oef_search_dialogue: the dialogue
-        :return: None
-        """
-        self.context.logger.warning(
-            "cannot handle oef_search message of performative={} in dialogue={}.".format(
-                oef_search_msg.performative, oef_search_dialogue,
             )
         )

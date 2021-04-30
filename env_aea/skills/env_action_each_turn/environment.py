@@ -44,7 +44,6 @@ class Phase(Enum):
     """This class defines the phases of the simulation."""
 
     PRE_SIMULATION = "pre_simulation"
-    SIMULATION_REGISTRATION = "simulation_registration"
     START_NEXT_SIMULATION_TURN = "start_next_simulation_turn"
     COLLECTING_AGENTS_REPLY = "collecting_agents_reply"
     AGENTS_REPLY_RECEIVED = "agents_reply_received"

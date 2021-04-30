@@ -23,12 +23,6 @@
 from aea.skills.behaviours import TickerBehaviour
 from typing import Any, Optional, cast
 
-from packages.fetchai.protocols.oef_search.message import OefSearchMessage
-from packages.gdp8.skills.env_action_each_turn.dialogues import (
-    OefSearchDialogues,
-)
-
-
 from packages.gdp8.skills.env_action_each_turn.environment import Environment, Phase
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
@@ -65,22 +59,13 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         if (
             environment.phase.value == Phase.PRE_SIMULATION.value
         ):
-            environment.phase = Phase.SIMULATION_REGISTRATION
-            self._register_env()
-            self.context.logger.info(
-                "Environment open for registration" ##until: {}".format(parameters.start_time)
-            )
-        elif (
-            environment.phase.value == Phase.SIMULATION_REGISTRATION.value
-        ):
             # should have a list of all agents and their address at the end of this phase
             if environment.registration.nb_agents < environment.nb_agents:######## WHERE IS THE NUMBER OF AGENT THAT WE WANT STORED ?
                 #wait
                 return
-            ##elif registration delay expired : cancel simulation
             else:
                 ##environment.create()## do we need to generate a simulation ? 
-                self._unregister_env()
+                #self._unregister_env()
                 # tell the env that the simulation starts?
                 environment.phase = Phase.START_SIMULATION
         elif (
@@ -136,36 +121,6 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         """
         raise NotImplementedError
 
-
-    def _register_env(self) -> None:
-        """
-        Register on the OEF as an Environment agent.
-        :return: None.
-        """
-        oef_search_dialogues = cast(
-            OefSearchDialogues, self.context.oef_search_dialogues
-        )
-        oef_search_msg, _ = oef_search_dialogues.create(
-            counterparty=self.context.search_service_address,
-            performative=OefSearchMessage.Performative.REGISTER_SERVICE,
-        )
-        self.context.outbox.put_message(message=oef_search_msg)
-        self.context.logger.info("registering Environment model on SOEF.")
-        
-    def _unregister_env(self) -> None:
-        """
-        Unregister from the OEF as an environment agent.
-        :return: None.
-        """
-        oef_search_dialogues = cast(
-            OefSearchDialogues, self.context.oef_search_dialogues
-        )
-        oef_search_msg, _ = oef_search_dialogues.create(
-            counterparty=self.context.search_service_address,
-            performative=OefSearchMessage.Performative.UNREGISTER_SERVICE,
-        )
-        self.context.outbox.put_message(message=oef_search_msg)
-        self.context.logger.info("unregistering Environment model from SOEF.")
 
     def _cancel_simulation(self, environment: Environment) -> None:
         """Notify agents that the simulation is cancelled."""
