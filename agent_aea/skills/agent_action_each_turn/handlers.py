@@ -24,6 +24,10 @@ from aea.configurations.base import PublicId
 from aea.protocols.base import Message
 from aea.skills.base import Handler
 from packages.fetchai.protocols.oef_search.message import OefSearchMessage
+from packages.gdp8.skills.agent_action_each_turn.dialogues import (
+    OefSearchDialogue,
+    OefSearchDialogues,
+)
 from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
 from packages.gdp8.protocols.agent_agent.dialogues import AgentAgentDialogue, AgentAgentDialogues
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage

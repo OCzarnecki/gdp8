@@ -11,8 +11,8 @@ fingerprint:
   __init__.py: QmW2ruHq4t1ivCWRGF3BDZjHi4sH1ykoYjz1hExRfkWQmL
   behaviours.py: QmTvzyyzB3j7k43dynYjSCQt28Jkb3bJKoegYtJtSHmYMV
   dialogues.py: QmTT9dvFhWt6qvxjwBfMFDTrgEtgWbvgANYafyRg2BXwcR
-  handlers.py: QmfZsWVZtcw2iFBDjy7CiZtCxhK2Nw3hxf6DXaHG14ZNBu
-  strategy.py: Qme5FeHHqwTzDH5AxdnSZrqPWxP6nPxXJudqaXB6x3FkVc
+  handlers.py: QmfHkWfj1kR3m9yaum7dwALVD2u4eYG7wgNozcTcBTwEaD
+  strategy.py: QmfRBV8FAc7NozD8GU4fhg5fCvzJWHcjDxhwcEngnHedDV
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
@@ -38,15 +38,9 @@ handlers:
     args: {}
     class_name: OefSearchHandler
 models:
-  agent_agent_dialogues:
+  oef_search_dialogues:
     args: {}
-    class_name: AgentAgentDialogues
-  agent_env_dialogues:
-    args: {}
-    class_name: AgentEnvDialogues
-  default_dialogues:
-    args: {}
-    class_name: DefaultDialogues
+    class_name: OefSearchDialogues
   strategy:
     args: {}
     class_name: BasicStrategy
