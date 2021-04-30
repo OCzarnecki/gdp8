@@ -1,0 +1,54 @@
+name: agent_action_each_turn
+author: gdp8
+version: 0.1.0
+type: skill
+description: This skill recieves info from environment agent every turn, make a decision
+  by communicating with other agent and makes a decision to return to an environment
+  agent.
+license: Apache-2.0
+aea_version: '>=1.0.0'
+fingerprint:
+  __init__.py: QmW2ruHq4t1ivCWRGF3BDZjHi4sH1ykoYjz1hExRfkWQmL
+  behaviours.py: QmTvzyyzB3j7k43dynYjSCQt28Jkb3bJKoegYtJtSHmYMV
+  dialogues.py: QmTT9dvFhWt6qvxjwBfMFDTrgEtgWbvgANYafyRg2BXwcR
+  handlers.py: QmfZsWVZtcw2iFBDjy7CiZtCxhK2Nw3hxf6DXaHG14ZNBu
+  strategy.py: Qme5FeHHqwTzDH5AxdnSZrqPWxP6nPxXJudqaXB6x3FkVc
+fingerprint_ignore_patterns: []
+connections: []
+contracts: []
+protocols: []
+skills: []
+behaviours:
+  agent_behaviour:
+    args:
+      tick_interval: 2
+    class_name: AgentLogicBehaviour
+  env_search:
+    args:
+      tick_interval: 5
+    class_name: EnvSearchBehaviour
+handlers:
+  agent_message_handler:
+    args: {}
+    class_name: AgentMessageHandler
+  environment_message_handler:
+    args: {}
+    class_name: EnvironmentMessageHandler
+  oef:
+    args: {}
+    class_name: OefSearchHandler
+models:
+  agent_agent_dialogues:
+    args: {}
+    class_name: AgentAgentDialogues
+  agent_env_dialogues:
+    args: {}
+    class_name: AgentEnvDialogues
+  default_dialogues:
+    args: {}
+    class_name: DefaultDialogues
+  strategy:
+    args: {}
+    class_name: BasicStrategy
+dependencies: {}
+is_abstract: false
