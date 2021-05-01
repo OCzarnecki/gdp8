@@ -17,4 +17,9 @@
 #
 # ------------------------------------------------------------------------------
 
-"""Implementation of the libp2p client connection."""
+"""This module contains the implementation of the default skill."""
+
+from aea.configurations.base import PublicId
+
+
+PUBLIC_ID = PublicId.from_str("gdp8/agent_action_each_turn:0.1.0")
