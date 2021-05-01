@@ -31,7 +31,7 @@ from aea.helpers.search.generic import (
     AGENT_SET_SERVICE_MODEL,
 )
 # Causes syntax error
-#from aea.helpers.search.models import 
+# from aea.helpers.search.models import
 
 from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMapping
 
@@ -41,14 +41,17 @@ from typing import Any, Dict, List, Optional, cast
 
 import random
 
+
 class Phase(Enum):
     """This class defines the phases of the simulation."""
 
     PRE_SIMULATION = "pre_simulation"
+    START_SIMULATION = "start_simulation"
     START_NEXT_SIMULATION_TURN = "start_next_simulation_turn"
     COLLECTING_AGENTS_REPLY = "collecting_agents_reply"
     AGENTS_REPLY_RECEIVED = "agents_reply_received"
     SIMULATION_CANCELLED = "simulation_cancelled"
+
 
 class CommandType(Enum):
     """ Enum of possible types of command """
@@ -56,29 +59,36 @@ class CommandType(Enum):
     REQUEST_WATER = auto()
     IDLE = auto()
 
+
 class Command:
     """ Abstract superclass of all command objects"""
+
     def __init__(self, command_type):
         self.command_type = command_type
+
 
 class OfferWaterCommand(Command):
     def __init__(self, quantity):
         super().__init__(CommandType.OFFER_WATER)
         self.quantity = quantity
 
+
 class ReceiveWaterCommand(Command):
     def __init__(self, quantity):
         super().__init__(CommandType.REQUEST_WATER)
         self.quantity = quantity
 
+
 class IdleCommand(Command):
     def __init__(self):
         super().__init__(CommandType.IDLE)
+
 
 class Agent:
     """ Representation of the properties an agent has in the
         environment. Does not include framework properties like
         addresses etc. """
+
     def __init__(self, agent_id, initial_water, pos_x, pos_y):
         self.agent_id = agent_id
         self.water = initial_water
@@ -91,14 +101,16 @@ class Agent:
             turn. Overwrites previous commands. Must be one of
             the command objects defined above, deriving Command. 
         """
-        if command == None:
+        if command is None:
             command = IdleCommand()
         self.next_command = command
 
-class SimulationState():
+
+class SimulationState:
     """ Captures the entire state of the simulation at a given
         time, and implements methods for querying and modifying
         it. """
+
     def __init__(self,
                  size_x,
                  size_y,
@@ -108,8 +120,8 @@ class SimulationState():
                  initial_agent_water,
                  agent_mining_speed,
                  agent_max_capacity):
-        self.size_x = size_x    # Width of cell grid
-        self.size_y = size_y    # Height of cell grid
+        self.size_x = size_x  # Width of cell grid
+        self.size_y = size_y  # Height of cell grid
         self._initial_oasis_water = initial_oasis_water
         self._agent_mining_speed = agent_mining_speed
         self._agent_max_capacity = agent_max_capacity
@@ -147,7 +159,7 @@ class SimulationState():
         self._transfer_water()
         for agent in self._agents_by_id:
             # Charge water cost
-            agent.water = max(agent.water - 1, 0)   # an agent could already have given all water away :(
+            agent.water = max(agent.water - 1, 0)  # an agent could already have given all water away :(
             # Clear command
             agent.queue_command(None)
             if (agent.water <= 0
@@ -158,32 +170,32 @@ class SimulationState():
         """ Returns an object with the simulation configuration, for
             creating the log for visualisation. """
         return {
-                    "x_size": self.size_x,
-                    "y_size": self.size_y,
-                    "max_water_capacity_cell": self._initial_oasis_water,
-                    "max_water_capacity_agent": self._agent_max_capacity
-                }
-    
+            "x_size": self.size_x,
+            "y_size": self.size_y,
+            "max_water_capacity_cell": self._initial_oasis_water,
+            "max_water_capacity_agent": self._agent_max_capacity
+        }
+
     def serialize_current(self):
         """ Returns the entire current simulation state, in the
             format for visualisation. """
         return {
-                    "tick_number": self.turn_number,
-                    "agents": [
-                        {
-                            "x": agent.pos_x,
-                            "y": agent.pos_y,
-                            "inventory": agent.water,
-                            "id": agent.agent_id
-                        } for agent in self.get_agents_alive()],
-                    "cells": [
-                        {
-                            "x": x,
-                            "y": y,
-                            "water": self.get_cell_water(x, y)
-                        } for x in range(self.size_x)
-                          for y in range(self.size_y)]
-                }
+            "tick_number": self.turn_number,
+            "agents": [
+                {
+                    "x": agent.pos_x,
+                    "y": agent.pos_y,
+                    "inventory": agent.water,
+                    "id": agent.agent_id
+                } for agent in self.get_agents_alive()],
+            "cells": [
+                {
+                    "x": x,
+                    "y": y,
+                    "water": self.get_cell_water(x, y)
+                } for x in range(self.size_x)
+                for y in range(self.size_y)]
+        }
 
     def _transfer_water(self):
         """ Update the agents' water inventory by one turn. This
@@ -211,7 +223,7 @@ class SimulationState():
         # made. Make sure that the transfer satisfies all the
         # constraints (amounts offered, amounts requested, max
         # capacity, capacity that can be transfered).
-        
+
         # Init data structures
         for x in range(self.size_x):
             for y in range(self.size_y):
@@ -223,7 +235,7 @@ class SimulationState():
                         self._needs[x][y] = agent.next_command.quantity
                     elif agent.next_command.command_type == CommandType.OFFER_WATER:
                         self._needs[x][y] = -1 * min(agent.next_command.quantity,
-                                                agent.water + self._minable_at(x, y))
+                                                     agent.water + self._minable_at(x, y))
         # Compute transfers
         agent_positions = [(agent.pos_x, agent.pos_y) for agent in self.get_agents_alive()]
         for (x, y) in agent_positions:
@@ -231,16 +243,16 @@ class SimulationState():
             if self._needs[x][y] < 0:
                 agent = self.get_agent_by_pos(x, y)
                 neighbour_coords = [(x + dx, y + dy)
-                    for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
-                    if 0 <= x + dx < self.size_x
-                    and 0 <= y + dy < self.size_y]
+                                    for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
+                                    if 0 <= x + dx < self.size_x
+                                    and 0 <= y + dy < self.size_y]
                 for (dst_x, dst_y) in neighbour_coords:
                     dst_agent = self.get_agent_by_pos(dst_x, dst_y)
                     if dst_agent != None and self._needs[dst_x][dst_y] > 0:
-                        transfer_amount = min(self._agent_max_capacity 
-                                                - dst_agent.water 
-                                                - self._minable_at(dst_x, dst_y) 
-                                                + self._transfers[dst_x][dst_y],
+                        transfer_amount = min(self._agent_max_capacity
+                                              - dst_agent.water
+                                              - self._minable_at(dst_x, dst_y)
+                                              + self._transfers[dst_x][dst_y],
                                               self._needs[dst_x][dst_y],
                                               -1 * self._needs[x][y],
                                               agent.water + self._minable_at(x, y) + self._transfers[x][y])
@@ -293,6 +305,7 @@ class SimulationState():
         possible_coords = list(product(range(self.size_x), range(self.size_y)))
         return random.sample(possible_coords, count)
 
+
 class Registration:
     """Class managing the registration of the simulation."""
 
@@ -316,7 +329,7 @@ class Registration:
         :param agent_addr: the Address of the agent
         :return: None
         """
-        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id) ##??? give it a new id
+        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id)  ##??? give it a new id
 
     def unregister_agent(self, agent_addr: Address) -> None:
         """
@@ -326,21 +339,23 @@ class Registration:
         """
         self._agent_addr_to_id.pop(agent_addr)
 
-class Environment(Model): 
+
+class Environment(Model):
     """Model of the environment."""
+
     def __init__(self, **kwargs: Any) -> None:
         self._phase = Phase.PRE_SIMULATION
         self._registration = Registration()
         self.state = SimulationState(
-                kwargs['size_x'],
-                kwargs['size_y'],
-                kwargs['initial_oasis_water'],
-                kwargs['oasis_count'],
-                kwargs['agent_count'],
-                kwargs['initial_agent_water'],
-                kwargs['agent_mining_speed'],
-                kwargs['agent_max_capacity']
-            )
+            kwargs['size_x'],
+            kwargs['size_y'],
+            kwargs['initial_oasis_water'],
+            kwargs['oasis_count'],
+            kwargs['agent_count'],
+            kwargs['initial_agent_water'],
+            kwargs['agent_mining_speed'],
+            kwargs['agent_max_capacity']
+        )
         self._agents_replied = set()
         super().__init__(**kwargs)
 
@@ -394,30 +409,29 @@ class Environment(Model):
         # TODO rename method to 'neighbours'
         agent = self.state.get_agent_by_id(self.address_to_id(agent_address))
         neighbour_coords = [(agent.pos_x + x, agent.pos_y + y)
-            for (x, y) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
-            if 0 <= agent.pos_x + x < self.state.size_x
-            and 0 <= agent.pos_y + y < self.state.size_y]
+                            for (x, y) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
+                            if 0 <= agent.pos_x + x < self.state.size_x
+                            and 0 <= agent.pos_y + y < self.state.size_y]
         possible_agents = [self.state.get_agent_by_pos(x, y) for (x, y) in neighbour_coords]
-        return [self.id_to_address(agent.agent_id) for agent in possible_agents if agent != None]
+        return [self.id_to_address(agent.agent_id) for agent in possible_agents if agent is not None]
 
     @property
     def agents_alive(self) -> Dict[str, str]:
         """Get a list of agents still alive in the simulation."""
         return [self.id_to_address(agent.agent_id) for agent in self.state.get_agents_alive()]
-        #-> I actually prefer if we could return a similar dict as agent_addr_to_id
-
+        # -> I actually prefer if we could return a similar dict as agent_addr_to_id
 
     @property
     def agents_reply_received(self) -> bool:
         """Get true if the env received a reply from all agents still alive this turn"""
-        return len(self._agents_replied) == 42 # TODO figure out where to get this
+        return len(self._agents_replied) == 42  # TODO figure out where to get this
 
     def remove_dead_agents(self) -> None:
         """Removes all agents who haven't replied this turn from the list of agents alive."""
         # Nothing to do, currently.
         pass
 
-    def save_action(self, agent_adress, action, water_content) -> None:
+    def save_action(self, agent_address, action, water_content) -> None:
         """Saves the agent's action for this turn."""
         agent_id = self.address_to_id(agent_address)
         agent = self.state.get_agent_by_id(agent_id)

@@ -31,6 +31,7 @@ from packages.gdp8.skills.env_action_each_turn.environment import Environment, P
 from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMapping
 from packages.gdp8.skills.env_action_each_turn.replay_logger import ReplayLogger
 
+
 class EnvironmentLogicBehaviour(TickerBehaviour):
     """Each turn of the simulation, this behaviour:
         - collects data from the environment for tick messages
@@ -40,7 +41,7 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
 
     def __init__(self, **kwargs: Any):
         """Instantiate the behaviour."""
-        super().__init__(**kwargs)##
+        super().__init__(**kwargs)  ##
         self._mapping_path = kwargs['mapping_path']
 
     def setup(self) -> None:
@@ -49,15 +50,14 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         :return: None
         """
         self._replay_logger = ReplayLogger()
-        
+
         environment = self.context.environment
         mapping = AddressMapping(
-                self._mapping_path,
-                environment.nb_agents
-            )
+            self._mapping_path,
+            environment.nb_agents
+        )
         mapping.load()
         environment.set_mapping(mapping)
-
 
     def act(self) -> None:
         """
@@ -69,18 +69,16 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         environment = cast(Environment, self.context.environment)
 
         if (
-            environment.phase.value == Phase.PRE_SIMULATION.value
+                environment.phase.value == Phase.PRE_SIMULATION.value
         ):
             # should have a list of all agents and their address at the end of this phase
-                ##environment.create()## do we need to generate a simulation ? 
-                #self._unregister_env()
-                # tell the env that the simulation starts?
+            ##environment.create()## do we need to generate a simulation ?
+            # self._unregister_env()
+            # tell the env that the simulation starts?
             self.context.logger.info("will start simulation")
-
-
             environment.phase = Phase.START_SIMULATION
         elif (
-            environment.phase.value == Phase.START_SIMULATION.value
+                environment.phase.value == Phase.START_SIMULATION.value
         ):
             # Set up simulation logging
             self._replay_logger.initialize(environment.state)
@@ -89,26 +87,26 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
             environment.phase = Phase.START_NEXT_SIMULATION_TURN
 
         elif (
-            environment.phase.value == Phase.START_NEXT_SIMULATION_TURN.value
+                environment.phase.value == Phase.START_NEXT_SIMULATION_TURN.value
         ):
             environment.phase = Phase.COLLECTING_AGENTS_REPLY
             self._send_tick_messages(environment)
 
         elif (
-            environment.phase.value == Phase.COLLECTING_AGENTS_REPLY.value
+                environment.phase.value == Phase.COLLECTING_AGENTS_REPLY.value
         ):
-            if environment.agents_reply_received:  
+            if environment.agents_reply_received:
                 environment.phase = Phase.AGENTS_REPLY_RECEIVED
-            #elif after_some_time_contraint:
-            #   environment.remove_dead_agents() # agents are considered dead if they haven't replied after a delay
-            #   environment.phase = Phase.AGENTS_REPLY_RECEIVED
+                # elif after_some_time_contraint:
+                #   environment.remove_dead_agents() # agents are considered dead if they haven't replied after a delay
+                #   environment.phase = Phase.AGENTS_REPLY_RECEIVED
 
                 environment.phase = Phase.START_NEXT_SIMULATION_TURN
                 environment.start_next_simulation_turn()
                 self._replay_logger.log_state(environment.state)
 
         elif (
-            environment.phase.value == Phase.SIMULATION_CANCELLED.value
+                environment.phase.value == Phase.SIMULATION_CANCELLED.value
         ):
             ## the simulation has been canceled
             environment.end_simulation()
@@ -118,11 +116,10 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
             ## end simulation
             # -> Who does the above ? 
             return None
-        else: 
+        else:
             ##there has been an issue, the env should be in one of those phases
             ## return phase of env
             return None
-        
 
     def teardown(self) -> None:
         """
@@ -130,15 +127,13 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
 
         :return: None
         """
-        raise NotImplementedError
-
 
     def _cancel_simulation(self, environment: Environment) -> None:
         """Notify agents that the simulation is cancelled."""
         self.context.logger.info("notifying agents that the simulation is cancelled.")
 
         agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
-        for agent_address in environment.registration.agent_addr_to_name.keys():##
+        for agent_address in environment.registration.agent_addr_to_name.keys():  ##
             _agent_environment_dialogues = agent_environment_dialogues.get_dialogues_with_counterparty(
                 agent_address
             )
@@ -153,20 +148,18 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
             )
             self.context.outbox.put_message(message=env_msg)
 
-        if (environment.phase == Phase.START_NEXT_SIMULATION_TURN 
-            or environment.phase == Phase.COLLECTING_AGENTS_REPLY 
-            or environment.phase == Phase.AGENTS_REPLY_RECEIVED):##indentation error possible
-            self.context.is_active = False ## when was it set to true ?
-
+        if (environment.phase == Phase.START_NEXT_SIMULATION_TURN
+                or environment.phase == Phase.COLLECTING_AGENTS_REPLY
+                or environment.phase == Phase.AGENTS_REPLY_RECEIVED):  ##indentation error possible
+            self.context.is_active = False  ## when was it set to true ?
 
     def _send_tick_messages(self, environment: Environment) -> None:
         """Collects data from the env and sends tick messages to all agents alive for current turn of simulation."""
 
         turn_number = environment.turn_number
         agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
-        
-        for agent_address in environment.agents_alive:
 
+        for agent_address in environment.agents_alive:
             tile_water = environment.water_content(agent_address)
             agent_water = environment.agent_water(agent_address)
             neighbours_id = environment.neighbour_ids(agent_address)
@@ -180,13 +173,13 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
             last_msg = tac_dialogue.last_message
             if last_msg is None:
                 raise ValueError("Error when retrieving last message.")
-            tac_msg = tac_dialogue.reply("""## we can do something similar as this if the dialogue below doesn't work
+            tac_msg = tac_dialogue.reply("""  ## we can do something similar as this if the dialogue below doesn't work
 
             tick_msg = agent_environment_dialogues.create(
-                #dialogue_reference=???,
-                #message_id=???,
-                #target_message=???,
-                counterparty=agent_address,##
+                # dialogue_reference=???,
+                # message_id=???,
+                # target_message=???,
+                counterparty=agent_address,  ##
                 performative=AgentEnvironmentMessage.Performative.TICK,
                 tile_water=tile_water,
                 turn_number=turn_number,
