@@ -170,7 +170,7 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
 
             tile_water = environment.water_content(agent_address)        
             self.context.logger.info("tile_water '{}'".format(tile_water))
-            agent_water = environment.agent_water(agent_address)
+            agent_water = environment.agent_water(agent_address).water
             self.context.logger.info("agent_water '{}'".format(agent_water))
             neighbour_ids = environment.neighbour_ids(agent_address)
             self.context.logger.info("neighbours id: '{}'".format(neighbour_ids))
