@@ -155,6 +155,7 @@ class BasicStrategy(Model):
             performative=AgentEnvironmentMessage.Performative.ACTION,
             target_message=self.current_env_message,
             command=decision,
+            turn_number=self.round_no
         )
         self.context.outbox.put_message(message=return_agent_env_message)
         self.is_round_done = True
