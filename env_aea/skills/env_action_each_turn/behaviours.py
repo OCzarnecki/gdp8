@@ -155,11 +155,11 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
 
     def _send_tick_messages(self, environment: Environment) -> None:
         """Collects data from the env and sends tick messages to all agents alive for current turn of simulation."""
-        if(environment.agents_alive != [None]):
+        if environment.agents_alive != [None]:
             self._send_to_all_agents(environment)
-        else: 
-            self.context.logger.info("Tick messages not sent, list of agents alive is: '{}'".format(environment.agents_alive))
-
+        else:
+            self.context.logger.info(
+                "Tick messages not sent, list of agents alive is: '{}'".format(environment.agents_alive))
 
     def _send_to_all_agents(self, environment):
         turn_number = environment.turn_number
@@ -168,9 +168,9 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         for agent_address in environment.agents_alive:
             self.context.logger.info("Sending tick message to: '{}'".format(agent_address))
 
-            tile_water = environment.water_content(agent_address)        
+            tile_water = environment.water_content(agent_address)
             self.context.logger.info("tile_water '{}'".format(tile_water))
-            agent_water = environment.agent_water(agent_address).water
+            agent_water = environment.agent_water(agent_address)
             self.context.logger.info("agent_water '{}'".format(agent_water))
             neighbour_ids = environment.neighbour_ids(agent_address)
             self.context.logger.info("neighbours id: '{}'".format(neighbour_ids))
@@ -187,17 +187,16 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
                 raise ValueError("Error when retrieving last message.")
             tac_msg = tac_dialogue.reply("""  ## we can do something similar as this if the dialogue below doesn't work
 
-            tick_msg, tick_dialogue = agent_environment_dialogues.create(
+            tick_msg, _ = agent_environment_dialogues.create(
                 # dialogue_reference=???,
                 # message_id=???,
                 # target_message=???,
-                counterparty=agent_address,  ##
+                counterparty=agent_address,
                 performative=AgentEnvironmentMessage.Performative.TICK,
-                #agent_name?
+                # agent_name?
                 tile_water=tile_water,
                 turn_number=turn_number,
                 agent_water=agent_water,
                 neighbour_ids=neighbour_ids,
             )
             self.context.outbox.put_message(message=tick_msg)
-        

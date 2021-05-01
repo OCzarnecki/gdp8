@@ -358,7 +358,6 @@ class Environment(Model):
         )
         self._agents_replied = set()
         super().__init__(**kwargs)
-    
 
     def set_mapping(self, mapping: AddressMapping) -> None:
         """Set the maping by which id<->address resolution
@@ -400,7 +399,7 @@ class Environment(Model):
     def agent_water(self, agent_address) -> int:
         """Get the amount of water the agent has in its inventory."""
         agent_id = self.address_to_id(agent_address)
-        return self.state.get_agent_by_id(agent_id)
+        return self.state.get_agent_by_id(agent_id).water
 
     def neighbour_ids(self, agent_address):
         """Get the list of addresses of the agents neighbours."""
@@ -411,7 +410,7 @@ class Environment(Model):
                             if 0 <= agent.pos_x + x < self.state.size_x
                             and 0 <= agent.pos_y + y < self.state.size_y]
         possible_agents = [self.state.get_agent_by_pos(x, y) for (x, y) in neighbour_coords]
-        return [self.id_to_address(agent.agent_id) for agent in possible_agents if agent is not None]
+        return frozenset([self.id_to_address(agent.agent_id) for agent in possible_agents if agent is not None])
 
     @property
     def agents_alive(self) -> Dict[str, str]:
