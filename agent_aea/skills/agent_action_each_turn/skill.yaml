@@ -10,6 +10,7 @@ aea_version: '>=1.0.0'
 fingerprint:
   __init__.py: QmW2ruHq4t1ivCWRGF3BDZjHi4sH1ykoYjz1hExRfkWQmL
   behaviours.py: QmV8Sm35VbyRSbrxwsguuorT15nFzP67bV4G57NnstU5C8
+  dialogues.py: QmWXWb5d2TzX2eszTXbr4j4RdeB8wKUNByKgzqNA1sscRA
   handlers.py: QmXg3FLTNMfVkhLgNt7ezRw9shEtoX4ZSQNsPC3r58HE7U
   strategy.py: QmfRBV8FAc7NozD8GU4fhg5fCvzJWHcjDxhwcEngnHedDV
 fingerprint_ignore_patterns: []
@@ -30,6 +31,12 @@ handlers:
     args: {}
     class_name: EnvironmentMessageHandler
 models:
+  agent_agent_dialogues:
+    args: {}
+    class_name: AgentAgentDialogues
+  agent_environment_dialogues:
+    args: {}
+    class_name: AgentEnvironmentDialogues
   strategy:
     args: {}
     class_name: BasicStrategy
