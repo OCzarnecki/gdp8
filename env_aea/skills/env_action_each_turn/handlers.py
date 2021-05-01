@@ -217,7 +217,7 @@ class EnvironmentHandler(Handler):
         #     turn_number' content is not set.
         #assert(agent_env_msg.turn_number == self.context.environment.turn_number)
 
-        self.context.environment.save_action(agent_environment_dialogue.sender, agent_env_msg.action, agent_env_msg.water_content)
+        self.context.environment.save_action(agent_env_msg.sender, agent_env_msg.command)
         
     def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """

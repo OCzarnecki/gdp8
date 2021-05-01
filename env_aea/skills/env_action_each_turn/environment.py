@@ -428,7 +428,7 @@ class Environment(Model):
         # Nothing to do, currently.
         pass
 
-    def save_action(self, agent_address, action, water_content) -> None:
+    def save_action(self, agent_address, action) -> None:
         """Saves the agent's action for this turn."""
         agent_id = self.address_to_id(agent_address)
         agent = self.state.get_agent_by_id(agent_id)
@@ -455,7 +455,7 @@ class Environment(Model):
                     self.context.logger.warning("could not parse action string {}".format(action))
         else:
             self.context.logger.warning("could not parse action string {}".format(action))
-        agent.queue_command(action, command)
+        agent.queue_command(command)
 
     def start_next_simulation_turn(self) -> None:
         """Starts the next simulation turn."""
