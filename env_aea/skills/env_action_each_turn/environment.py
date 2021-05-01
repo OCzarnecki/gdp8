@@ -33,6 +33,7 @@ from aea.helpers.search.generic import (
 # Causes syntax error
 #from aea.helpers.search.models import 
 
+from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMapping
 
 from enum import Enum, auto
 from itertools import product
@@ -344,7 +345,10 @@ class Environment(Model):
         self._agents_replied = set()
         super().__init__(**kwargs)
 
-        # TODO ID <-> addres/framework_agent_object assignment
+    def set_mapping(self, mapping: AddressMapping) -> None:
+        """Set the maping by which id<->address resolution
+           will be done."""
+        self._mapping = mapping
 
     @property
     def nb_agents(self) -> int:
@@ -457,7 +461,7 @@ class Environment(Model):
         pass
 
     def address_to_id(self, agent_address):
-        raise NotImplementedError
+        return self._mapping.get_id_from_address(agent_address)
 
     def id_to_address(self, agent_id):
-        raise NotImplementedError
+        return self._mapping.get_address_from_id(agent_id)

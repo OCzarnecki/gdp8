@@ -1,6 +1,6 @@
 import json
 
-class AddresssMapping:
+class AddressMapping:
     """Provides id<->address mapping, based on a static mapping
        file."""
 
