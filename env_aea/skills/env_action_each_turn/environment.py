@@ -472,7 +472,6 @@ class Environment(Model):
         pass
 
     def address_to_id(self, agent_address):
-        print("we are looking for the id of the agent located at: " + str(agent_address))
         return self._mapping.get_id_from_address(agent_address)
 
     def id_to_address(self, agent_id):

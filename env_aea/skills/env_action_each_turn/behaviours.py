@@ -168,9 +168,13 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         for agent_address in environment.agents_alive:
             self.context.logger.info("Sending tick message to: '{}'".format(agent_address))
 
-            tile_water = environment.water_content(agent_address)
+            tile_water = environment.water_content(agent_address)        
+            self.context.logger.info("tile_water '{}'".format(tile_water))
             agent_water = environment.agent_water(agent_address)
-            neighbours_id = environment.neighbour_ids(agent_address)
+            self.context.logger.info("agent_water '{}'".format(agent_water))
+            neighbour_ids = environment.neighbour_ids(agent_address)
+            self.context.logger.info("neighbours id: '{}'".format(neighbour_ids))
+
             """
             _tac_dialogues = tac_dialogues.get_dialogues_with_counterparty(
                 agent_address
@@ -183,16 +187,17 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
                 raise ValueError("Error when retrieving last message.")
             tac_msg = tac_dialogue.reply("""  ## we can do something similar as this if the dialogue below doesn't work
 
-            tick_msg = agent_environment_dialogues.create(
+            tick_msg, tick_dialogue = agent_environment_dialogues.create(
                 # dialogue_reference=???,
                 # message_id=???,
                 # target_message=???,
                 counterparty=agent_address,  ##
                 performative=AgentEnvironmentMessage.Performative.TICK,
+                #agent_name?
                 tile_water=tile_water,
                 turn_number=turn_number,
                 agent_water=agent_water,
-                neighbours_id=neighbours_id,
+                neighbour_ids=neighbour_ids,
             )
             self.context.outbox.put_message(message=tick_msg)
         
