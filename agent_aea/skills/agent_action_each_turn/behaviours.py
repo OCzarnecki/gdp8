@@ -54,16 +54,16 @@ class AgentLogicBehaviour(TickerBehaviour):
 
         there_is_agent_asking_for_water_info = True
         while there_is_agent_asking_for_water_info:
-            there_is_agent_asking_for_water_info = strategy.deal_with_an_agent_asking_for_water_info
+            there_is_agent_asking_for_water_info = strategy.deal_with_an_agent_asking_for_water_info()
 
         if not strategy.is_round_done:
-            info_is_enough = strategy.enough_info_to_make_decision
+            info_is_enough = strategy.enough_info_to_make_decision()
             if info_is_enough:
                 strategy.make_decision_send_to_env()
             else:
                 asking_for_info = True
                 while asking_for_info:
-                    asking_for_info = strategy.potentially_ask_for_info
+                    asking_for_info = strategy.potentially_ask_for_info()
 
     def teardown(self) -> None:
         """

@@ -75,7 +75,7 @@ class EnvironmentHandler(Handler):
         elif agent_env_msg.performative == AgentEnvironmentMessage.Performative.UNREGISTER:
             self._on_unregister(agent_env_msg, agent_environment_dialogue)
         elif agent_env_msg.performative == AgentEnvironmentMessage.Performative.ACTION:
-            self._on_action(agent_env_msg, agent_environment_dialogue)
+            self._handle_valid_tick_reply(agent_env_msg, agent_environment_dialogue)
         else:
             self._handle_invalid(agent_env_msg, agent_environment_dialogue)
 
