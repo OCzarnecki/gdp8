@@ -20,76 +20,18 @@
 """This package contains a scaffold of a behaviour."""
 from typing import cast, Any
 
+from aea.common import Address
 from aea.skills.behaviours import TickerBehaviour
 from aea.helpers.search.models import Constraint, ConstraintType, Query
 
-
-from packages.fetchai.protocols.oef_search.message import OefSearchMessage
-
 from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
-
-DEFAULT_REGISTER_AND_SEARCH_INTERVAL = 5.0
-environmentFound = False
 
 DEFAULT_SEARCH_QUERY = {
     "search_key": "env",## is that the key of the environment ?
     "search_value": "v1", 
     "constraint_type": "==",
 }
-
-
-
-class EnvSearchBehaviour(TickerBehaviour):
-    """This class scaffolds a behaviour."""
-
-    def setup(self) -> None:
-        """
-        Implement the setup.
-        :return: None
-        """
-
-    def act(self) -> None:
-        """
-        Implement the act.
-        :return: None
-        """
-        if not environmentFound:
-            self._search_for_environment()
-
-    def teardown(self) -> None:
-        """
-        Implement the task teardown.
-        :return: None
-        """
-
-    def _search_for_environment(self) -> None:
-        """
-        Search for active environment (simulation controller).
-        We assume that the environment is registered as a service
-        (and with an attribute version = expected_version_id ## ??? do we really need to have that attribute ?)
-        :return: None
-        """
-        ## can add a filter: close to my service if there are too many results
-        service_key_filter = Constraint(
-           DEFAULT_SEARCH_QUERY["search_key"],
-            ConstraintType(
-                DEFAULT_SEARCH_QUERY["constraint_type"],
-                DEFAULT_SEARCH_QUERY["search_value"],
-            ),
-        )
-        query = Query([service_key_filter],)
-        oef_search_dialogues = cast(
-            OefSearchDialogues, self.context.oef_search_dialogues
-        )
-        oef_search_msg, _ = oef_search_dialogues.create(
-            counterparty=self.context.search_service_address,
-            performative=OefSearchMessage.Performative.SEARCH_SERVICES,
-            query=query,
-        )
-        self.context.outbox.put_message(message=oef_search_msg)
-        self.context.logger.info(
-            "searching for environment, search_id={}".format(oef_search_msg.dialogue_reference)
-        )
+environment_addr = None
 
 class AgentLogicBehaviour(TickerBehaviour):
     """Behaviour looks at if actions required in each tick:
@@ -98,13 +40,13 @@ class AgentLogicBehaviour(TickerBehaviour):
        is there enough info for making a decision? if so, do so,
        if not, might have to send message to ask for info"""
 
-    def setup(self) -> None:
+    def setup(self, **kwargs: Any) -> None:
         """
         Implement the setup.
 
         :return: None
         """
-        pass
+        #self.environment_addr = kwargs['environment_addr']
 
     def act(self) -> None:
 

@@ -289,7 +289,7 @@ class SimulationState:
     def _init_agents(self, agent_count, initial_agent_water):
         """ Initiate IDs and locations for agents. """
         # Distribute agents uniformly.
-        current_id = 1
+        current_id = 0
         self.agent_count = agent_count
         self._agents_by_id = []
         self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
@@ -358,7 +358,6 @@ class Environment(Model):
         )
         self._agents_replied = set()
         super().__init__(**kwargs)
-    
 
     def set_mapping(self, mapping: AddressMapping) -> None:
         """Set the maping by which id<->address resolution

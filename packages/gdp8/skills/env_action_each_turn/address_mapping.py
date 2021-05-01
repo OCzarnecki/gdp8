@@ -8,12 +8,6 @@ class AddressMapping:
         self._mapping_path = mapping_path
         self._agent_count = agent_count
 
-
-    def twoAgents(self):##to debug the agents
-        address = "fetch10fzlhpd36yd705vf426rxt2yk3kgp3vheqfkxc"
-        self._addresses[0] = address
-        self._address_to_id[address]= 0
-
     def load(self):
         with open(self._mapping_path, "r") as file:
             self.mapping = json.load(file)
@@ -30,4 +24,5 @@ class AddressMapping:
         return self._addresses[agent_id]
 
     def get_id_from_address(self, address):
+        print(address)
         return self._address_to_id[address]
