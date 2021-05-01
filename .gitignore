@@ -52,3 +52,6 @@ Thumbs.db
 bin/
 lib/
 pyvenv.cfg
+
+# Simulation log files
+logs/
