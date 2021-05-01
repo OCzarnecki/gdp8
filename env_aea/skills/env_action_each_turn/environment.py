@@ -212,9 +212,9 @@ class SimulationState:
         for agent in self.get_agents_alive(): 
             if agent.next_command.command_type == CommandType.MOVE:
                 if agent.next_command.direction == "up":
-                    self._try_moving(agent, agent.pos_x, agent.pos_y + 1)
-                elif agent.next_command.direction == "down":
                     self._try_moving(agent, agent.pos_x, agent.pos_y - 1)
+                elif agent.next_command.direction == "down":
+                    self._try_moving(agent, agent.pos_x, agent.pos_y + 1)
                 elif agent.next_command.direction == "left":
                     self._try_moving(agent, agent.pos_x - 1, agent.pos_y)
                 elif agent.next_command.direction == "right":
