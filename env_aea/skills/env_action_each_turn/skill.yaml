@@ -30,9 +30,9 @@ models:
   default_dialogues:
     args: {}
     class_name: DefaultDialogues
-  agent_environment_dialpgues:
+  agent_environment_dialogues:
     args: {}
-    class_name: AgentEnviornmentDialogues
+    class_name: AgentEnvironmentDialogues
   environment:
     args:
       agent_count: 1

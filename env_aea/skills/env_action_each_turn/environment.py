@@ -390,7 +390,6 @@ class Environment(Model):
         """Get the current turn number of the simulation."""
         return self.state.turn_number
 
-    @property
     def water_content(self, agent_address) -> int:
         """Get the water_content of the cell of the agent."""
         agent_id = self.address_to_id(agent_address)
