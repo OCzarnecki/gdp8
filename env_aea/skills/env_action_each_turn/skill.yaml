@@ -27,6 +27,12 @@ handlers:
     args: {}
     class_name: EnvironmentHandler
 models:
+  default_dialogues:
+    args: {}
+    class_name: DefaultDialogues
+  agent_environment_dialpgues:
+    args: {}
+    class_name: AgentEnviornmentDialogues
   environment:
     args:
       agent_count: 1
