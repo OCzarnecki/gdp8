@@ -31,7 +31,7 @@ DEFAULT_SEARCH_QUERY = {
     "search_value": "v1", 
     "constraint_type": "==",
 }
-registeredToEnv = False
+environment_addr = None
 
 class AgentLogicBehaviour(TickerBehaviour):
     """Behaviour looks at if actions required in each tick:
@@ -40,33 +40,30 @@ class AgentLogicBehaviour(TickerBehaviour):
        is there enough info for making a decision? if so, do so,
        if not, might have to send message to ask for info"""
 
-    def setup(self) -> None:
+    def setup(self, **kwargs: Any) -> None:
         """
         Implement the setup.
 
         :return: None
         """
+        #self.environment_addr = kwargs['environment_addr']
 
     def act(self) -> None:
 
-        if not registeredToEnv :
-            self._register_to_env(self.context.environment_addr)##where is the env address stored?
-       
-        else:
-            strategy = cast(BasicStrategy, self.context.strategy)
+        strategy = cast(BasicStrategy, self.context.strategy)
 
-            there_is_agent_asking_for_water_info = True
-            while there_is_agent_asking_for_water_info:
-                there_is_agent_asking_for_water_info = strategy.deal_with_an_agent_asking_for_water_info
+        there_is_agent_asking_for_water_info = True
+        while there_is_agent_asking_for_water_info:
+            there_is_agent_asking_for_water_info = strategy.deal_with_an_agent_asking_for_water_info
 
-            if not strategy.is_round_done:
-                info_is_enough = strategy.enough_info_to_make_decision
-                if info_is_enough:
-                    strategy.make_decision_send_to_env()
-                else:
-                    asking_for_info = True
-                    while asking_for_info:
-                        asking_for_info = strategy.potentially_ask_for_info
+        if not strategy.is_round_done:
+            info_is_enough = strategy.enough_info_to_make_decision
+            if info_is_enough:
+                strategy.make_decision_send_to_env()
+            else:
+                asking_for_info = True
+                while asking_for_info:
+                    asking_for_info = strategy.potentially_ask_for_info
 
     def teardown(self) -> None:
         """
@@ -75,19 +72,3 @@ class AgentLogicBehaviour(TickerBehaviour):
         :return: None
         """
         pass
-
-    def _register_to_env(self, environment_addr: Address) -> None:  
-        """
-        Register to active environment.
-        :param environment_addr: the address of the environment.
-        :return: None
-        """
-        agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
-        agent_env_msg, agent_environment_dialogue = agent_environment_dialogues.create(
-            counterparty=environment_addr,
-            performative=AgentEnvironmentMessage.Performative.REGISTER,
-            agent_name=self.context.agent_name,## do we have a variable for the agent name? what is its use?
-        )
-        agent_environment_dialogue = cast(AgentEnvironmentDialogue, agent_environment_dialogue)
-        self.context.outbox.put_message(message=agent_env_msg)
-        registeredToEnv = True##

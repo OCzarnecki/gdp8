@@ -7,11 +7,10 @@ license: Apache-2.0
 aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   __init__.py: QmSwBuAQmvDfLbuUvJ7nfrNCEE8iYzmqZzcTYupPwEsG4G
-  address_mapping.py: QmQhcCBNVfNvyyBywdos4RRcW7GazzwAmvMK9KmHK1GrKi
-  behaviours.py: QmTarMR8eESPkJjb2bDBtpQv9k46Zg9CdwoWWanVjnBXNW
-  dialogues.py: QmTT9dvFhWt6qvxjwBfMFDTrgEtgWbvgANYafyRg2BXwcR
-  environment.py: QmSmcaqwtphkAi4Nd8Ly5b7861u3GC2bevQNzAEKxeTuST
-  handlers.py: QmZf14yW2pyV1HHoKofatjKJAPAdMWHAiYimLjcGLZ6H49
+  address_mapping.py: QmdDh3fNbMzXPvYKqFzQAfxWSUG8mmxrY8Wr7bbAygsRYz
+  behaviours.py: QmeTSuU3LX8xS6fzS7W5MRpzTJzGWwG25L9w6jYPzQMqvV
+  environment.py: QmVwLJMxgvEgRifg3Qhcm2er4AxZM6NExX7uMfw6XSyY7Z
+  handlers.py: QmdfNhExQrugw7KotBMBVq64SKUu4WmZTsrS7mF9YtE8mW
   replay_logger.py: QmZymG35GL7MAuY5pAQadPCWqEPHGJ9ghgD2j2WP8nGV9s
 fingerprint_ignore_patterns: []
 connections: []

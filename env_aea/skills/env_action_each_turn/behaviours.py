@@ -23,12 +23,12 @@
 from aea.skills.behaviours import TickerBehaviour
 from typing import Any, Optional, cast
 
-from packages.gdp8.skills.env_action_each_turn.environment import Environment, Phase
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
-from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMapping
+
 from packages.gdp8.skills.env_action_each_turn.environment import Environment, Phase
+from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMapping
 from packages.gdp8.skills.env_action_each_turn.replay_logger import ReplayLogger
 
 class EnvironmentLogicBehaviour(TickerBehaviour):
@@ -72,14 +72,13 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
             environment.phase.value == Phase.PRE_SIMULATION.value
         ):
             # should have a list of all agents and their address at the end of this phase
-            if environment.registration.nb_agents < environment.nb_agents:######## WHERE IS THE NUMBER OF AGENT THAT WE WANT STORED ?
-                #wait
-                return
-            else:
                 ##environment.create()## do we need to generate a simulation ? 
                 #self._unregister_env()
                 # tell the env that the simulation starts?
-                environment.phase = Phase.START_SIMULATION
+            self.context.logger.info("will start simulation")
+
+
+            environment.phase = Phase.START_SIMULATION
         elif (
             environment.phase.value == Phase.START_SIMULATION.value
         ):
