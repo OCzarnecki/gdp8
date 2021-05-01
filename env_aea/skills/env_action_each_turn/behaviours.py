@@ -165,8 +165,9 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         turn_number = environment.turn_number
         self.context.logger.info("Sending tick messages for turn number: '{}'".format(turn_number))
         agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
-        self.context.logger.info("Sending tick messages to: '{}'".format(environment.agents_alive))
         for agent_address in environment.agents_alive:
+            self.context.logger.info("Sending tick message to: '{}'".format(agent_address))
+
             tile_water = environment.water_content(agent_address)
             agent_water = environment.agent_water(agent_address)
             neighbours_id = environment.neighbour_ids(agent_address)
