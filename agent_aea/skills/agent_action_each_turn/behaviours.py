@@ -20,18 +20,9 @@
 """This package contains a scaffold of a behaviour."""
 from typing import cast, Any
 
-from aea.common import Address
 from aea.skills.behaviours import TickerBehaviour
-from aea.helpers.search.models import Constraint, ConstraintType, Query
 
 from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
-
-DEFAULT_SEARCH_QUERY = {
-    "search_key": "env",## is that the key of the environment ?
-    "search_value": "v1", 
-    "constraint_type": "==",
-}
-environment_addr = None
 
 class AgentLogicBehaviour(TickerBehaviour):
     """Behaviour looks at if actions required in each tick:
@@ -46,7 +37,6 @@ class AgentLogicBehaviour(TickerBehaviour):
 
         :return: None
         """
-        #self.environment_addr = kwargs['environment_addr']
 
     def act(self) -> None:
 

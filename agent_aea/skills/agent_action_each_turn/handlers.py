@@ -65,7 +65,6 @@ class EnvironmentMessageHandler(Handler):
             return
 
         #handle message
-        #environment = cast(Environment, self.context.environment)##
         self.context.logger.debug(
             "handling environment response. performative={}".format(agent_env_msg.performative)
         )
