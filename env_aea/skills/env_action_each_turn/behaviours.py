@@ -26,8 +26,10 @@ from typing import Any, Optional, cast
 from packages.gdp8.skills.env_action_each_turn.environment import Environment, Phase
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
+from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
+from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMapping
+from packages.gdp8.skills.env_action_each_turn.environment import Environment, Phase
 from packages.gdp8.skills.env_action_each_turn.replay_logger import ReplayLogger
-
 
 class EnvironmentLogicBehaviour(TickerBehaviour):
     """Each turn of the simulation, this behaviour:
@@ -39,13 +41,23 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
     def __init__(self, **kwargs: Any):
         """Instantiate the behaviour."""
         super().__init__(**kwargs)##
-        self._replay_logger = ReplayLogger()
+        self._mapping_path = kwargs['mapping_path']
 
     def setup(self) -> None:
         """
         Implement the setup.
         :return: None
         """
+        self._replay_logger = ReplayLogger()
+        
+        environment = self.context.environment
+        mapping = AddressMapping(
+                self._mapping_path,
+                environment.nb_agents
+            )
+        mapping.load()
+        environment.set_mapping(mapping)
+
 
     def act(self) -> None:
         """

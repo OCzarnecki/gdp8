@@ -7,9 +7,11 @@ license: Apache-2.0
 aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   __init__.py: QmSwBuAQmvDfLbuUvJ7nfrNCEE8iYzmqZzcTYupPwEsG4G
-  behaviours.py: QmX1K8LoW3tj5hxMRLBUTu45xDcmmoYNQsCgV4cmeMcfuW
-  environment.py: QmbiqdGKx2MqtojDXVMGY1M6nxkCsPxAGNUg9AporMnfUB
-  handlers.py: QmdfNhExQrugw7KotBMBVq64SKUu4WmZTsrS7mF9YtE8mW
+  address_mapping.py: QmQhcCBNVfNvyyBywdos4RRcW7GazzwAmvMK9KmHK1GrKi
+  behaviours.py: QmTarMR8eESPkJjb2bDBtpQv9k46Zg9CdwoWWanVjnBXNW
+  dialogues.py: QmTT9dvFhWt6qvxjwBfMFDTrgEtgWbvgANYafyRg2BXwcR
+  environment.py: QmSmcaqwtphkAi4Nd8Ly5b7861u3GC2bevQNzAEKxeTuST
+  handlers.py: QmZf14yW2pyV1HHoKofatjKJAPAdMWHAiYimLjcGLZ6H49
   replay_logger.py: QmZymG35GL7MAuY5pAQadPCWqEPHGJ9ghgD2j2WP8nGV9s
 fingerprint_ignore_patterns: []
 connections: []
@@ -18,7 +20,8 @@ protocols: []
 skills: []
 behaviours:
   env_logic:
-    args: {}
+    args:
+      mapping_path: ../keys/mapping.json
     class_name: EnvironmentLogicBehaviour
 handlers:
   env:
