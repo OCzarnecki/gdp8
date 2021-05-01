@@ -397,13 +397,11 @@ class Environment(Model):
         agent = self.state.get_agent_by_id(agent_id)
         return self.state.get_cell_water(agent.pos_x, agent.pos_y)
 
-    @property
     def agent_water(self, agent_address) -> int:
         """Get the amount of water the agent has in its inventory."""
         agent_id = self.address_to_id(agent_address)
         return self.state.get_agent_by_id(agent_id)
 
-    @property
     def neighbour_ids(self, agent_address):
         """Get the list of addresses of the agents neighbours."""
         # TODO rename method to 'neighbours'
