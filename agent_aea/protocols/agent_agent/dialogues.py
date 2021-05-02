@@ -37,19 +37,20 @@ from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
 class AgentAgentDialogue(Dialogue):
     """The agent_agent dialogue class maintains state of a dialogue and manages it."""
 
-    INITIAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.REQUEST_INFO})
-    TERMINAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.WATER_STATUS})
+    INITIAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.SENDER_REQUEST})
+    TERMINAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.RECEIVER_REPLY})
     VALID_REPLIES = {
-        AgentAgentMessage.Performative.REQUEST_INFO: frozenset(
-            {AgentAgentMessage.Performative.WATER_STATUS}
+        AgentAgentMessage.Performative.RECEIVER_REPLY: frozenset(),
+        AgentAgentMessage.Performative.SENDER_REQUEST: frozenset(
+            {AgentAgentMessage.Performative.RECEIVER_REPLY}
         ),
-        AgentAgentMessage.Performative.WATER_STATUS: frozenset(),
     }
 
     class Role(Dialogue.Role):
         """This class defines the agent's role in a agent_agent dialogue."""
 
-        AGENT = "agent"
+        INFO_PROVIDER = "info_provider"
+        INFO_REQUESTER = "info_requester"
 
     class EndState(Dialogue.EndState):
         """This class defines the end states of a agent_agent dialogue."""

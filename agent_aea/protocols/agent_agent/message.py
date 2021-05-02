@@ -19,6 +19,7 @@
 
 """This module contains agent_agent's message definition."""
 
+# pylint: disable=too-many-statements,too-many-locals,no-member,too-few-public-methods,too-many-branches,not-an-iterable,unidiomatic-typecheck,unsubscriptable-object
 import logging
 from typing import Any, Set, Tuple, cast
 
@@ -43,14 +44,14 @@ class AgentAgentMessage(Message):
     class Performative(Message.Performative):
         """Performatives for the agent_agent protocol."""
 
-        REQUEST_INFO = "request_info"
-        WATER_STATUS = "water_status"
+        RECEIVER_REPLY = "receiver_reply"
+        SENDER_REQUEST = "sender_request"
 
         def __str__(self) -> str:
             """Get the string representation."""
             return str(self.value)
 
-    _performatives = {"request_info", "water_status"}
+    _performatives = {"receiver_reply", "sender_request"}
     __slots__: Tuple[str, ...] = tuple()
 
     class _SlotsCls:
@@ -58,9 +59,10 @@ class AgentAgentMessage(Message):
             "dialogue_reference",
             "message_id",
             "performative",
+            "reply",
+            "request",
             "target",
             "turn_number",
-            "water",
         )
 
     def __init__(
@@ -117,46 +119,52 @@ class AgentAgentMessage(Message):
         return cast(int, self.get("target"))
 
     @property
+    def reply(self) -> str:
+        """Get the 'reply' content from the message."""
+        enforce(self.is_set("reply"), "'reply' content is not set.")
+        return cast(str, self.get("reply"))
+
+    @property
+    def request(self) -> str:
+        """Get the 'request' content from the message."""
+        enforce(self.is_set("request"), "'request' content is not set.")
+        return cast(str, self.get("request"))
+
+    @property
     def turn_number(self) -> int:
         """Get the 'turn_number' content from the message."""
         enforce(self.is_set("turn_number"), "'turn_number' content is not set.")
         return cast(int, self.get("turn_number"))
 
-    @property
-    def water(self) -> int:
-        """Get the 'water' content from the message."""
-        enforce(self.is_set("water"), "'water' content is not set.")
-        return cast(int, self.get("water"))
-
     def _is_consistent(self) -> bool:
         """Check that the message follows the agent_agent protocol."""
         try:
             enforce(
-                type(self.dialogue_reference) == tuple,
+                isinstance(self.dialogue_reference, tuple),
                 "Invalid type for 'dialogue_reference'. Expected 'tuple'. Found '{}'.".format(
                     type(self.dialogue_reference)
                 ),
             )
             enforce(
-                type(self.dialogue_reference[0]) == str,
+                isinstance(self.dialogue_reference[0], str),
                 "Invalid type for 'dialogue_reference[0]'. Expected 'str'. Found '{}'.".format(
                     type(self.dialogue_reference[0])
                 ),
             )
             enforce(
-                type(self.dialogue_reference[1]) == str,
+                isinstance(self.dialogue_reference[1], str),
                 "Invalid type for 'dialogue_reference[1]'. Expected 'str'. Found '{}'.".format(
                     type(self.dialogue_reference[1])
                 ),
             )
             enforce(
-                type(self.message_id) == int,
+                type(self.message_id) is int,
                 "Invalid type for 'message_id'. Expected 'int'. Found '{}'.".format(
                     type(self.message_id)
                 ),
             )
             enforce(
-                type(self.target) == int,
+                type(self.target) is int,
                 "Invalid type for 'target'. Expected 'int'. Found '{}'.".format(
                     type(self.target)
                 ),
@@ -165,7 +173,7 @@ class AgentAgentMessage(Message):
             # Light Protocol Rule 2
             # Check correct performative
             enforce(
-                type(self.performative) == AgentAgentMessage.Performative,
+                isinstance(self.performative, AgentAgentMessage.Performative),
                 "Invalid 'performative'. Expected either of '{}'. Found '{}'.".format(
                     self.valid_performatives, self.performative
                 ),
@@ -174,20 +182,26 @@ class AgentAgentMessage(Message):
             # Check correct contents
             actual_nb_of_contents = len(self._body) - DEFAULT_BODY_SIZE
             expected_nb_of_contents = 0
-            if self.performative == AgentAgentMessage.Performative.WATER_STATUS:
-                expected_nb_of_contents = 1
+            if self.performative == AgentAgentMessage.Performative.SENDER_REQUEST:
+                expected_nb_of_contents = 2
                 enforce(
-                    type(self.water) == int,
-                    "Invalid type for content 'water'. Expected 'int'. Found '{}'.".format(
-                        type(self.water)
+                    isinstance(self.request, str),
+                    "Invalid type for content 'request'. Expected 'str'. Found '{}'.".format(
+                        type(self.request)
                     ),
                 )
-            elif self.performative == AgentAgentMessage.Performative.REQUEST_INFO:
-                expected_nb_of_contents = 1
                 enforce(
-                    type(self.turn_number) == int,
+                    type(self.turn_number) is int,
                     "Invalid type for content 'turn_number'. Expected 'int'. Found '{}'.".format(
                         type(self.turn_number)
+                    ),
+                )
+            elif self.performative == AgentAgentMessage.Performative.RECEIVER_REPLY:
+                expected_nb_of_contents = 1
+                enforce(
+                    isinstance(self.reply, str),
+                    "Invalid type for content 'reply'. Expected 'str'. Found '{}'.".format(
+                        type(self.reply)
                     ),
                 )
 

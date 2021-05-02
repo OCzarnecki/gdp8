@@ -61,8 +61,16 @@ class AgentEnvironmentSerializer(Serializer):
             performative.turn_number = turn_number
             agent_water = msg.agent_water
             performative.agent_water = agent_water
-            neighbour_ids = msg.neighbour_ids
-            performative.neighbour_ids.extend(neighbour_ids)
+            north_neighbour_id = msg.north_neighbour_id
+            performative.north_neighbour_id = north_neighbour_id
+            east_neighbour_id = msg.east_neighbour_id
+            performative.east_neighbour_id = east_neighbour_id
+            south_neighbour_id = msg.south_neighbour_id
+            performative.south_neighbour_id = south_neighbour_id
+            west_neighbour_id = msg.west_neighbour_id
+            performative.west_neighbour_id = west_neighbour_id
+            movement_last_turn = msg.movement_last_turn
+            performative.movement_last_turn = movement_last_turn
             agent_environment_msg.tick.CopyFrom(performative)
         elif performative_id == AgentEnvironmentMessage.Performative.ACTION:
             performative = agent_environment_pb2.AgentEnvironmentMessage.Action_Performative()  # type: ignore
@@ -107,9 +115,16 @@ class AgentEnvironmentSerializer(Serializer):
             performative_content["turn_number"] = turn_number
             agent_water = agent_environment_pb.tick.agent_water
             performative_content["agent_water"] = agent_water
-            neighbour_ids = agent_environment_pb.tick.neighbour_ids
-            neighbour_ids_frozenset = frozenset(neighbour_ids)
-            performative_content["neighbour_ids"] = neighbour_ids_frozenset
+            north_neighbour_id = agent_environment_pb.tick.north_neighbour_id
+            performative_content["north_neighbour_id"] = north_neighbour_id
+            east_neighbour_id = agent_environment_pb.tick.east_neighbour_id
+            performative_content["east_neighbour_id"] = east_neighbour_id
+            south_neighbour_id = agent_environment_pb.tick.south_neighbour_id
+            performative_content["south_neighbour_id"] = south_neighbour_id
+            west_neighbour_id = agent_environment_pb.tick.west_neighbour_id
+            performative_content["west_neighbour_id"] = west_neighbour_id
+            movement_last_turn = agent_environment_pb.tick.movement_last_turn
+            performative_content["movement_last_turn"] = movement_last_turn
         elif performative_id == AgentEnvironmentMessage.Performative.ACTION:
             command = agent_environment_pb.action.command
             performative_content["command"] = command

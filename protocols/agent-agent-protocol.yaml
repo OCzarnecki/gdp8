@@ -7,10 +7,6 @@ protocol_specification_id: gdp8/agent_agent_communication:0.1.0
 license: Apache-2.0
 aea_version: '>=1.0.0'
 speech_acts:
-  water_status: 
-    water: pt:int
-  request_info:
-    turn_number: pt:int
   sender_request:
     request: pt:str
     turn_number: pt:int
@@ -18,12 +14,11 @@ speech_acts:
     reply: pt:str
 ...
 ---
-initiation: [request_info]
+initiation: [sender_request]
 reply:
-  request_info: [water_status]
-  water_status: []
   sender_request: [receiver_reply]
-termination: [water_status, receiver_reply]
+  receiver_reply: []
+termination: [receiver_reply]
 roles: {info_requester, info_provider}
 end_states: [message_sent]
 keep_terminal_state_dialogues: false

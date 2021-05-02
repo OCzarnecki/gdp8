@@ -9,7 +9,11 @@ message AgentEnvironmentMessage{
     int32 tile_water = 1;
     int32 turn_number = 2;
     int32 agent_water = 3;
-    repeated string neighbour_ids = 4;
+    string north_neighbour_id = 4;
+    string east_neighbour_id = 5;
+    string south_neighbour_id = 6;
+    string west_neighbour_id = 7;
+    string movement_last_turn = 8;
   }
 
   message Action_Performative{

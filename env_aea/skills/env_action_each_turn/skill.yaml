@@ -11,7 +11,7 @@ fingerprint:
   behaviours.py: QmRcBScRhmpMBm6kCLV9MxDXcRmaxwfq7S9oucRSjG3KjR
   dialogues.py: QmdteuGzg4MaAa3UGAPxuEoZdTYn2uGM5oEjiB4iYB6rVy
   environment.py: QmRNXjw6QS5MBJTsFmbUMxaLmAkKS5kg3uT3MMMUJVM7E7
-  handlers.py: Qmdc2yWPykLwVbdNFRLtUoDf9rkmLZeqgvJcL6txkZUu71
+  handlers.py: QmWzQkwam8oGPTrevmaYuhwvFATSFS13nHNfbusMxWm5oE
   replay_logger.py: QmQcgtaJiZSTNiJTzk3hWQiCbqm7e8ZM7DKNzxWDGWTKZv
 fingerprint_ignore_patterns: []
 connections: []
