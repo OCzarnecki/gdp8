@@ -69,11 +69,11 @@ class EnvironmentHandler(Handler):
             "handling the agent_environment message. performative={}".format(agent_env_msg.performative)
         )
         # handle message
-        if agent_env_msg.performative == AgentEnvironmentMessage.Performative.REGISTER:
-            self._on_register(agent_env_msg, agent_environment_dialogue)
-        elif agent_env_msg.performative == AgentEnvironmentMessage.Performative.UNREGISTER:
-            self._on_unregister(agent_env_msg, agent_environment_dialogue)
-        elif agent_env_msg.performative == AgentEnvironmentMessage.Performative.ACTION:
+        # if agent_env_msg.performative == AgentEnvironmentMessage.Performative.REGISTER:
+        #    self._on_register(agent_env_msg, agent_environment_dialogue)
+        # elif agent_env_msg.performative == AgentEnvironmentMessage.Performative.UNREGISTER:
+        #    self._on_unregister(agent_env_msg, agent_environment_dialogue)
+        if agent_env_msg.performative == AgentEnvironmentMessage.Performative.ACTION:
             self._handle_valid_tick_reply(agent_env_msg, agent_environment_dialogue)
         else:
             self._handle_invalid(agent_env_msg, agent_environment_dialogue)

@@ -251,7 +251,7 @@ class SimulationState:
                                     and 0 <= y + dy < self.size_y]
                 for (dst_x, dst_y) in neighbour_coords:
                     dst_agent = self.get_agent_by_pos(dst_x, dst_y)
-                    if dst_agent != None and self._needs[dst_x][dst_y] > 0:
+                    if dst_agent is not None and self._needs[dst_x][dst_y] > 0:
                         transfer_amount = min(self._agent_max_capacity
                                               - dst_agent.water
                                               - self._minable_at(dst_x, dst_y)
@@ -296,11 +296,23 @@ class SimulationState:
         self.agent_count = agent_count
         self._agents_by_id = []
         self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
+        agent = Agent(current_id, initial_agent_water, 1, 0)
+        self._agents_by_id.append(agent)
+        self._agent_grid[1][0] = agent
+        current_id += 1
+
+        agent = Agent(current_id, initial_agent_water, 1, 1)
+        self._agents_by_id.append(agent)
+        self._agent_grid[1][1] = agent
+        current_id += 1
+
+        """             !!!!!!!!!!!!!!!REVERT!!!!!!!!!!!!!!
         for (x, y) in self._unique_random_coords(agent_count):
             agent = Agent(current_id, initial_agent_water, x, y)
             self._agents_by_id.append(agent)
             self._agent_grid[x][y] = agent
             current_id += 1
+        """
 
     def _unique_random_coords(self, count):
         """ Returns a list of `count` unique, uniformly distributed, random,
@@ -332,7 +344,7 @@ class Registration:
         :param agent_addr: the Address of the agent
         :return: None
         """
-        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id)  ##??? give it a new id
+        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id)  # ??? give it a new id
 
     def unregister_agent(self, agent_addr: Address) -> None:
         """

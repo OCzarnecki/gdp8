@@ -10,7 +10,7 @@ fingerprint:
   address_mapping.py: QmdDh3fNbMzXPvYKqFzQAfxWSUG8mmxrY8Wr7bbAygsRYz
   behaviours.py: QmRcBScRhmpMBm6kCLV9MxDXcRmaxwfq7S9oucRSjG3KjR
   dialogues.py: QmdteuGzg4MaAa3UGAPxuEoZdTYn2uGM5oEjiB4iYB6rVy
-  environment.py: QmXLhTQEUXXMsHWw1AeMbwiQADoZ7FADKKutwuPYvEHes8
+  environment.py: QmRNXjw6QS5MBJTsFmbUMxaLmAkKS5kg3uT3MMMUJVM7E7
   handlers.py: Qmdc2yWPykLwVbdNFRLtUoDf9rkmLZeqgvJcL6txkZUu71
   replay_logger.py: QmQcgtaJiZSTNiJTzk3hWQiCbqm7e8ZM7DKNzxWDGWTKZv
 fingerprint_ignore_patterns: []
@@ -36,7 +36,7 @@ models:
     class_name: DefaultDialogues
   environment:
     args:
-      agent_count: 1
+      agent_count: 2
       agent_max_capacity: 150
       agent_mining_speed: 20
       initial_agent_water: 100

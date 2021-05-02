@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021 gdp8
+#   Copyright 2021 fetchai
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,56 +17,89 @@
 #
 # ------------------------------------------------------------------------------
 
-"""This module contains agent_environment's message definition."""
+"""This module contains signing's message definition."""
 
 # pylint: disable=too-many-statements,too-many-locals,no-member,too-few-public-methods,too-many-branches,not-an-iterable,unidiomatic-typecheck,unsubscriptable-object
 import logging
-from typing import Any, FrozenSet, Set, Tuple, cast
+from typing import Any, Set, Tuple, cast
 
 from aea.configurations.base import PublicId
 from aea.exceptions import AEAEnforceError, enforce
 from aea.protocols.base import Message
 
-
-_default_logger = logging.getLogger(
-    "aea.packages.gdp8.protocols.agent_environment.message"
+from packages.fetchai.protocols.signing.custom_types import ErrorCode as CustomErrorCode
+from packages.fetchai.protocols.signing.custom_types import (
+    RawMessage as CustomRawMessage,
 )
+from packages.fetchai.protocols.signing.custom_types import (
+    RawTransaction as CustomRawTransaction,
+)
+from packages.fetchai.protocols.signing.custom_types import (
+    SignedMessage as CustomSignedMessage,
+)
+from packages.fetchai.protocols.signing.custom_types import (
+    SignedTransaction as CustomSignedTransaction,
+)
+from packages.fetchai.protocols.signing.custom_types import Terms as CustomTerms
+
+
+_default_logger = logging.getLogger("aea.packages.fetchai.protocols.signing.message")
 
 DEFAULT_BODY_SIZE = 4
 
 
-class AgentEnvironmentMessage(Message):
-    """Agent-environment messages"""
+class SigningMessage(Message):
+    """A protocol for communication between skills and decision maker."""
 
-    protocol_id = PublicId.from_str("gdp8/agent_environment:0.1.0")
-    protocol_specification_id = PublicId.from_str(
-        "gdp8/agent_environment_communication:0.1.0"
-    )
+    protocol_id = PublicId.from_str("fetchai/signing:1.0.0")
+    protocol_specification_id = PublicId.from_str("fetchai/signing:1.0.0")
+
+    ErrorCode = CustomErrorCode
+
+    RawMessage = CustomRawMessage
+
+    RawTransaction = CustomRawTransaction
+
+    SignedMessage = CustomSignedMessage
+
+    SignedTransaction = CustomSignedTransaction
+
+    Terms = CustomTerms
 
     class Performative(Message.Performative):
-        """Performatives for the agent_environment protocol."""
+        """Performatives for the signing protocol."""
 
-        ACTION = "action"
-        TICK = "tick"
+        ERROR = "error"
+        SIGN_MESSAGE = "sign_message"
+        SIGN_TRANSACTION = "sign_transaction"
+        SIGNED_MESSAGE = "signed_message"
+        SIGNED_TRANSACTION = "signed_transaction"
 
         def __str__(self) -> str:
             """Get the string representation."""
             return str(self.value)
 
-    _performatives = {"action", "tick"}
+    _performatives = {
+        "error",
+        "sign_message",
+        "sign_transaction",
+        "signed_message",
+        "signed_transaction",
+    }
     __slots__: Tuple[str, ...] = tuple()
 
     class _SlotsCls:
         __slots__ = (
-            "agent_water",
-            "command",
             "dialogue_reference",
+            "error_code",
             "message_id",
-            "neighbour_ids",
             "performative",
+            "raw_message",
+            "raw_transaction",
+            "signed_message",
+            "signed_transaction",
             "target",
-            "tile_water",
-            "turn_number",
+            "terms",
         )
 
     def __init__(
@@ -78,7 +111,7 @@ class AgentEnvironmentMessage(Message):
         **kwargs: Any,
     ):
         """
-        Initialise an instance of AgentEnvironmentMessage.
+        Initialise an instance of SigningMessage.
 
         :param message_id: the message id.
         :param dialogue_reference: the dialogue reference.
@@ -89,7 +122,7 @@ class AgentEnvironmentMessage(Message):
             dialogue_reference=dialogue_reference,
             message_id=message_id,
             target=target,
-            performative=AgentEnvironmentMessage.Performative(performative),
+            performative=SigningMessage.Performative(performative),
             **kwargs,
         )
 
@@ -114,7 +147,7 @@ class AgentEnvironmentMessage(Message):
     def performative(self) -> Performative:  # type: ignore # noqa: F821
         """Get the performative of the message."""
         enforce(self.is_set("performative"), "performative is not set.")
-        return cast(AgentEnvironmentMessage.Performative, self.get("performative"))
+        return cast(SigningMessage.Performative, self.get("performative"))
 
     @property
     def target(self) -> int:
@@ -123,37 +156,46 @@ class AgentEnvironmentMessage(Message):
         return cast(int, self.get("target"))
 
     @property
-    def agent_water(self) -> int:
-        """Get the 'agent_water' content from the message."""
-        enforce(self.is_set("agent_water"), "'agent_water' content is not set.")
-        return cast(int, self.get("agent_water"))
+    def error_code(self) -> CustomErrorCode:
+        """Get the 'error_code' content from the message."""
+        enforce(self.is_set("error_code"), "'error_code' content is not set.")
+        return cast(CustomErrorCode, self.get("error_code"))
 
     @property
-    def command(self) -> str:
-        """Get the 'command' content from the message."""
-        enforce(self.is_set("command"), "'command' content is not set.")
-        return cast(str, self.get("command"))
+    def raw_message(self) -> CustomRawMessage:
+        """Get the 'raw_message' content from the message."""
+        enforce(self.is_set("raw_message"), "'raw_message' content is not set.")
+        return cast(CustomRawMessage, self.get("raw_message"))
 
     @property
-    def neighbour_ids(self) -> FrozenSet[str]:
-        """Get the 'neighbour_ids' content from the message."""
-        enforce(self.is_set("neighbour_ids"), "'neighbour_ids' content is not set.")
-        return cast(FrozenSet[str], self.get("neighbour_ids"))
+    def raw_transaction(self) -> CustomRawTransaction:
+        """Get the 'raw_transaction' content from the message."""
+        enforce(self.is_set("raw_transaction"), "'raw_transaction' content is not set.")
+        return cast(CustomRawTransaction, self.get("raw_transaction"))
 
     @property
-    def tile_water(self) -> int:
-        """Get the 'tile_water' content from the message."""
-        enforce(self.is_set("tile_water"), "'tile_water' content is not set.")
-        return cast(int, self.get("tile_water"))
+    def signed_message(self) -> CustomSignedMessage:
+        """Get the 'signed_message' content from the message."""
+        enforce(self.is_set("signed_message"), "'signed_message' content is not set.")
+        return cast(CustomSignedMessage, self.get("signed_message"))
 
     @property
-    def turn_number(self) -> int:
-        """Get the 'turn_number' content from the message."""
-        enforce(self.is_set("turn_number"), "'turn_number' content is not set.")
-        return cast(int, self.get("turn_number"))
+    def signed_transaction(self) -> CustomSignedTransaction:
+        """Get the 'signed_transaction' content from the message."""
+        enforce(
+            self.is_set("signed_transaction"),
+            "'signed_transaction' content is not set.",
+        )
+        return cast(CustomSignedTransaction, self.get("signed_transaction"))
+
+    @property
+    def terms(self) -> CustomTerms:
+        """Get the 'terms' content from the message."""
+        enforce(self.is_set("terms"), "'terms' content is not set.")
+        return cast(CustomTerms, self.get("terms"))
 
     def _is_consistent(self) -> bool:
-        """Check that the message follows the agent_environment protocol."""
+        """Check that the message follows the signing protocol."""
         try:
             enforce(
                 isinstance(self.dialogue_reference, tuple),
@@ -189,7 +231,7 @@ class AgentEnvironmentMessage(Message):
             # Light Protocol Rule 2
             # Check correct performative
             enforce(
-                isinstance(self.performative, AgentEnvironmentMessage.Performative),
+                isinstance(self.performative, SigningMessage.Performative),
                 "Invalid 'performative'. Expected either of '{}'. Found '{}'.".format(
                     self.valid_performatives, self.performative
                 ),
@@ -198,42 +240,56 @@ class AgentEnvironmentMessage(Message):
             # Check correct contents
             actual_nb_of_contents = len(self._body) - DEFAULT_BODY_SIZE
             expected_nb_of_contents = 0
-            if self.performative == AgentEnvironmentMessage.Performative.TICK:
-                expected_nb_of_contents = 4
+            if self.performative == SigningMessage.Performative.SIGN_TRANSACTION:
+                expected_nb_of_contents = 2
                 enforce(
-                    type(self.tile_water) is int,
-                    "Invalid type for content 'tile_water'. Expected 'int'. Found '{}'.".format(
-                        type(self.tile_water)
+                    isinstance(self.terms, CustomTerms),
+                    "Invalid type for content 'terms'. Expected 'Terms'. Found '{}'.".format(
+                        type(self.terms)
                     ),
                 )
                 enforce(
-                    type(self.turn_number) is int,
-                    "Invalid type for content 'turn_number'. Expected 'int'. Found '{}'.".format(
-                        type(self.turn_number)
+                    isinstance(self.raw_transaction, CustomRawTransaction),
+                    "Invalid type for content 'raw_transaction'. Expected 'RawTransaction'. Found '{}'.".format(
+                        type(self.raw_transaction)
+                    ),
+                )
+            elif self.performative == SigningMessage.Performative.SIGN_MESSAGE:
+                expected_nb_of_contents = 2
+                enforce(
+                    isinstance(self.terms, CustomTerms),
+                    "Invalid type for content 'terms'. Expected 'Terms'. Found '{}'.".format(
+                        type(self.terms)
                     ),
                 )
                 enforce(
-                    type(self.agent_water) is int,
-                    "Invalid type for content 'agent_water'. Expected 'int'. Found '{}'.".format(
-                        type(self.agent_water)
+                    isinstance(self.raw_message, CustomRawMessage),
+                    "Invalid type for content 'raw_message'. Expected 'RawMessage'. Found '{}'.".format(
+                        type(self.raw_message)
                     ),
                 )
-                enforce(
-                    isinstance(self.neighbour_ids, frozenset),
-                    "Invalid type for content 'neighbour_ids'. Expected 'frozenset'. Found '{}'.".format(
-                        type(self.neighbour_ids)
-                    ),
-                )
-                enforce(
-                    all(isinstance(element, str) for element in self.neighbour_ids),
-                    "Invalid type for frozenset elements in content 'neighbour_ids'. Expected 'str'.",
-                )
-            elif self.performative == AgentEnvironmentMessage.Performative.ACTION:
+            elif self.performative == SigningMessage.Performative.SIGNED_TRANSACTION:
                 expected_nb_of_contents = 1
                 enforce(
-                    isinstance(self.command, str),
-                    "Invalid type for content 'command'. Expected 'str'. Found '{}'.".format(
-                        type(self.command)
+                    isinstance(self.signed_transaction, CustomSignedTransaction),
+                    "Invalid type for content 'signed_transaction'. Expected 'SignedTransaction'. Found '{}'.".format(
+                        type(self.signed_transaction)
+                    ),
+                )
+            elif self.performative == SigningMessage.Performative.SIGNED_MESSAGE:
+                expected_nb_of_contents = 1
+                enforce(
+                    isinstance(self.signed_message, CustomSignedMessage),
+                    "Invalid type for content 'signed_message'. Expected 'SignedMessage'. Found '{}'.".format(
+                        type(self.signed_message)
+                    ),
+                )
+            elif self.performative == SigningMessage.Performative.ERROR:
+                expected_nb_of_contents = 1
+                enforce(
+                    isinstance(self.error_code, CustomErrorCode),
+                    "Invalid type for content 'error_code'. Expected 'ErrorCode'. Found '{}'.".format(
+                        type(self.error_code)
                     ),
                 )
 
