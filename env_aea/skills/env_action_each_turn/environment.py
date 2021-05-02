@@ -25,11 +25,11 @@ https://github.com/fetchai/agents-aea/blob/main/packages/fetchai/skills/tac_cont
 
 from aea.skills.base import Model
 from aea.common import Address
-from aea.helpers.search.generic import (
-    AGENT_LOCATION_MODEL,
-    AGENT_REMOVE_SERVICE_MODEL,
-    AGENT_SET_SERVICE_MODEL,
-)
+# from aea.helpers.search.generic import (
+#    AGENT_LOCATION_MODEL,
+#    AGENT_REMOVE_SERVICE_MODEL,
+#    AGENT_SET_SERVICE_MODEL,
+# )
 # Causes syntax error
 # from aea.helpers.search.models import
 
@@ -37,7 +37,8 @@ from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMap
 
 from enum import Enum, auto
 from itertools import product
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict
+# from typing import List, Optional, cast
 
 import random
 
@@ -230,12 +231,14 @@ class SimulationState:
                 self._transfers[x][y] = 0
                 agent = self.get_agent_by_pos(x, y)
                 self._needs[x][y] = 0
-                if agent != None and agent.next_command != None:
+                if agent is not None and agent.next_command is not None:
                     if agent.next_command.command_type == CommandType.REQUEST_WATER:
                         self._needs[x][y] = agent.next_command.quantity
                     elif agent.next_command.command_type == CommandType.OFFER_WATER:
                         self._needs[x][y] = -1 * min(agent.next_command.quantity,
                                                      agent.water + self._minable_at(x, y))
+                    elif agent.next_command.command_type == CommandType.IDLE:
+                        pass
         # Compute transfers
         agent_positions = [(agent.pos_x, agent.pos_y) for agent in self.get_agents_alive()]
         for (x, y) in agent_positions:
