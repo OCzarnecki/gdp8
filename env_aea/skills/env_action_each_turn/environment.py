@@ -421,7 +421,7 @@ class Environment(Model):
     @property
     def agents_reply_received(self) -> bool:
         """Get true if the env received a reply from all agents still alive this turn"""
-        return len(self._agents_replied) == 42  # TODO figure out where to get this
+        return len(self._agents_replied) == self.agents_alive.__len__()
 
     def remove_dead_agents(self) -> None:
         """Removes all agents who haven't replied this turn from the list of agents alive."""

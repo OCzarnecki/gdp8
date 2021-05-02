@@ -49,8 +49,7 @@ class AgentAgentDialogue(Dialogue):
     class Role(Dialogue.Role):
         """This class defines the agent's role in a agent_agent dialogue."""
 
-        INFO_PROVIDER = "info_provider"
-        INFO_REQUESTER = "info_requester"
+        AGENT = "agent"
 
     class EndState(Dialogue.EndState):
         """This class defines the end states of a agent_agent dialogue."""

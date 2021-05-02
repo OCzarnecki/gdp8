@@ -151,11 +151,15 @@ class BasicStrategy(Model):
             decision: str = "NULL"
         else:  # difference > 0
             decision: str = "receive_water" + "." + str(-difference)
+        self.context.logger.info(
+                "sending command={} to env={}".format(
+                    decision, self.current_env_message.sender
+                )
+            )
         return_agent_env_message = self.current_env_dialogue.reply(
             performative=AgentEnvironmentMessage.Performative.ACTION,
             target_message=self.current_env_message,
             command=decision,
-            turn_number=self.round_no
         )
         self.context.outbox.put_message(message=return_agent_env_message)
         self.is_round_done = True

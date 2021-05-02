@@ -35,7 +35,7 @@ from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
 # Handler will Update my model (strategy class) depending on what it has received
 # Unimplemented: self.context.agent_environment_dialogues, self.context.default_dialogues
 
-        
+
 class EnvironmentMessageHandler(Handler):
     """This class handles messages from the environment."""
 
@@ -57,15 +57,15 @@ class EnvironmentMessageHandler(Handler):
         """
         agent_env_msg = cast(AgentEnvironmentMessage, message)
 
-        #recover dialogue
+        # recover dialogue
         agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
         agent_environment_dialogue = cast(AgentEnvironmentDialogue, agent_environment_dialogues.update(agent_env_msg))
         if agent_environment_dialogue is None:
             self._handle_unidentified_dialogue(agent_env_msg)
             return
 
-        #handle message
-        #environment = cast(Environment, self.context.environment)##
+        # handle message
+        # environment = cast(Environment, self.context.environment)##
         self.context.logger.debug(
             "handling environment response. performative={}".format(agent_env_msg.performative)
         )
@@ -100,14 +100,13 @@ class EnvironmentMessageHandler(Handler):
         :return: None
         """
         # Update my_model to get ready for next round
-        self.context.logger.info(
-            "received tick message from the environment."
-            )
+        self.context.logger.info("received tick message from the environment.")
 
         strategy = cast(BasicStrategy, self.context.strategy)
         strategy.receive_agent_env_info(agent_env_msg, agent_environment_dialogue)
 
-    def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
+    def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage,
+                        agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """
         Handle an oef search message.
 
@@ -120,6 +119,7 @@ class EnvironmentMessageHandler(Handler):
                 agent_env_msg.performative, agent_environment_dialogue
             )
         )
+
 
 class AgentMessageHandler(Handler):
     SUPPORTED_PROTOCOL = AgentAgentMessage.protocol_id
@@ -140,7 +140,7 @@ class AgentMessageHandler(Handler):
         """
         agent_agent_msg = cast(AgentAgentMessage, message)
 
-        agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)##????
+        agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)
         agent_agent_dialogue = cast(AgentAgentDialogue,
                                     agent_agent_dialogues.update(agent_agent_msg))
         if agent_agent_dialogue is None:

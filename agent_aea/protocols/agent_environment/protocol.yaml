@@ -11,7 +11,7 @@ fingerprint:
   agent_environment.proto: QmWEKF8QJZVJHmvkWgutDu6axuJywJTSXQmKVM5ouhhQ6q
   agent_environment_pb2.py: QmTCcaH2Xg4rjFbHoCrYqkXtPNpaYoY21cVniWKkuCa4iR
   dialogues.py: QmNXz32kafKZWKD9oV4boNuR6oNb28Nw1xYv7s7P1VgWxo
-  message.py: QmPiJL2AsQuwnmhMppYqaMYyG1sjZLsU1s2HLYPhFxJXoC
+  message.py: QmY9nQZzTrJfL1QhJsRjXE1udq2evXtJ8EmMkGzquLrWTX
   serialization.py: QmcA2kTFsRgHY3F864em4ZsUSGtXQuXek2urxEHsXzpHG3
 fingerprint_ignore_patterns: []
 dependencies:
