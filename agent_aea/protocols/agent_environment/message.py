@@ -48,15 +48,12 @@ class AgentEnvironmentMessage(Message):
 
         ACTION = "action"
         TICK = "tick"
-        CANCELLED ="cancelled"
-        AGENT_ENV_ERROR ="agent_env_error"
-
 
         def __str__(self) -> str:
             """Get the string representation."""
             return str(self.value)
 
-    _performatives = {"action", "tick", "cancelled", "agent_env_error",}
+    _performatives = {"action", "tick"}
     __slots__: Tuple[str, ...] = tuple()
 
     class _SlotsCls:
@@ -70,8 +67,6 @@ class AgentEnvironmentMessage(Message):
             "target",
             "tile_water",
             "turn_number",
-            "water_quantity",
-            "error_description",
         )
 
     def __init__(
@@ -140,10 +135,10 @@ class AgentEnvironmentMessage(Message):
         return cast(str, self.get("command"))
 
     @property
-    def neighbour_ids(self) -> FrozenSet[int]:
+    def neighbour_ids(self) -> FrozenSet[str]:
         """Get the 'neighbour_ids' content from the message."""
         enforce(self.is_set("neighbour_ids"), "'neighbour_ids' content is not set.")
-        return cast(FrozenSet[int], self.get("neighbour_ids"))
+        return cast(FrozenSet[str], self.get("neighbour_ids"))
 
     @property
     def tile_water(self) -> int:
@@ -230,8 +225,8 @@ class AgentEnvironmentMessage(Message):
                     ),
                 )
                 enforce(
-                    all(type(element) is int for element in self.neighbour_ids),
-                    "Invalid type for frozenset elements in content 'neighbour_ids'. Expected 'int'.",
+                    all(isinstance(element, str) for element in self.neighbour_ids),
+                    "Invalid type for frozenset elements in content 'neighbour_ids'. Expected 'str'.",
                 )
             elif self.performative == AgentEnvironmentMessage.Performative.ACTION:
                 expected_nb_of_contents = 1

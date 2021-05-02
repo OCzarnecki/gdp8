@@ -8,10 +8,10 @@ license: Apache-2.0
 aea_version: '>=0.11.0, <=1.0.0'
 fingerprint:
   __init__.py: QmSzaNJaAR4TtykVzWT3d6Nbu1wSHUNLb6ncaHoAGEsYNy
-  agent_environment.proto: QmWEKF8QJZVJHmvkWgutDu6axuJywJTSXQmKVM5ouhhQ6q
-  agent_environment_pb2.py: QmTCcaH2Xg4rjFbHoCrYqkXtPNpaYoY21cVniWKkuCa4iR
+  agent_environment.proto: QmVyPLLusUL5aMMcThEYPEaJyrLsR6tfCNqNUV7MdNKaBE
+  agent_environment_pb2.py: QmS8DEftKLMnazC53bAvYjryaEpHYPaTmeZ8ENVdbuV7AX
   dialogues.py: QmNXz32kafKZWKD9oV4boNuR6oNb28Nw1xYv7s7P1VgWxo
-  message.py: QmY9nQZzTrJfL1QhJsRjXE1udq2evXtJ8EmMkGzquLrWTX
+  message.py: QmSk7NtxzpYmWmtTu5FDUfVYNY5JmkQrStHyxb5u8zrDYG
   serialization.py: QmcA2kTFsRgHY3F864em4ZsUSGtXQuXek2urxEHsXzpHG3
 fingerprint_ignore_patterns: []
 dependencies:

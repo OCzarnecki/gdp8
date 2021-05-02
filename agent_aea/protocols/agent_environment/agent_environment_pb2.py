@@ -17,7 +17,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     package="aea.gdp8.agent_environment_communication.v0_1_0",
     syntax="proto3",
     serialized_options=None,
-    serialized_pb=b'\n\x17\x61gent_environment.proto\x12/aea.gdp8.agent_environment_communication.v0_1_0"\x97\x03\n\x17\x41gentEnvironmentMessage\x12n\n\x06\x61\x63tion\x18\x05 \x01(\x0b\x32\\.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Action_PerformativeH\x00\x12j\n\x04tick\x18\x06 \x01(\x0b\x32Z.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_PerformativeH\x00\x1ah\n\x11Tick_Performative\x12\x12\n\ntile_water\x18\x01 \x01(\x05\x12\x13\n\x0bturn_number\x18\x02 \x01(\x05\x12\x13\n\x0b\x61gent_water\x18\x03 \x01(\x05\x12\x15\n\rneighbour_ids\x18\x04 \x03(\x05\x1a&\n\x13\x41\x63tion_Performative\x12\x0f\n\x07\x63ommand\x18\x01 \x01(\tB\x0e\n\x0cperformativeb\x06proto3',
+    serialized_pb=b'\n\x17\x61gent_environment.proto\x12/aea.gdp8.agent_environment_communication.v0_1_0"\x97\x03\n\x17\x41gentEnvironmentMessage\x12n\n\x06\x61\x63tion\x18\x05 \x01(\x0b\x32\\.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Action_PerformativeH\x00\x12j\n\x04tick\x18\x06 \x01(\x0b\x32Z.aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_PerformativeH\x00\x1ah\n\x11Tick_Performative\x12\x12\n\ntile_water\x18\x01 \x01(\x05\x12\x13\n\x0bturn_number\x18\x02 \x01(\x05\x12\x13\n\x0b\x61gent_water\x18\x03 \x01(\x05\x12\x15\n\rneighbour_ids\x18\x04 \x03(\t\x1a&\n\x13\x41\x63tion_Performative\x12\x0f\n\x07\x63ommand\x18\x01 \x01(\tB\x0e\n\x0cperformativeb\x06proto3',
 )
 
 
@@ -87,8 +87,8 @@ _AGENTENVIRONMENTMESSAGE_TICK_PERFORMATIVE = _descriptor.Descriptor(
             full_name="aea.gdp8.agent_environment_communication.v0_1_0.AgentEnvironmentMessage.Tick_Performative.neighbour_ids",
             index=3,
             number=4,
-            type=5,
-            cpp_type=1,
+            type=9,
+            cpp_type=9,
             label=3,
             has_default_value=False,
             default_value=[],
