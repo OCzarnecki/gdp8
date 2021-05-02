@@ -142,7 +142,7 @@ class BasicStrategy(Model):
         sum_of_all_agents = self.agent_water
         for i in self.neighbour_water_amount:
             sum_of_all_agents += i[1]
-        average = (sum_of_all_agents + self.agent_water) / (len(self.neighbour_water_amount) + 1)
+        average = sum_of_all_agents / (len(self.neighbour_water_amount) + 1)
         difference = int(self.agent_water - average)
         # difference > 0 => offer water, vice versa, difference ALWAYS underestimated if not accurate
         if difference > 0:
