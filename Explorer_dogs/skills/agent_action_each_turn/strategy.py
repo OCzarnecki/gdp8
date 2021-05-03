@@ -90,7 +90,7 @@ class BasicStrategy(Model):
         self.asked_for_info_already = False
 
     def update_water_location_according_to_last_round_movement(self) -> None:
-        if self.move_direction_last_turn is None:
+        if self.move_direction_last_turn == "None":
             pass
         else:
             if self.move_direction_last_turn == "north":
