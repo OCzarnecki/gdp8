@@ -99,7 +99,9 @@ class Agent:
         self.water = initial_water
         self.pos_x = pos_x
         self.pos_y = pos_y
+        self.movement_last_turn = None
         self.queue_command(None)
+
 
     def queue_command(self, command):
         """ Set the command that the agent wants to execute this
@@ -212,24 +214,29 @@ class SimulationState:
         """
         for agent in self.get_agents_alive(): 
             if agent.next_command.command_type == CommandType.MOVE:
-                if agent.next_command.direction == "north":
-                    self._try_moving(agent, agent.pos_x, agent.pos_y - 1)
-                elif agent.next_command.direction == "south":
+                direction = agent.next_command.direction 
+                if direction == "north":
+                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y - 1)
+                elif direction == "south":
                     self._try_moving(agent, agent.pos_x, agent.pos_y + 1)
-                elif agent.next_command.direction == "west":
+                elif direction == "west":
                     self._try_moving(agent, agent.pos_x - 1, agent.pos_y)
-                elif agent.next_command.direction == "east":
+                elif direction == "east":
                     self._try_moving(agent, agent.pos_x + 1, agent.pos_y)
                 else:
                     self.context.logger.info("Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
-                    return        
+            else : 
+                agent.movement_last_turn = None        
 
-    def _try_moving(self, agent, try_pos_x, try_pos_y):
+    def _try_moving(self, agent, direction, try_pos_x, try_pos_y):
         try_pos_x = try_pos_x % self.size_x
         try_pos_y = try_pos_y % self.size_y
         if self._agent_grid[try_pos_x][try_pos_y] == None:
             agent.pos_x = try_pos_x
             agent.pos_y = try_pos_y
+            agent.movement_last_turn = direction
+        else :
+            agent.movement_last_turn = None
         return
 
     def _transfer_water(self):
