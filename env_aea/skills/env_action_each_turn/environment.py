@@ -218,11 +218,11 @@ class SimulationState:
                 if direction == "north":
                     self._try_moving(agent, direction, agent.pos_x, agent.pos_y - 1)
                 elif direction == "south":
-                    self._try_moving(agent, agent.pos_x, agent.pos_y + 1)
+                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y + 1)
                 elif direction == "west":
-                    self._try_moving(agent, agent.pos_x - 1, agent.pos_y)
+                    self._try_moving(agent, direction, agent.pos_x - 1, agent.pos_y)
                 elif direction == "east":
-                    self._try_moving(agent, agent.pos_x + 1, agent.pos_y)
+                    self._try_moving(agent, direction, agent.pos_x + 1, agent.pos_y)
                 else:
                     self.context.logger.info("Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
             else : 
@@ -492,7 +492,7 @@ class Environment(Model):
                     self.context.logger.warning("could not parse action string {}".format(action))
                 else:
                     try:
-                        command = MoveCommand(int(tokens[1]))
+                        command = MoveCommand(tokens[1])
                     except ValueError:
                         self.context.logger.warning("could not parse action string {}".format(action))
             else:

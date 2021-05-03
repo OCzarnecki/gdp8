@@ -54,7 +54,6 @@ class AgentLogicBehaviour(TickerBehaviour):
 
         there_is_agent_asking_for_info = True
         while there_is_agent_asking_for_info:
-            self.context.logger.info("someone asking for info")
             there_is_agent_asking_for_info = strategy.deal_with_an_agent_asking_for_info()
         if not strategy.is_round_done:
             if not strategy.asked_for_info_already:

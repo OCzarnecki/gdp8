@@ -210,6 +210,7 @@ class BasicStrategy(Model):
             state = "returning"
         else:
             state = "exploring"
+        self.context.logger.info("agent in state = " + state)
         # no matter what, update memory about this tile
         try:
             self.water_location.remove([0, 0])
@@ -226,6 +227,7 @@ class BasicStrategy(Model):
                     target_message=self.current_env_message,
                     command="NULL",
                 )
+                self.context.logger.info("sending env message back with command = " + "NULL")
                 self.context.outbox.put_message(message=return_agent_env_message)
                 self.is_round_done = True
             else:
@@ -245,21 +247,21 @@ class BasicStrategy(Model):
                         direction = "move.west"
                 else:
                     randomizer = random.randint(1, 5)
-                    if self.move_direction_last_turn == "North":
+                    if self.move_direction_last_turn == "north":
                         if randomizer == 1:
                             direction = "move.west"
                         elif randomizer == 5:
                             direction = "move.east"
                         else:
                             direction = "move.north"
-                    elif self.move_direction_last_turn == "East":
+                    elif self.move_direction_last_turn == "east":
                         if randomizer == 1:
                             direction = "move.north"
                         elif randomizer == 5:
                             direction = "move.south"
                         else:
                             direction = "move.east"
-                    elif self.move_direction_last_turn == "South":
+                    elif self.move_direction_last_turn == "south":
                         if randomizer == 1:
                             direction = "move.east"
                         elif randomizer == 5:
@@ -267,7 +269,7 @@ class BasicStrategy(Model):
                         else:
                             direction = "move.south"
                     else:
-                        assert self.move_direction_last_turn == "West"
+                        assert self.move_direction_last_turn == "west"
                         if randomizer == 1:
                             direction = "move.south"
                         elif randomizer == 5:
@@ -279,6 +281,7 @@ class BasicStrategy(Model):
                     target_message=self.current_env_message,
                     command=direction,
                 )
+                self.context.logger.info("sending env message back with command = " + direction)
                 self.context.outbox.put_message(message=return_agent_env_message)
                 self.is_round_done = True
         if state == "returning":
