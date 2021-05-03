@@ -518,7 +518,7 @@ class Environment(Model):
                         self.context.logger.warning("could not parse action string {}".format(action))
             else:
                 self.context.logger.warning("could not parse action string {}".format(action))
-        agent.queue_command(action, command)
+        agent.queue_command(command)
 
     def start_next_simulation_turn(self) -> None:
         """Starts the next simulation turn."""
