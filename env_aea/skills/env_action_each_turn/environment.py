@@ -510,11 +510,8 @@ class Environment(Model):
                 self.context.logger.warning("could not parse action string {}".format(action))
         agent.queue_command(command)
 
-    def start_next_simulation_turn(self) -> None:
+    def update_simulation(self) -> None:
         """Starts the next simulation turn."""
-        # TODO rename to 'update_simulation' or something, because this will need to be called
-        # on the last turn, and has nothing to do with preparing the next turn
-
         self.state.update_simulation()
         self._agents_replied.clear()
 

@@ -94,7 +94,7 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
                 #   environment.phase = Phase.AGENTS_REPLY_RECEIVED
 
                 environment.phase = Phase.START_NEXT_SIMULATION_TURN
-                environment.start_next_simulation_turn()
+                environment.update_simulation()
                 self._replay_logger.log_state(environment.state)
 
         elif (environment.phase.value == Phase.SIMULATION_CANCELLED.value):
