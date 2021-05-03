@@ -148,10 +148,10 @@ class AgentMessageHandler(Handler):
             return
 
         self.context.logger.info(agent_agent_msg.performative)
-        if agent_agent_msg.performative == AgentAgentMessage.Performative.WATER_STATUS:
+        if agent_agent_msg.performative == AgentAgentMessage.Performative.RECEIVER_REPLY:
             # water status returned
             self._handle_returned_water_info(agent_agent_msg, agent_agent_dialogue)
-        elif agent_agent_msg.performative == AgentAgentMessage.Performative.REQUEST_INFO:
+        elif agent_agent_msg.performative == AgentAgentMessage.Performative.SENDER_REQUEST:
             # water status asked
             self._handle_water_query(agent_agent_msg, agent_agent_dialogue)
         else:
