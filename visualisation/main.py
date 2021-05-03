@@ -17,7 +17,8 @@ WHITE = (255, 255, 255)
 AGENT_STEER_STRENGTH = 4
 AGENTS_WANDER_STRENGTH = 0.5
 AGENT_RADIUS = 5
-BASIC_SPEED = 4
+BASIC_SPEED = 16
+TIME_STEP = 100
 
 font = pygame.font.SysFont("Times New Roman", 13)
 
@@ -99,7 +100,7 @@ def new_pos(agent, speed):
     desiredSteeringForce = (desiredVelocity - agent.vel) * AGENT_STEER_STRENGTH
     acceleration = clamp_norm(desiredSteeringForce, AGENT_STEER_STRENGTH) / 1
 
-    agent.vel = clamp_norm(agent.vel + acceleration, speed) / 1
+    agent.vel = clamp_norm((agent.vel + acceleration), speed) / 1
     agent.pos = agent.pos + agent.vel
 
 def updateAgent(state):
@@ -123,8 +124,8 @@ def updateAgent(state):
                 # if the distance between the agent and the center of the pit is smaller than the radius, we stop
                 if dist <= pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity)):
                     # deal with the start state where the agent is in the middle of the lake
-                    if (agent.pos == cell_pos).all():
-                        agent.pos[0] = agent.pos[0] - pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity))
+                    if (agent.pos == cell.pos).all():
+                        agent.pos[0] = cell.pos[0] - pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity))
                     agent.desired_dir = np.array([0, 0])
                 else:
                     temp = agent.desired_pos - agent.pos
@@ -196,12 +197,21 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused(state)
-                if event.key == pygame.K_RIGHT and state.speed < 4:
+                elif event.key == pygame.K_RIGHT and state.speed < 4:
                     state.speed *= 2
                     iteration = 0
-                if event.key == pygame.K_LEFT and state.speed > 1:
+                elif event.key == pygame.K_LEFT and state.speed > 1:
                     state.speed = math.floor(state.speed / 2)
                     iteration = 0
+                elif event.key == pygame.K_UP and state.time + TIME_STEP < state.max_time:
+                    state.time += 100
+                    state.init_load()
+                    iteration = 0
+                elif event.key == pygame.K_DOWN and state.time - TIME_STEP > 0:
+                    state.time -= 100
+                    state.init_load()
+                    iteration = 0
+
         if run:
             if iteration == BASIC_SPEED / state.speed:
                 state.load()
@@ -209,10 +219,10 @@ def main():
             else:
                 iteration += 1
 
+            updateAgent(state)
             SCREEN.fill(BLACK)
             draw_window(state)
             pygame.display.update()
-            updateAgent(state)
         
     pygame.quit()
 

@@ -51,7 +51,48 @@ class State():
         self.tile_height = HEIGHT / self.y_size
         self.pit_max_radius = min(self.tile_width/2, self.tile_height/2)
 
-        self.load()
+        self.init_load()
+
+    def init_load(self):
+        #reinitialize agents and cells
+        self.cells = []
+        self.agents = []
+
+        twcenter = self.tile_width / 2
+        thcenter = self.tile_height / 2
+
+        d = self.data[self.time+1]
+        assert(d['tick_number'] == self.time)
+        #agents on the next iteration, we want to know their position
+        nextTime = self.time+2
+        if self.time == self.max_time:
+            nextTime = 1
+
+        desired_pos_agents = self.data[nextTime]['agents']
+
+        j = 0 
+        for agent in d['agents']:
+            desired_pos_x = -1
+            desired_pos_y = -1
+            if j<len(desired_pos_agents) and desired_pos_agents[j]['id']==agent['id']:
+                desired_pos_x = desired_pos_agents[j]['x']
+                desired_pos_y = desired_pos_agents[j]['y']
+                j += 1
+            pos = computePos(agent['x'], agent['y'], self.tile_width, self.tile_height, twcenter, thcenter)
+            if desired_pos_x == -1:
+                self.agents.append(Agent(agent['id'],
+                    pos,
+                    pos,
+                    agent['inventory']))
+            else:
+                self.agents.append(Agent(agent['id'],
+                    pos,
+                    computePos(desired_pos_x, desired_pos_y, self.tile_width, self.tile_height, twcenter, thcenter),
+                    agent['inventory']))
+        for cell in d['cells']:
+            self.cells.append(Cell(computePos(cell['x'], cell['y'], self.tile_width, self.tile_height, twcenter, thcenter), cell['water']))
+        
+        self.time += 1
 
     def load(self):
         #reinitialize agents and cells
