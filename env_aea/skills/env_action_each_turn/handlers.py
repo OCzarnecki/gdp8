@@ -68,11 +68,7 @@ class EnvironmentHandler(Handler):
         self.context.logger.info(
             "handling the agent_environment message. performative={}".format(agent_env_msg.performative)
         )
-        # handle message
-        # if agent_env_msg.performative == AgentEnvironmentMessage.Performative.REGISTER:
-        #    self._on_register(agent_env_msg, agent_environment_dialogue)
-        # elif agent_env_msg.performative == AgentEnvironmentMessage.Performative.UNREGISTER:
-        #    self._on_unregister(agent_env_msg, agent_environment_dialogue)
+        #handle message
         if agent_env_msg.performative == AgentEnvironmentMessage.Performative.ACTION:
             self._handle_valid_tick_reply(agent_env_msg, agent_environment_dialogue)
         else:
@@ -107,95 +103,6 @@ class EnvironmentHandler(Handler):
             error_data={"Agent Environment Message": agent_env_msg.encode()},
         )
         self.context.outbox.put_message(message=default_msg)
-
-    def _on_register(self, agent_env_msg: AgentEnvironmentMessage,
-                     agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
-        """
-        Handle a register message.
-        If the address is not registered, answer with an error message.
-        
-        :param agent_env_msg: the agent environment message
-        :param agent_environment_dialogue: the agent environment dialogue
-        :return: None
-        """
-        environment = cast(Environment, self.context.environment)
-        if not environment.phase == Phase.SIMULATION_REGISTRATION:
-            self.context.logger.warning(
-                "received registration outside of environment registration phase: '{}'".format(
-                    agent_env_msg
-                )
-            )
-            return
-
-        ## we can implement a whitelist if undesired agents try to register
-        """parameters = cast(Parameters, self.context.parameters)
-        ##agent_name = agent_env_msg.agent_name## do we have a whitelist with the name of the agents ? or an id ? 
-        if len(parameters.whitelist) != 0 and agent_name not in parameters.whitelist:
-            self.context.logger.warning(
-                "agent name not in whitelist: '{}'".format(agent_name)
-            )
-            error_msg = agent_environment_dialogue.reply(
-                performative=AgentEnvironmentMessage.Performative.AGENT_ENV_ERROR,
-                target_message=agent_env_msg,## target or target_message ??
-                error_description= "agent not in whitelist",
-            )
-            self.context.outbox.put_message(message=error_msg)
-            return"""
-
-        environment = cast(Environment, self.context.environment)  ##why do it again ?
-        if agent_env_msg.sender in environment.registration.agent_addr_to_id:
-            self.context.logger.warning(
-                "agent already registered: '{}'".format(
-                    environment.registration.agent_addr_to_id[agent_env_msg.sender],
-                )
-            )
-            error_msg = agent_environment_dialogue.reply(
-                performative=AgentEnvironmentMessage.Performative.AGENT_ENV_ERROR,
-                target_message=agent_env_msg,
-                error_descrition="agent address already registered",
-            )
-            self.context.outbox.put_message(message=error_msg)
-            return
-
-        environment.registration.register_agent(agent_env_msg.sender)
-        self.context.logger.info("agent registered: '{}'".format(agent_env_msg.sender))
-
-    def _on_unregister(self, agent_env_msg: AgentEnvironmentMessage,
-                       agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
-        """
-        Handle an unregister message.
-        If the address is not registered, answer with an error message.
-
-        :param agent_env_msg: the agent environment message
-        :param agent_environment_dialogue: the agent environment dialogue
-        :return: None
-        """
-        environment = cast(Environment, self.context.environment)
-        if not environment.phase == Phase.SIMULATION_REGISTRATION:
-            self.context.logger.warning(
-                "received unregister outside of environment registration phase: '{}'".format(
-                    agent_env_msg
-                )
-            )
-            return
-
-        if agent_env_msg.sender not in environment.registration.agent_addr_to_id:
-            self.context.logger.warning(
-                "agent not registered: '{}'".format(agent_env_msg.sender)
-            )
-            error_msg = agent_environment_dialogue.reply(
-                performative=AgentEnvironmentMessage.Performative.AGENT_ENV_ERROR,
-                target_message=agent_env_msg,
-                error_description="agent not registered",
-            )
-            self.context.outbox.put_message(message=error_msg)
-        else:
-            self.context.logger.debug(
-                "agent unregistered: '{}'".format(
-                    environment.registration.agent_addr_to_id[agent_env_msg.sender],
-                )
-            )
-            environment.registration.unregister_agent(agent_env_msg.sender)
 
     def _handle_valid_tick_reply(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue):
         """

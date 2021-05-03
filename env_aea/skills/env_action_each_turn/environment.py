@@ -58,6 +58,7 @@ class CommandType(Enum):
     """ Enum of possible types of command """
     OFFER_WATER = auto()
     REQUEST_WATER = auto()
+    MOVE = auto()
     IDLE = auto()
 
 
@@ -73,12 +74,15 @@ class OfferWaterCommand(Command):
         super().__init__(CommandType.OFFER_WATER)
         self.quantity = quantity
 
-
 class ReceiveWaterCommand(Command):
     def __init__(self, quantity):
         super().__init__(CommandType.REQUEST_WATER)
         self.quantity = quantity
 
+class MoveCommand(Command):
+    def __init__(self, direction):
+        super().__init__(CommandType.MOVE)
+        self.direction = direction
 
 class IdleCommand(Command):
     def __init__(self):
@@ -95,7 +99,9 @@ class Agent:
         self.water = initial_water
         self.pos_x = pos_x
         self.pos_y = pos_y
+        self.movement_last_turn = None
         self.queue_command(None)
+
 
     def queue_command(self, command):
         """ Set the command that the agent wants to execute this
@@ -158,6 +164,7 @@ class SimulationState:
             for the next one. """
         self.turn_number += 1
         self._transfer_water()
+        self._move_agents()
         for agent in self._agents_by_id:
             # Charge water cost
             agent.water = max(agent.water - 1, 0)  # an agent could already have given all water away :(
@@ -197,6 +204,40 @@ class SimulationState:
                 } for x in range(self.size_x)
                 for y in range(self.size_y)]
         }
+
+    def _move_agents(self):
+        """
+        Update position of all agents that wanted to move. 
+        If the position is already taken, the action will be discarded.
+        The world is "round", if you reach the top and move up you go back to the bottom.
+
+        """
+        for agent in self.get_agents_alive(): 
+            if agent.next_command.command_type == CommandType.MOVE:
+                direction = agent.next_command.direction 
+                if direction == "north":
+                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y - 1)
+                elif direction == "south":
+                    self._try_moving(agent, agent.pos_x, agent.pos_y + 1)
+                elif direction == "west":
+                    self._try_moving(agent, agent.pos_x - 1, agent.pos_y)
+                elif direction == "east":
+                    self._try_moving(agent, agent.pos_x + 1, agent.pos_y)
+                else:
+                    self.context.logger.info("Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
+            else : 
+                agent.movement_last_turn = None        
+
+    def _try_moving(self, agent, direction, try_pos_x, try_pos_y):
+        try_pos_x = try_pos_x % self.size_x
+        try_pos_y = try_pos_y % self.size_y
+        if self._agent_grid[try_pos_x][try_pos_y] == None:
+            agent.pos_x = try_pos_x
+            agent.pos_y = try_pos_y
+            agent.movement_last_turn = direction
+        else :
+            agent.movement_last_turn = None
+        return
 
     def _transfer_water(self):
         """ Update the agents' water inventory by one turn. This
@@ -455,6 +496,7 @@ class Environment(Model):
             tokens = action.split(".")
             if len(tokens) == 0:
                 self.context.logger.warning("got empty action string")
+
             elif tokens[0] == "offer_water":
                 if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
@@ -463,12 +505,22 @@ class Environment(Model):
                         command = OfferWaterCommand(int(tokens[1]))
                     except ValueError:
                         self.context.logger.warning("could not parse action string {}".format(action))
+
             elif tokens[0] == "receive_water":
                 if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
                 else:
                     try:
                         command = ReceiveWaterCommand(int(tokens[1]))
+                    except ValueError:
+                        self.context.logger.warning("could not parse action string {}".format(action))
+
+            elif tokens[0] == "move":
+                if len(tokens) != 2:
+                    self.context.logger.warning("could not parse action string {}".format(action))
+                else:
+                    try:
+                        command = MoveCommand(int(tokens[1]))
                     except ValueError:
                         self.context.logger.warning("could not parse action string {}".format(action))
             else:

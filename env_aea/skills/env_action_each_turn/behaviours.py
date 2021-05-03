@@ -41,7 +41,7 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
 
     def __init__(self, **kwargs: Any):
         """Instantiate the behaviour."""
-        super().__init__(**kwargs)  ##
+        super().__init__(**kwargs) 
         self._mapping_path = kwargs['mapping_path']
 
     def setup(self) -> None:
@@ -68,34 +68,25 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         """
         environment = cast(Environment, self.context.environment)
 
-        if (
-                environment.phase.value == Phase.PRE_SIMULATION.value
-        ):
+        if (environment.phase.value == Phase.PRE_SIMULATION.value):
             # should have a list of all agents and their address at the end of this phase
-            ##environment.create()## do we need to generate a simulation ?
-            # self._unregister_env()
-            # tell the env that the simulation starts?
+            ##if nothing has to be done before the simulation this phase can be removed
             self.context.logger.info("Starting simulation")
             environment.phase = Phase.START_SIMULATION
-        elif (
-                environment.phase.value == Phase.START_SIMULATION.value
-        ):
+
+        elif (environment.phase.value == Phase.START_SIMULATION.value):
             # Set up simulation logging
             self._replay_logger.initialize(environment.state)
             # Log initial state
             self._replay_logger.log_state(environment.state)
             environment.phase = Phase.START_NEXT_SIMULATION_TURN
 
-        elif (
-                environment.phase.value == Phase.START_NEXT_SIMULATION_TURN.value
-        ):
+        elif (environment.phase.value == Phase.START_NEXT_SIMULATION_TURN.value):
             environment.phase = Phase.COLLECTING_AGENTS_REPLY
             self._send_tick_messages(environment)
             self.context.logger.info("tick messages sent, waiting for replies")
 
-        elif (
-                environment.phase.value == Phase.COLLECTING_AGENTS_REPLY.value
-        ):
+        elif (environment.phase.value == Phase.COLLECTING_AGENTS_REPLY.value):
             if environment.agents_reply_received:
                 environment.phase = Phase.AGENTS_REPLY_RECEIVED
                 # elif after_some_time_contraint:
@@ -106,9 +97,7 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
                 environment.start_next_simulation_turn()
                 self._replay_logger.log_state(environment.state)
 
-        elif (
-                environment.phase.value == Phase.SIMULATION_CANCELLED.value
-        ):
+        elif (environment.phase.value == Phase.SIMULATION_CANCELLED.value):
             ## the simulation has been canceled
             environment.end_simulation()
             self._cancel_simulation()
@@ -166,29 +155,13 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         turn_number = environment.turn_number
         self.context.logger.info("Sending tick messages for turn number: '{}'".format(turn_number))
         agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
+
         for agent_address in environment.agents_alive:
-            self.context.logger.info("Sending tick message to: '{}'".format(agent_address))
-
             tile_water = environment.water_content(agent_address)
-            self.context.logger.info("tile_water '{}'".format(tile_water))
             agent_water = environment.agent_water(agent_address)
-            self.context.logger.info("agent_water '{}'".format(agent_water))
             neighbour_ids = environment.neighbour_ids(agent_address)
-            self.context.logger.info("neighbours id: '{}'".format(neighbour_ids))
 
-            """
-            _tac_dialogues = tac_dialogues.get_dialogues_with_counterparty(
-                agent_address
-            )
-            if len(_tac_dialogues) != 1:
-                raise ValueError("Error when retrieving dialogue.")
-            tac_dialogue = _tac_dialogues[0]
-            last_msg = tac_dialogue.last_message
-            if last_msg is None:
-                raise ValueError("Error when retrieving last message.")
-            tac_msg = tac_dialogue.reply("""  ## we can do something similar as this if the dialogue below doesn't work
-
-            tick_msg, _ = agent_environment_dialogues.create(
+            tick_msg, _agent_environment_dialogue = agent_environment_dialogues.create(
                 # dialogue_reference=???,
                 # message_id=???,
                 # target_message=???,
