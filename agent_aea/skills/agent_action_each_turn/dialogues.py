@@ -123,7 +123,7 @@ class AgentAgentDialogues(Model, BaseAgentAgentDialogues):
             :param receiver_address: the address of the receiving agent
             :return: The role of the agent
             """
-            return AgentAgentDialogue.Role.AGENT  # INFO_REQUESTER?? COULD BE EITHER ONE?
+            return AgentAgentDialogue.Role.INFO_REQUESTER
 
         BaseAgentAgentDialogues.__init__(
             self,

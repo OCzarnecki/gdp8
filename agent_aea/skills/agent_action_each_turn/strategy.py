@@ -128,9 +128,9 @@ class BasicStrategy(Model):
                 # self.outbox.
                 send_agent_agent_message, _ = agent_agent_dialogues.create(
                     counterparty=i[0],
-                    performative=AgentAgentMessage.Performative.REQUEST_INFO,
+                    performative=AgentAgentMessage.Performative.SENDER_REQUEST,
                     turn_number=self.round_no,
-                    requests="water_info"
+                    request="water_info"
                 )
                 self.context.outbox.put_message(message=send_agent_agent_message)
                 self.context.logger.info(i[0])
