@@ -25,11 +25,11 @@ https://github.com/fetchai/agents-aea/blob/main/packages/fetchai/skills/tac_cont
 
 from aea.skills.base import Model
 from aea.common import Address
-from aea.helpers.search.generic import (
-    AGENT_LOCATION_MODEL,
-    AGENT_REMOVE_SERVICE_MODEL,
-    AGENT_SET_SERVICE_MODEL,
-)
+# from aea.helpers.search.generic import (
+#    AGENT_LOCATION_MODEL,
+#    AGENT_REMOVE_SERVICE_MODEL,
+#    AGENT_SET_SERVICE_MODEL,
+# )
 # Causes syntax error
 # from aea.helpers.search.models import
 
@@ -37,7 +37,8 @@ from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMap
 
 from enum import Enum, auto
 from itertools import product
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict
+# from typing import List, Optional, cast
 
 import random
 
@@ -264,12 +265,14 @@ class SimulationState:
                 self._transfers[x][y] = 0
                 agent = self.get_agent_by_pos(x, y)
                 self._needs[x][y] = 0
-                if agent != None and agent.next_command != None:
+                if agent is not None and agent.next_command is not None:
                     if agent.next_command.command_type == CommandType.REQUEST_WATER:
                         self._needs[x][y] = agent.next_command.quantity
                     elif agent.next_command.command_type == CommandType.OFFER_WATER:
                         self._needs[x][y] = -1 * min(agent.next_command.quantity,
                                                      agent.water + self._minable_at(x, y))
+                    elif agent.next_command.command_type == CommandType.IDLE:
+                        pass
         # Compute transfers
         agent_positions = [(agent.pos_x, agent.pos_y) for agent in self.get_agents_alive()]
         for (x, y) in agent_positions:
@@ -282,7 +285,7 @@ class SimulationState:
                                     and 0 <= y + dy < self.size_y]
                 for (dst_x, dst_y) in neighbour_coords:
                     dst_agent = self.get_agent_by_pos(dst_x, dst_y)
-                    if dst_agent != None and self._needs[dst_x][dst_y] > 0:
+                    if dst_agent is not None and self._needs[dst_x][dst_y] > 0:
                         transfer_amount = min(self._agent_max_capacity
                                               - dst_agent.water
                                               - self._minable_at(dst_x, dst_y)
@@ -327,11 +330,23 @@ class SimulationState:
         self.agent_count = agent_count
         self._agents_by_id = []
         self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
+        agent = Agent(current_id, initial_agent_water, 1, 0)
+        self._agents_by_id.append(agent)
+        self._agent_grid[1][0] = agent
+        current_id += 1
+
+        agent = Agent(current_id, initial_agent_water, 1, 1)
+        self._agents_by_id.append(agent)
+        self._agent_grid[1][1] = agent
+        current_id += 1
+
+        """             !!!!!!!!!!!!!!!REVERT!!!!!!!!!!!!!!
         for (x, y) in self._unique_random_coords(agent_count):
             agent = Agent(current_id, initial_agent_water, x, y)
             self._agents_by_id.append(agent)
             self._agent_grid[x][y] = agent
             current_id += 1
+        """
 
     def _unique_random_coords(self, count):
         """ Returns a list of `count` unique, uniformly distributed, random,
@@ -363,7 +378,7 @@ class Registration:
         :param agent_addr: the Address of the agent
         :return: None
         """
-        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id)  ##??? give it a new id
+        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id)  # ??? give it a new id
 
     def unregister_agent(self, agent_addr: Address) -> None:
         """
@@ -455,37 +470,35 @@ class Environment(Model):
     @property
     def agents_reply_received(self) -> bool:
         """Get true if the env received a reply from all agents still alive this turn"""
-        return len(self._agents_replied) == 42  # TODO figure out where to get this
+        return len(self._agents_replied) == self.agents_alive.__len__()
 
     def remove_dead_agents(self) -> None:
         """Removes all agents who haven't replied this turn from the list of agents alive."""
         # Nothing to do, currently.
         pass
 
-    def save_action(self, agent_address, action, water_content) -> None:
+    def save_action(self, agent_address, action) -> None:
         """Saves the agent's action for this turn."""
         agent_id = self.address_to_id(agent_address)
         agent = self.state.get_agent_by_id(agent_id)
         self._agents_replied.add(agent_id)
         command = None
-        tokens = action.split(".")
-        if len(tokens) == 0:
-            self.context.logger.warning("got empty action string")
-        elif tokens[0] == "offer_water":
-            if len(tokens) != 2:
-                self.context.logger.warning("could not parse action string {}".format(action))
-            else:
-                try:
-                    command = OfferWaterCommand(int(tokens[1]))
-                except ValueError:
+        if action == "NULL":
+            command = IdleCommand()
+        else:
+            tokens = action.split(".")
+            if len(tokens) == 0:
+                self.context.logger.warning("got empty action string")
+            elif tokens[0] == "offer_water":
+                if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
-        elif tokens[0] == "receive_water":
-            if len(tokens) != 2:
-                self.context.logger.warning("could not parse action string {}".format(action))
-            else:
-                try:
-                    command = ReceiveWaterCommand(int(tokens[1]))
-                except ValueError:
+                else:
+                    try:
+                        command = OfferWaterCommand(int(tokens[1]))
+                    except ValueError:
+                        self.context.logger.warning("could not parse action string {}".format(action))
+            elif tokens[0] == "receive_water":
+                if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
         elif tokens[0] == "move":
             if len(tokens) != 2:

@@ -11,7 +11,7 @@ speech_acts:
     tile_water: pt:int
     turn_number: pt:int
     agent_water: pt:int
-    neighbour_ids: pt:set[pt:int]
+    neighbour_ids: pt:set[pt:str]
   action:
     command: pt:str
 ...

@@ -40,17 +40,19 @@ class AgentLogicBehaviour(TickerBehaviour):
 
     def act(self) -> None:
 
+        self.context.logger.info("act called")
         strategy = cast(BasicStrategy, self.context.strategy)
 
         there_is_agent_asking_for_water_info = True
         while there_is_agent_asking_for_water_info:
             there_is_agent_asking_for_water_info = strategy.deal_with_an_agent_asking_for_water_info()
-
         if not strategy.is_round_done:
             info_is_enough = strategy.enough_info_to_make_decision()
             if info_is_enough:
                 strategy.make_decision_send_to_env()
+                self.context.logger.info("info enough - send reply")
             else:
+                self.context.logger.info("info not enough - send/wait")
                 asking_for_info = True
                 while asking_for_info:
                     asking_for_info = strategy.potentially_ask_for_info()

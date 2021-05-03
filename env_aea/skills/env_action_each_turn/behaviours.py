@@ -84,6 +84,7 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         elif (environment.phase.value == Phase.START_NEXT_SIMULATION_TURN.value):
             environment.phase = Phase.COLLECTING_AGENTS_REPLY
             self._send_tick_messages(environment)
+            self.context.logger.info("tick messages sent, waiting for replies")
 
         elif (environment.phase.value == Phase.COLLECTING_AGENTS_REPLY.value):
             if environment.agents_reply_received:
