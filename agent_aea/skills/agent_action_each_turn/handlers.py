@@ -64,8 +64,7 @@ class EnvironmentMessageHandler(Handler):
             self._handle_unidentified_dialogue(agent_env_msg)
             return
 
-        # handle message
-        # environment = cast(Environment, self.context.environment)##
+        #handle message
         self.context.logger.debug(
             "handling environment response. performative={}".format(agent_env_msg.performative)
         )
