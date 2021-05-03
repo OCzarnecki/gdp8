@@ -1,0 +1,44 @@
+name: agent_action_each_turn
+author: gdp8
+version: 0.1.0
+type: skill
+description: This skill recieves info from environment agent every turn, make a decision
+  by communicating with other agent and makes a decision to return to an environment
+  agent.
+license: Apache-2.0
+aea_version: '>=1.0.0'
+fingerprint:
+  __init__.py: QmW2ruHq4t1ivCWRGF3BDZjHi4sH1ykoYjz1hExRfkWQmL
+  behaviours.py: QmayH6KqSPQ4bdgeCidLYHunExpPWkNGReFJxci6o6b2AZ
+  dialogues.py: QmQjaUcAff4HPjCSEu9eP9oTrM3kXGkpBx6FkxNgnAwL9D
+  handlers.py: QmRYc9kV23PAakeiuo3HrRNgwyjX9zGa6MXDHmRuCXPMwc
+  strategy.py: QmQ9A4he8hNkDJQPXt7XxRFTHU8bRieY8bMuJEAXc69zdX
+fingerprint_ignore_patterns: []
+connections: []
+contracts: []
+protocols: []
+skills: []
+behaviours:
+  agent_behaviour:
+    args:
+      tick_interval: 2
+    class_name: AgentLogicBehaviour
+handlers:
+  agent_message_handler:
+    args: {}
+    class_name: AgentMessageHandler
+  environment_message_handler:
+    args: {}
+    class_name: EnvironmentMessageHandler
+models:
+  agent_agent_dialogues:
+    args: {}
+    class_name: AgentAgentDialogues
+  agent_environment_dialogues:
+    args: {}
+    class_name: AgentEnvironmentDialogues
+  strategy:
+    args: {}
+    class_name: BasicStrategy
+dependencies: {}
+is_abstract: false
