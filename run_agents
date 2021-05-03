@@ -1,0 +1,80 @@
+#!bin/python
+
+import os
+import time
+
+from pathlib import Path
+
+from aea.configurations.base import PublicId
+from aea.manager import MultiAgentManager
+
+
+
+class ApplicationRunner:
+    def _init_mam(self):
+        WORKING_DIR = "mam"
+        REGISTRY_PATH = "packages"
+
+        self._manager = MultiAgentManager(
+            WORKING_DIR,
+            registry_path = REGISTRY_PATH
+        )
+        self._manager.start_manager(local=True)
+
+    def _start_env(self):
+        env_id = PublicId.from_str("gdp8/env_aea:0.1.0")
+        self._manager.add_project(env_id)
+        agent_overrides = {
+                "connection_private_key_paths": {
+                    "fetchai": "../../../keys/ckp.txt"
+                }
+        }
+        self._manager.add_agent(
+                env_id, 
+                agent_overrides=agent_overrides
+        )
+        self._manager.start_agent(env_id.name)
+
+    def _start_agent_with_id(self, agent_id_simulation):
+        name = f"agent-{agent_id_simulation}"
+        agent_overrides = {
+#                "agent_name": name,
+                "connection_private_key_paths": {
+                    "fetchai": "../../../keys/ckp.txt"
+                },
+                "private_key_paths": {
+                    "fetchai": f"../../../keys/fetchai_private_key-{agent_id_simulation}.txt"
+                }
+        }
+        self._manager.add_agent(
+                self._agent_id, 
+                agent_overrides=agent_overrides
+        )
+        #self._manager.start_agent(name)
+        self._manager.start_agent(self._agent_id.name)
+
+    
+    def _start_agents(self):
+        self._agent_id = PublicId.from_str("gdp8/agent_aea:0.1.0")
+        self._manager.add_project(self._agent_id)
+        for i in range(5):
+            self._start_agent_with_id(i)
+
+
+    def _cleanup(self):
+        if self._manager:
+            self._manager.stop_all_agents()
+            self._manager.stop_manager()
+
+    def main(self):
+        try:
+            self._init_mam()
+            self._start_agents()
+            time.sleep(5.0)
+            self._start_env()
+            time.sleep(5.0)
+        finally:
+            self._cleanup()
+
+if __name__ == "__main__":
+    ApplicationRunner().main()
