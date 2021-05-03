@@ -63,20 +63,23 @@ class BasicStrategy(Model):
         self.current_env_dialogue = agent_environment_dialogue
         self.tile_water = agent_environment_message.tile_water
         self.agent_water = agent_environment_message.agent_water
-        self.neighbour_id = list(agent_environment_message.neighbour_ids)
-        self.neighbour_water_amount = [[i, "Unknown"] for i in self.neighbour_id]
+        self.neighbour_id = [agent_environment_message.north_neighbour_id, agent_environment_message.east_neighbour_id,
+                             agent_environment_message.south_neighbour_id, agent_environment_message.west_neighbour_id]
+        print(agent_environment_message)
+        self.neighbour_water_amount = [[i, "Unknown"] for i in self.neighbour_id if i != "None"]
+        self.context.logger.info(self.neighbour_water_amount)
         self.is_round_done = False
 
     def receive_agent_agent_info(self, agent_agent_message: AgentAgentMessage) -> None:
         # If round number is of prev round. discard
         # If round number is of future round. something is wrong cuz you should not be able to
         # request anything
-        assert self.round_no >= agent_agent_message.turn_number
-        if self.round_no == agent_agent_message.turn_number:
-            if not self.is_round_done:
-                # Use info
-                index = self.neighbour_water_amount.index([agent_agent_message.target, "Asking"])
-                self.neighbour_water_amount[index] = [agent_agent_message.target, agent_agent_message.water]
+        # assert self.round_no >= agent_agent_message.turn_number
+        # if self.round_no == agent_agent_message.turn_number:
+        if not self.is_round_done:
+            # Use info
+            index = self.neighbour_water_amount.index([agent_agent_message.sender, "Asking"])
+            self.neighbour_water_amount[index] = [agent_agent_message.sender, int(agent_agent_message.reply)]
 
     def deal_with_an_agent_asking_for_water_info(self) -> bool:
         # Return true if a request was dealt with, return false if there were no request dealt with
@@ -91,9 +94,9 @@ class BasicStrategy(Model):
             dialogue = cast(AgentAgentDialogue, dialogue_)
             if message.turn_number == self.round_no:
                 return_message = dialogue.reply(
-                    performative=AgentAgentMessage.Performative.WATER_STATUS,
+                    performative=AgentAgentMessage.Performative.RECEIVER_REPLY,
                     target_message=message,
-                    water_status=self.agent_water,
+                    reply=str(self.agent_water),
                 )
                 self.context.outbox.put_message(message=return_message)
                 return True
@@ -112,6 +115,7 @@ class BasicStrategy(Model):
         # currently, ALL info has to be asked for
         # return true if a message asking for water is sent
         # false otherwise
+        print(self.neighbour_water_amount)
         for i in self.neighbour_water_amount:
             if i[1] == "Unknown":
                 i[1] = "Asking"
@@ -126,10 +130,12 @@ class BasicStrategy(Model):
                 # self.outbox.
                 send_agent_agent_message, _ = agent_agent_dialogues.create(
                     counterparty=i[0],
-                    performative=AgentAgentMessage.Performative.REQUEST_INFO,
+                    performative=AgentAgentMessage.Performative.SENDER_REQUEST,
                     turn_number=self.round_no,
+                    request="water_info"
                 )
                 self.context.outbox.put_message(message=send_agent_agent_message)
+                self.context.logger.info(i[0])
                 return True
         return False
 
@@ -142,7 +148,7 @@ class BasicStrategy(Model):
         sum_of_all_agents = self.agent_water
         for i in self.neighbour_water_amount:
             sum_of_all_agents += i[1]
-        average = (sum_of_all_agents + self.agent_water) / (len(self.neighbour_water_amount) + 1)
+        average = sum_of_all_agents / (len(self.neighbour_water_amount) + 1)
         difference = int(self.agent_water - average)
         # difference > 0 => offer water, vice versa, difference ALWAYS underestimated if not accurate
         if difference > 0:
@@ -151,6 +157,11 @@ class BasicStrategy(Model):
             decision: str = "NULL"
         else:  # difference > 0
             decision: str = "receive_water" + "." + str(-difference)
+        self.context.logger.info(
+            "sending command={} to env={}".format(
+                decision, self.current_env_message.sender
+            )
+        )
         return_agent_env_message = self.current_env_dialogue.reply(
             performative=AgentEnvironmentMessage.Performative.ACTION,
             target_message=self.current_env_message,

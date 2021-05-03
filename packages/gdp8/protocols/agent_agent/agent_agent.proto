@@ -5,17 +5,18 @@ package aea.gdp8.agent_agent_communication.v0_1_0;
 message AgentAgentMessage{
 
   // Performatives and contents
-  message Water_Status_Performative{
-    int32 water = 1;
+  message Sender_Request_Performative{
+    string request = 1;
+    int32 turn_number = 2;
   }
 
-  message Request_Info_Performative{
-    int32 turn_number = 1;
+  message Receiver_Reply_Performative{
+    string reply = 1;
   }
 
 
   oneof performative{
-    Request_Info_Performative request_info = 5;
-    Water_Status_Performative water_status = 6;
+    Receiver_Reply_Performative receiver_reply = 5;
+    Sender_Request_Performative sender_request = 6;
   }
 }
