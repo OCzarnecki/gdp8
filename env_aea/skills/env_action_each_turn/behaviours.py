@@ -159,18 +159,19 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         for agent_address in environment.agents_alive:
             tile_water = environment.water_content(agent_address)
             agent_water = environment.agent_water(agent_address)
-            neighbour_ids = environment.neighbour_ids(agent_address)
+            n, e, s, w = environment.neighbours_nesw(agent_address)
+            agent_movement = environment.agent_movement(agent_address)
 
             tick_msg, _agent_environment_dialogue = agent_environment_dialogues.create(
-                # dialogue_reference=???,
-                # message_id=???,
-                # target_message=???,
                 counterparty=agent_address,
                 performative=AgentEnvironmentMessage.Performative.TICK,
-                # agent_name?
                 tile_water=tile_water,
                 turn_number=turn_number,
                 agent_water=agent_water,
-                neighbour_ids=neighbour_ids,
+                north_neighbour_id=n if n else "None",
+                east_neighbour_id=e if e else "None",
+                south_neighbour_id=s if s else "None",
+                west_neighbour_id=w if w else "None",
+                movement_last_turn=agent_movement if agent_movement else "None"
             )
             self.context.outbox.put_message(message=tick_msg)

@@ -361,47 +361,11 @@ class SimulationState:
         possible_coords = list(product(range(self.size_x), range(self.size_y)))
         return random.sample(possible_coords, count)
 
-
-class Registration:
-    """Class managing the registration of the simulation."""
-
-    def __init__(self) -> None:
-        """Instantiate the registration class."""
-        self._agent_addr_to_id = {}  # type: Dict[str, int]
-
-    @property
-    def agent_addr_to_id(self) -> Dict[str, int]:
-        """Get the registered agent addresses and their ids."""
-        return self._agent_addr_to_id
-
-    @property
-    def nb_agents(self) -> int:
-        """Get the number of registered agents."""
-        return len(self._agent_addr_to_id)
-
-    def register_agent(self, agent_addr: Address) -> None:
-        """
-        Register an agent.
-        :param agent_addr: the Address of the agent
-        :return: None
-        """
-        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id)  # ??? give it a new id
-
-    def unregister_agent(self, agent_addr: Address) -> None:
-        """
-        Register an agent.
-        :param agent_addr: the Address of the agent
-        :return: None
-        """
-        self._agent_addr_to_id.pop(agent_addr)
-
-
 class Environment(Model):
     """Model of the environment."""
 
     def __init__(self, **kwargs: Any) -> None:
         self._phase = Phase.PRE_SIMULATION
-        self._registration = Registration()
         self.state = SimulationState(
             kwargs['size_x'],
             kwargs['size_y'],
@@ -437,11 +401,6 @@ class Environment(Model):
         self._phase = phase
 
     @property
-    def registration(self) -> Registration:
-        """Get the registration."""
-        return self._registration
-
-    @property
     def turn_number(self) -> int:
         """Get the current turn number of the simulation."""
         return self.state.turn_number
@@ -457,16 +416,40 @@ class Environment(Model):
         agent_id = self.address_to_id(agent_address)
         return self.state.get_agent_by_id(agent_id).water
 
-    def neighbour_ids(self, agent_address):
-        """Get the list of addresses of the agents neighbours."""
-        # TODO rename method to 'neighbours'
+    def agent_movement(self, agent_address) -> str:
+        """Get the direction in which the agent was moved last turn.
+           one of "north", "east", "south", "west", or None if the
+           agent didn't move."""
+        agent_id = self.address_to_id(agent_address)
+        return self.state.get_agent_by_id(agent_id).movement_last_turn
+
+    def neighbours_nesw(self, agent_address):
+        """Get the list of addresses of the agents neighbours.
+           :return 4-tuple, where each element is either the
+                   neighbouring agent address, or None if there
+                   is no agent. The addresses are layed out like
+                   this: (N, W, S, E), where N corresponds to the
+                   address in the north etc."""
         agent = self.state.get_agent_by_id(self.address_to_id(agent_address))
-        neighbour_coords = [(agent.pos_x + x, agent.pos_y + y)
-                            for (x, y) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
-                            if 0 <= agent.pos_x + x < self.state.size_x
-                            and 0 <= agent.pos_y + y < self.state.size_y]
-        possible_agents = [self.state.get_agent_by_pos(x, y) for (x, y) in neighbour_coords]
-        return frozenset([self.id_to_address(agent.agent_id) for agent in possible_agents if agent is not None])
+        x, y = agent.pos_x, agent.pos_y
+        n, e, s, w = None, None, None, None
+        if y >= 1:
+            north_agent = self.state.get_agent_by_pos(x, y - 1)
+            if north_agent:
+                n = self.id_to_address(north_agent.agent_id)
+        if x + 1 < self.state.size_x:
+            east_agent = self.state.get_agent_by_pos(x + 1, y)
+            if east_agent:
+                e = self.id_to_address(east_agent.agent_id)
+        if y + 1 < self.state.size_y:
+            south_agent = self.state.get_agent_by_pos(x, y + 1)
+            if south_agent:
+                s = self.id_to_address(south_agent.agent_id)
+        if x >= 1:
+            west_agent = self.state.get_agent_by_pos(x - 1, y)
+            if west_agent:
+                w = self.id_to_address(west_agent.agent_id)
+        return (n, e, s, w)
 
     @property
     def agents_alive(self) -> Dict[str, str]:
