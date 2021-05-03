@@ -65,7 +65,7 @@ class BasicStrategy(Model):
         self.agent_water = agent_environment_message.agent_water
         self.neighbour_id = [agent_environment_message.north_neighbour_id, agent_environment_message.east_neighbour_id,
                              agent_environment_message.south_neighbour_id, agent_environment_message.west_neighbour_id]
-        self.neighbour_water_amount = [[i, "Unknown"] for i in self.neighbour_id]
+        self.neighbour_water_amount = [[i, "Unknown"] for i in self.neighbour_id if i != "None"]
         self.context.logger.info(self.neighbour_water_amount)
         self.is_round_done = False
 
@@ -93,7 +93,7 @@ class BasicStrategy(Model):
             dialogue = cast(AgentAgentDialogue, dialogue_)
             if message.turn_number == self.round_no:
                 return_message = dialogue.reply(
-                    performative=AgentAgentMessage.Performative.WATER_STATUS,
+                    performative=AgentAgentMessage.Performative.RECEIVER_REPLY,
                     target_message=message,
                     reply=str(self.agent_water),
                 )

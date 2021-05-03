@@ -337,23 +337,12 @@ class SimulationState:
         self.agent_count = agent_count
         self._agents_by_id = []
         self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
-        agent = Agent(current_id, initial_agent_water, 1, 0)
-        self._agents_by_id.append(agent)
-        self._agent_grid[1][0] = agent
-        current_id += 1
-
-        agent = Agent(current_id, initial_agent_water, 1, 1)
-        self._agents_by_id.append(agent)
-        self._agent_grid[1][1] = agent
-        current_id += 1
-
-        """             !!!!!!!!!!!!!!!REVERT!!!!!!!!!!!!!!
+        
         for (x, y) in self._unique_random_coords(agent_count):
             agent = Agent(current_id, initial_agent_water, x, y)
             self._agents_by_id.append(agent)
             self._agent_grid[x][y] = agent
             current_id += 1
-        """
 
     def _unique_random_coords(self, count):
         """ Returns a list of `count` unique, uniformly distributed, random,
