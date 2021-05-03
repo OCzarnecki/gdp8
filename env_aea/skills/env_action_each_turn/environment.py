@@ -24,7 +24,7 @@ https://github.com/fetchai/agents-aea/blob/main/packages/fetchai/skills/tac_cont
 """
 
 from aea.skills.base import Model
-from aea.common import Address
+# from aea.common import Address
 # from aea.helpers.search.generic import (
 #    AGENT_LOCATION_MODEL,
 #    AGENT_REMOVE_SERVICE_MODEL,
@@ -74,15 +74,18 @@ class OfferWaterCommand(Command):
         super().__init__(CommandType.OFFER_WATER)
         self.quantity = quantity
 
+
 class ReceiveWaterCommand(Command):
     def __init__(self, quantity):
         super().__init__(CommandType.REQUEST_WATER)
         self.quantity = quantity
 
+
 class MoveCommand(Command):
     def __init__(self, direction):
         super().__init__(CommandType.MOVE)
         self.direction = direction
+
 
 class IdleCommand(Command):
     def __init__(self):
@@ -101,7 +104,6 @@ class Agent:
         self.pos_y = pos_y
         self.movement_last_turn = None
         self.queue_command(None)
-
 
     def queue_command(self, command):
         """ Set the command that the agent wants to execute this
@@ -135,7 +137,7 @@ class SimulationState:
         self._generate_water(initial_oasis_water, oasis_count)
         self._init_agents(agent_count, initial_agent_water)
         self.turn_number = 0
-        # Alocate datastructures used in update_simulation once
+        # Allocate datastructures used in update_simulation once
         self._needs = [[0] * size_y for _ in range(size_x)]
         self._transfers = [[0] * size_y for _ in range(size_x)]
 
@@ -212,9 +214,9 @@ class SimulationState:
         The world is "round", if you reach the top and move up you go back to the bottom.
 
         """
-        for agent in self.get_agents_alive(): 
+        for agent in self.get_agents_alive():
             if agent.next_command.command_type == CommandType.MOVE:
-                direction = agent.next_command.direction 
+                direction = agent.next_command.direction
                 if direction == "north":
                     self._try_moving(agent, direction, agent.pos_x, agent.pos_y - 1)
                 elif direction == "south":
@@ -224,18 +226,19 @@ class SimulationState:
                 elif direction == "east":
                     self._try_moving(agent, direction, agent.pos_x + 1, agent.pos_y)
                 else:
-                    self.context.logger.info("Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
-            else : 
-                agent.movement_last_turn = None        
+                    self.context.logger.info(
+                        "Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
+            else:
+                agent.movement_last_turn = None
 
     def _try_moving(self, agent, direction, try_pos_x, try_pos_y):
         try_pos_x = try_pos_x % self.size_x
         try_pos_y = try_pos_y % self.size_y
-        if self._agent_grid[try_pos_x][try_pos_y] == None:
+        if self._agent_grid[try_pos_x][try_pos_y] is None:
             agent.pos_x = try_pos_x
             agent.pos_y = try_pos_y
             agent.movement_last_turn = direction
-        else :
+        else:
             agent.movement_last_turn = None
         return
 
@@ -244,7 +247,7 @@ class SimulationState:
             includes both mining, and the resolution of transfers
             the agents make among themselves. If requests or
             offers for water are not consistent with each other,
-            arbitrary tiebreaking will be applied. The details
+            arbitrary tie-breaking will be applied. The details
             are not specified. In particular, there is no
             guarantee for optimality. """
         # Algorithm description:
@@ -255,7 +258,7 @@ class SimulationState:
         # while the algorithm is running.
         #
         # Also maintain transfers, indicating how much water
-        # should be transfered to or from an agent after water
+        # should be transferred to or from an agent after water
         # has been mined. The transfers are the output of the
         # algorithm.
         #
@@ -264,7 +267,7 @@ class SimulationState:
         # Adjust needs accordingly, and keep track of transfers
         # made. Make sure that the transfer satisfies all the
         # constraints (amounts offered, amounts requested, max
-        # capacity, capacity that can be transfered).
+        # capacity, capacity that can be transferred).
 
         # Init data structures
         for x in range(self.size_x):
@@ -325,7 +328,7 @@ class SimulationState:
     def _generate_water(self, initial_oasis_water, oasis_count):
         """ Terrain generation. Populate the grid with water. """
         # Currently just uniformly distribute 1x1 oases.
-        # Might do a gaussain blur later for coolness and interest.
+        # Might do a Gaussian blur later for coolness and interest.
         self._water = [[0] * self.size_y for _ in range(self.size_x)]
         for (x, y) in self._unique_random_coords(oasis_count):
             self._water[x][y] = initial_oasis_water
@@ -337,7 +340,7 @@ class SimulationState:
         self.agent_count = agent_count
         self._agents_by_id = []
         self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
-        
+
         for (x, y) in self._unique_random_coords(agent_count):
             agent = Agent(current_id, initial_agent_water, x, y)
             self._agents_by_id.append(agent)
@@ -349,6 +352,7 @@ class SimulationState:
             integer coordinates, that lie within this simulations grid """
         possible_coords = list(product(range(self.size_x), range(self.size_y)))
         return random.sample(possible_coords, count)
+
 
 class Environment(Model):
     """Model of the environment."""
@@ -369,7 +373,7 @@ class Environment(Model):
         super().__init__(**kwargs)
 
     def set_mapping(self, mapping: AddressMapping) -> None:
-        """Set the maping by which id<->address resolution
+        """Set the mapping by which id<->address resolution
            will be done."""
         self._mapping = mapping
 
@@ -416,7 +420,7 @@ class Environment(Model):
         """Get the list of addresses of the agents neighbours.
            :return 4-tuple, where each element is either the
                    neighbouring agent address, or None if there
-                   is no agent. The addresses are layed out like
+                   is no agent. The addresses are laid out like
                    this: (N, W, S, E), where N corresponds to the
                    address in the north etc."""
         agent = self.state.get_agent_by_id(self.address_to_id(agent_address))
@@ -438,7 +442,7 @@ class Environment(Model):
             west_agent = self.state.get_agent_by_pos(x - 1, y)
             if west_agent:
                 w = self.id_to_address(west_agent.agent_id)
-        return (n, e, s, w)
+        return n, e, s, w
 
     @property
     def agents_alive(self) -> Dict[str, str]:

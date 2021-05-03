@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 import json
 
-from packages.gdp8.skills.env_action_each_turn.environment import SimulationState
+# from packages.gdp8.skills.env_action_each_turn.environment import SimulationState
 
 
 class ReplayLogger:

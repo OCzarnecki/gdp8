@@ -19,9 +19,9 @@
 
 """This package contains a scaffold of a handler, that handles the replies of agents every turn."""
 
-from typing import Optional, cast
+from typing import cast
 
-from aea.configurations.base import PublicId
+# from aea.configurations.base import PublicId
 
 from aea.protocols.base import Message
 from aea.skills.base import Handler
@@ -68,9 +68,9 @@ class EnvironmentHandler(Handler):
         self.context.logger.info(
             "handling the agent_environment message. performative={}".format(agent_env_msg.performative)
         )
-        #handle message
+        # handle message
         if agent_env_msg.performative == AgentEnvironmentMessage.Performative.ACTION:
-            self._handle_valid_tick_reply(agent_env_msg, agent_environment_dialogue)
+            self._handle_valid_tick_reply(agent_env_msg)
         else:
             self._handle_invalid(agent_env_msg, agent_environment_dialogue)
 
@@ -104,14 +104,13 @@ class EnvironmentHandler(Handler):
         )
         self.context.outbox.put_message(message=default_msg)
 
-    def _handle_valid_tick_reply(self, agent_env_msg: AgentEnvironmentMessage, agent_environment_dialogue):
+    def _handle_valid_tick_reply(self, agent_env_msg: AgentEnvironmentMessage):
         """
         Handle a valid tick message reply. (we suppose that all replies are valid, but can add a check if needed)
 
         That is:
         - update the environment state
 
-        :param tick_reply: the tick message reply
         :return: None
         """
         environment = cast(Environment, self.context.environment)
@@ -130,10 +129,10 @@ class EnvironmentHandler(Handler):
     def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage,
                         agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """
-        Handle an agent environment message of invalid perfomative.
+        Handle an agent environment message of invalid performative.
 
         :param agent_env_msg: the agent environment message
-        :param agent_environment_dialogue: the agent environment dialogue (fipa?)
+        :param agent_environment_dialogue: the agent environment dialogue (Fipa?)
         :return: None
         """
         self.context.logger.warning(
