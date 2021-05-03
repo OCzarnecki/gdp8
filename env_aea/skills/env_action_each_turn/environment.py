@@ -212,13 +212,13 @@ class SimulationState:
         """
         for agent in self.get_agents_alive(): 
             if agent.next_command.command_type == CommandType.MOVE:
-                if agent.next_command.direction == "up":
+                if agent.next_command.direction == "north":
                     self._try_moving(agent, agent.pos_x, agent.pos_y - 1)
-                elif agent.next_command.direction == "down":
+                elif agent.next_command.direction == "south":
                     self._try_moving(agent, agent.pos_x, agent.pos_y + 1)
-                elif agent.next_command.direction == "left":
+                elif agent.next_command.direction == "west":
                     self._try_moving(agent, agent.pos_x - 1, agent.pos_y)
-                elif agent.next_command.direction == "right":
+                elif agent.next_command.direction == "east":
                     self._try_moving(agent, agent.pos_x + 1, agent.pos_y)
                 else:
                     self.context.logger.info("Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
@@ -489,6 +489,7 @@ class Environment(Model):
             tokens = action.split(".")
             if len(tokens) == 0:
                 self.context.logger.warning("got empty action string")
+
             elif tokens[0] == "offer_water":
                 if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
@@ -497,19 +498,26 @@ class Environment(Model):
                         command = OfferWaterCommand(int(tokens[1]))
                     except ValueError:
                         self.context.logger.warning("could not parse action string {}".format(action))
+
             elif tokens[0] == "receive_water":
                 if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
-        elif tokens[0] == "move":
-            if len(tokens) != 2:
-                self.context.logger.warning("could not parse action string {}".format(action))
-            else:
-                try:
-                    command = ReceiveMoveCommand(int(tokens[1]))
-                except ValueError:
+                else:
+                    try:
+                        command = ReceiveWaterCommand(int(tokens[1]))
+                    except ValueError:
+                        self.context.logger.warning("could not parse action string {}".format(action))
+
+            elif tokens[0] == "move":
+                if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
-        else:
-            self.context.logger.warning("could not parse action string {}".format(action))
+                else:
+                    try:
+                        command = MoveCommand(int(tokens[1]))
+                    except ValueError:
+                        self.context.logger.warning("could not parse action string {}".format(action))
+            else:
+                self.context.logger.warning("could not parse action string {}".format(action))
         agent.queue_command(action, command)
 
     def start_next_simulation_turn(self) -> None:
