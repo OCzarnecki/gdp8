@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021 gdp8
+#   Copyright 2021 fetchai
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@
 # ------------------------------------------------------------------------------
 
 """
-This module contains the classes required for agent_agent dialogue management.
+This module contains the classes required for state_update dialogue management.
 
-- AgentAgentDialogue: The dialogue class maintains state of a dialogue and manages it.
-- AgentAgentDialogues: The dialogues class keeps track of all dialogues.
+- StateUpdateDialogue: The dialogue class maintains state of a dialogue and manages it.
+- StateUpdateDialogues: The dialogues class keeps track of all dialogues.
 """
 
 from abc import ABC
@@ -31,37 +31,41 @@ from aea.common import Address
 from aea.protocols.base import Message
 from aea.protocols.dialogue.base import Dialogue, DialogueLabel, Dialogues
 
-from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
+from packages.fetchai.protocols.state_update.message import StateUpdateMessage
 
 
-class AgentAgentDialogue(Dialogue):
-    """The agent_agent dialogue class maintains state of a dialogue and manages it."""
+class StateUpdateDialogue(Dialogue):
+    """The state_update dialogue class maintains state of a dialogue and manages it."""
 
-    INITIAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.SENDER_REQUEST})
-    TERMINAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.RECEIVER_REPLY})
+    INITIAL_PERFORMATIVES = frozenset({StateUpdateMessage.Performative.INITIALIZE})
+    TERMINAL_PERFORMATIVES = frozenset({StateUpdateMessage.Performative.END})
     VALID_REPLIES = {
-        AgentAgentMessage.Performative.RECEIVER_REPLY: frozenset(),
-        AgentAgentMessage.Performative.SENDER_REQUEST: frozenset(
-            {AgentAgentMessage.Performative.RECEIVER_REPLY}
+        StateUpdateMessage.Performative.APPLY: frozenset(
+            {StateUpdateMessage.Performative.APPLY, StateUpdateMessage.Performative.END}
+        ),
+        StateUpdateMessage.Performative.END: frozenset(),
+        StateUpdateMessage.Performative.INITIALIZE: frozenset(
+            {StateUpdateMessage.Performative.APPLY}
         ),
     }
 
     class Role(Dialogue.Role):
-        """This class defines the agent's role in a agent_agent dialogue."""
+        """This class defines the agent's role in a state_update dialogue."""
 
-        AGENT = "agent"
+        DECISION_MAKER = "decision_maker"
+        SKILL = "skill"
 
     class EndState(Dialogue.EndState):
-        """This class defines the end states of a agent_agent dialogue."""
+        """This class defines the end states of a state_update dialogue."""
 
-        MESSAGE_SENT = 0
+        SUCCESSFUL = 0
 
     def __init__(
         self,
         dialogue_label: DialogueLabel,
         self_address: Address,
         role: Dialogue.Role,
-        message_class: Type[AgentAgentMessage] = AgentAgentMessage,
+        message_class: Type[StateUpdateMessage] = StateUpdateMessage,
     ) -> None:
         """
         Initialize a dialogue.
@@ -80,10 +84,10 @@ class AgentAgentDialogue(Dialogue):
         )
 
 
-class AgentAgentDialogues(Dialogues, ABC):
-    """This class keeps track of all agent_agent dialogues."""
+class StateUpdateDialogues(Dialogues, ABC):
+    """This class keeps track of all state_update dialogues."""
 
-    END_STATES = frozenset({AgentAgentDialogue.EndState.MESSAGE_SENT})
+    END_STATES = frozenset({StateUpdateDialogue.EndState.SUCCESSFUL})
 
     _keep_terminal_state_dialogues = False
 
@@ -91,7 +95,7 @@ class AgentAgentDialogues(Dialogues, ABC):
         self,
         self_address: Address,
         role_from_first_message: Callable[[Message, Address], Dialogue.Role],
-        dialogue_class: Type[AgentAgentDialogue] = AgentAgentDialogue,
+        dialogue_class: Type[StateUpdateDialogue] = StateUpdateDialogue,
     ) -> None:
         """
         Initialize dialogues.
@@ -103,7 +107,7 @@ class AgentAgentDialogues(Dialogues, ABC):
             self,
             self_address=self_address,
             end_states=cast(FrozenSet[Dialogue.EndState], self.END_STATES),
-            message_class=AgentAgentMessage,
+            message_class=StateUpdateMessage,
             dialogue_class=dialogue_class,
             role_from_first_message=role_from_first_message,
         )

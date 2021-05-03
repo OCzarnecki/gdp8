@@ -210,7 +210,6 @@ class BasicStrategy(Model):
             state = "returning"
         else:
             state = "exploring"
-        self.context.logger.info("agent in state = " + state)
         # no matter what, update memory about this tile
         try:
             self.water_location.remove([0, 0])
@@ -227,7 +226,6 @@ class BasicStrategy(Model):
                     target_message=self.current_env_message,
                     command="NULL",
                 )
-                self.context.logger.info("sending env message back with command = " + "NULL")
                 self.context.outbox.put_message(message=return_agent_env_message)
                 self.is_round_done = True
             else:
@@ -281,7 +279,6 @@ class BasicStrategy(Model):
                     target_message=self.current_env_message,
                     command=direction,
                 )
-                self.context.logger.info("sending env message back with command = " + direction)
                 self.context.outbox.put_message(message=return_agent_env_message)
                 self.is_round_done = True
         if state == "returning":
