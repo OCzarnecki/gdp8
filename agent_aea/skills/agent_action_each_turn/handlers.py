@@ -17,10 +17,8 @@
 #
 # ------------------------------------------------------------------------------
 
-from typing import Optional, Tuple, cast
+from typing import cast
 
-from aea.common import Address
-from aea.configurations.base import PublicId
 from aea.protocols.base import Message
 from aea.skills.base import Handler
 
@@ -65,7 +63,6 @@ class EnvironmentMessageHandler(Handler):
             return
 
         # handle message
-        # environment = cast(Environment, self.context.environment)##
         self.context.logger.debug(
             "handling environment response. performative={}".format(agent_env_msg.performative)
         )
@@ -148,10 +145,10 @@ class AgentMessageHandler(Handler):
             return
 
         self.context.logger.info(agent_agent_msg.performative)
-        if agent_agent_msg.performative == AgentAgentMessage.Performative.WATER_STATUS:
+        if agent_agent_msg.performative == AgentAgentMessage.Performative.RECEIVER_REPLY:
             # water status returned
-            self._handle_returned_water_info(agent_agent_msg, agent_agent_dialogue)
-        elif agent_agent_msg.performative == AgentAgentMessage.Performative.REQUEST_INFO:
+            self._handle_returned_water_info(agent_agent_msg)
+        elif agent_agent_msg.performative == AgentAgentMessage.Performative.SENDER_REQUEST:
             # water status asked
             self._handle_water_query(agent_agent_msg, agent_agent_dialogue)
         else:
@@ -167,7 +164,7 @@ class AgentMessageHandler(Handler):
     def _handle_unidentified_dialogue(self, agent_agent_msg: AgentAgentMessage) -> None:
         """
         Handle an unidentified dialogue.
-        :param agent_env_msg: the message
+        :param agent_agent_msg: the message
         """
         self.context.logger.info(
             "received invalid agent_agent message={}, unidentified dialogue.".format(agent_agent_msg)
@@ -182,7 +179,7 @@ class AgentMessageHandler(Handler):
         )
         self.context.outbox.put_message(message=default_msg)
 
-    def _handle_returned_water_info(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
+    def _handle_returned_water_info(self, agent_agent_msg: AgentAgentMessage):
         # Actual function where agent messages are used.
         strategy = cast(BasicStrategy, self.context.strategy)
         # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)

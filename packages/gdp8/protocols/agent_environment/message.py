@@ -21,7 +21,7 @@
 
 # pylint: disable=too-many-statements,too-many-locals,no-member,too-few-public-methods,too-many-branches,not-an-iterable,unidiomatic-typecheck,unsubscriptable-object
 import logging
-from typing import Any, FrozenSet, Set, Tuple, cast
+from typing import Any, Set, Tuple, cast
 
 from aea.configurations.base import PublicId
 from aea.exceptions import AEAEnforceError, enforce
@@ -48,25 +48,12 @@ class AgentEnvironmentMessage(Message):
 
         ACTION = "action"
         TICK = "tick"
-        CANCELLED ="cancelled"
-        REGISTER = "register"
-        UNREGISTER = "unregister"
-        AGENT_ENV_ERROR ="agent_env_error"
-
-
 
         def __str__(self) -> str:
             """Get the string representation."""
             return str(self.value)
 
-    _performatives = {
-        "action", 
-        "tick", 
-        "cancelled", 
-        "register", 
-        "unregister",
-        "agent_env_error",
-        }
+    _performatives = {"action", "tick"}
     __slots__: Tuple[str, ...] = tuple()
 
     class _SlotsCls:
@@ -74,14 +61,16 @@ class AgentEnvironmentMessage(Message):
             "agent_water",
             "command",
             "dialogue_reference",
+            "east_neighbour_id",
             "message_id",
-            "neighbour_ids",
+            "movement_last_turn",
+            "north_neighbour_id",
             "performative",
+            "south_neighbour_id",
             "target",
             "tile_water",
             "turn_number",
-            "water_quantity",
-            "error_description",
+            "west_neighbour_id",
         )
 
     def __init__(
@@ -150,10 +139,39 @@ class AgentEnvironmentMessage(Message):
         return cast(str, self.get("command"))
 
     @property
-    def neighbour_ids(self) -> FrozenSet[int]:
-        """Get the 'neighbour_ids' content from the message."""
-        enforce(self.is_set("neighbour_ids"), "'neighbour_ids' content is not set.")
-        return cast(FrozenSet[int], self.get("neighbour_ids"))
+    def east_neighbour_id(self) -> str:
+        """Get the 'east_neighbour_id' content from the message."""
+        enforce(
+            self.is_set("east_neighbour_id"), "'east_neighbour_id' content is not set."
+        )
+        return cast(str, self.get("east_neighbour_id"))
+
+    @property
+    def movement_last_turn(self) -> str:
+        """Get the 'movement_last_turn' content from the message."""
+        enforce(
+            self.is_set("movement_last_turn"),
+            "'movement_last_turn' content is not set.",
+        )
+        return cast(str, self.get("movement_last_turn"))
+
+    @property
+    def north_neighbour_id(self) -> str:
+        """Get the 'north_neighbour_id' content from the message."""
+        enforce(
+            self.is_set("north_neighbour_id"),
+            "'north_neighbour_id' content is not set.",
+        )
+        return cast(str, self.get("north_neighbour_id"))
+
+    @property
+    def south_neighbour_id(self) -> str:
+        """Get the 'south_neighbour_id' content from the message."""
+        enforce(
+            self.is_set("south_neighbour_id"),
+            "'south_neighbour_id' content is not set.",
+        )
+        return cast(str, self.get("south_neighbour_id"))
 
     @property
     def tile_water(self) -> int:
@@ -166,6 +184,14 @@ class AgentEnvironmentMessage(Message):
         """Get the 'turn_number' content from the message."""
         enforce(self.is_set("turn_number"), "'turn_number' content is not set.")
         return cast(int, self.get("turn_number"))
+
+    @property
+    def west_neighbour_id(self) -> str:
+        """Get the 'west_neighbour_id' content from the message."""
+        enforce(
+            self.is_set("west_neighbour_id"), "'west_neighbour_id' content is not set."
+        )
+        return cast(str, self.get("west_neighbour_id"))
 
     def _is_consistent(self) -> bool:
         """Check that the message follows the agent_environment protocol."""
@@ -214,7 +240,7 @@ class AgentEnvironmentMessage(Message):
             actual_nb_of_contents = len(self._body) - DEFAULT_BODY_SIZE
             expected_nb_of_contents = 0
             if self.performative == AgentEnvironmentMessage.Performative.TICK:
-                expected_nb_of_contents = 4
+                expected_nb_of_contents = 8
                 enforce(
                     type(self.tile_water) is int,
                     "Invalid type for content 'tile_water'. Expected 'int'. Found '{}'.".format(
@@ -234,14 +260,34 @@ class AgentEnvironmentMessage(Message):
                     ),
                 )
                 enforce(
-                    isinstance(self.neighbour_ids, frozenset),
-                    "Invalid type for content 'neighbour_ids'. Expected 'frozenset'. Found '{}'.".format(
-                        type(self.neighbour_ids)
+                    isinstance(self.north_neighbour_id, str),
+                    "Invalid type for content 'north_neighbour_id'. Expected 'str'. Found '{}'.".format(
+                        type(self.north_neighbour_id)
                     ),
                 )
                 enforce(
-                    all(type(element) is int for element in self.neighbour_ids),
-                    "Invalid type for frozenset elements in content 'neighbour_ids'. Expected 'int'.",
+                    isinstance(self.east_neighbour_id, str),
+                    "Invalid type for content 'east_neighbour_id'. Expected 'str'. Found '{}'.".format(
+                        type(self.east_neighbour_id)
+                    ),
+                )
+                enforce(
+                    isinstance(self.south_neighbour_id, str),
+                    "Invalid type for content 'south_neighbour_id'. Expected 'str'. Found '{}'.".format(
+                        type(self.south_neighbour_id)
+                    ),
+                )
+                enforce(
+                    isinstance(self.west_neighbour_id, str),
+                    "Invalid type for content 'west_neighbour_id'. Expected 'str'. Found '{}'.".format(
+                        type(self.west_neighbour_id)
+                    ),
+                )
+                enforce(
+                    isinstance(self.movement_last_turn, str),
+                    "Invalid type for content 'movement_last_turn'. Expected 'str'. Found '{}'.".format(
+                        type(self.movement_last_turn)
+                    ),
                 )
             elif self.performative == AgentEnvironmentMessage.Performative.ACTION:
                 expected_nb_of_contents = 1

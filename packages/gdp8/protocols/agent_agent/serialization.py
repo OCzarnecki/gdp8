@@ -19,6 +19,7 @@
 
 """Serialization module for agent_agent protocol."""
 
+# pylint: disable=too-many-statements,too-many-locals,no-member,too-few-public-methods,redefined-builtin
 from typing import Any, Dict, cast
 
 from aea.mail.base_pb2 import DialogueMessage
@@ -52,16 +53,18 @@ class AgentAgentSerializer(Serializer):
         dialogue_message_pb.target = msg.target
 
         performative_id = msg.performative
-        if performative_id == AgentAgentMessage.Performative.WATER_STATUS:
-            performative = agent_agent_pb2.AgentAgentMessage.Water_Status_Performative()  # type: ignore
-            water = msg.water
-            performative.water = water
-            agent_agent_msg.water_status.CopyFrom(performative)
-        elif performative_id == AgentAgentMessage.Performative.REQUEST_INFO:
-            performative = agent_agent_pb2.AgentAgentMessage.Request_Info_Performative()  # type: ignore
+        if performative_id == AgentAgentMessage.Performative.SENDER_REQUEST:
+            performative = agent_agent_pb2.AgentAgentMessage.Sender_Request_Performative()  # type: ignore
+            request = msg.request
+            performative.request = request
             turn_number = msg.turn_number
             performative.turn_number = turn_number
-            agent_agent_msg.request_info.CopyFrom(performative)
+            agent_agent_msg.sender_request.CopyFrom(performative)
+        elif performative_id == AgentAgentMessage.Performative.RECEIVER_REPLY:
+            performative = agent_agent_pb2.AgentAgentMessage.Receiver_Reply_Performative()  # type: ignore
+            reply = msg.reply
+            performative.reply = reply
+            agent_agent_msg.receiver_reply.CopyFrom(performative)
         else:
             raise ValueError("Performative not valid: {}".format(performative_id))
 
@@ -93,12 +96,14 @@ class AgentAgentSerializer(Serializer):
         performative = agent_agent_pb.WhichOneof("performative")
         performative_id = AgentAgentMessage.Performative(str(performative))
         performative_content = dict()  # type: Dict[str, Any]
-        if performative_id == AgentAgentMessage.Performative.WATER_STATUS:
-            water = agent_agent_pb.water_status.water
-            performative_content["water"] = water
-        elif performative_id == AgentAgentMessage.Performative.REQUEST_INFO:
-            turn_number = agent_agent_pb.request_info.turn_number
+        if performative_id == AgentAgentMessage.Performative.SENDER_REQUEST:
+            request = agent_agent_pb.sender_request.request
+            performative_content["request"] = request
+            turn_number = agent_agent_pb.sender_request.turn_number
             performative_content["turn_number"] = turn_number
+        elif performative_id == AgentAgentMessage.Performative.RECEIVER_REPLY:
+            reply = agent_agent_pb.receiver_reply.reply
+            performative_content["reply"] = reply
         else:
             raise ValueError("Performative not valid: {}.".format(performative_id))
 

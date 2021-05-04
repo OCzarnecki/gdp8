@@ -17,7 +17,11 @@
 #
 # ------------------------------------------------------------------------------
 
-"""This module contains the support resources for the agent_agent protocol."""
+"""
+This module contains the support resources for the agent_agent protocol.
+
+It was created with protocol buffer compiler version `libprotoc 3.11.4` and aea version `1.0.0`.
+"""
 
 from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
 from packages.gdp8.protocols.agent_agent.serialization import AgentAgentSerializer

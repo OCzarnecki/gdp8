@@ -24,7 +24,7 @@ https://github.com/fetchai/agents-aea/blob/main/packages/fetchai/skills/tac_cont
 """
 
 from aea.skills.base import Model
-from aea.common import Address
+# from aea.common import Address
 # from aea.helpers.search.generic import (
 #    AGENT_LOCATION_MODEL,
 #    AGENT_REMOVE_SERVICE_MODEL,
@@ -37,8 +37,8 @@ from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMap
 
 from enum import Enum, auto
 from itertools import product
-from typing import Any, Dict
-# from typing import List, Optional, cast
+from typing import Any
+# from typing import List, Optional, cast, Dict
 
 import random
 
@@ -58,6 +58,7 @@ class CommandType(Enum):
     """ Enum of possible types of command """
     OFFER_WATER = auto()
     REQUEST_WATER = auto()
+    MOVE = auto()
     IDLE = auto()
 
 
@@ -80,6 +81,12 @@ class ReceiveWaterCommand(Command):
         self.quantity = quantity
 
 
+class MoveCommand(Command):
+    def __init__(self, direction):
+        super().__init__(CommandType.MOVE)
+        self.direction = direction
+
+
 class IdleCommand(Command):
     def __init__(self):
         super().__init__(CommandType.IDLE)
@@ -93,8 +100,9 @@ class Agent:
     def __init__(self, agent_id, initial_water, pos_x, pos_y):
         self.agent_id = agent_id
         self.water = initial_water
-        self.pos_x = pos_x
-        self.pos_y = pos_y
+        self.pos_x: int = pos_x
+        self.pos_y: int = pos_y
+        self.movement_last_turn = None
         self.queue_command(None)
 
     def queue_command(self, command):
@@ -129,7 +137,7 @@ class SimulationState:
         self._generate_water(initial_oasis_water, oasis_count)
         self._init_agents(agent_count, initial_agent_water)
         self.turn_number = 0
-        # Alocate datastructures used in update_simulation once
+        # Allocate datastructures used in update_simulation once
         self._needs = [[0] * size_y for _ in range(size_x)]
         self._transfers = [[0] * size_y for _ in range(size_x)]
 
@@ -158,6 +166,7 @@ class SimulationState:
             for the next one. """
         self.turn_number += 1
         self._transfer_water()
+        self._move_agents()
         for agent in self._agents_by_id:
             # Charge water cost
             agent.water = max(agent.water - 1, 0)  # an agent could already have given all water away :(
@@ -198,12 +207,49 @@ class SimulationState:
                 for y in range(self.size_y)]
         }
 
+    def _move_agents(self):
+        """
+        Update position of all agents that wanted to move. 
+        If the position is already taken, the action will be discarded.
+        The world is "round", if you reach the top and move up you go back to the bottom.
+
+        """
+        for agent in self.get_agents_alive():
+            if agent.next_command.command_type == CommandType.MOVE:
+                direction = agent.next_command.direction
+                if direction == "north":
+                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y - 1, agent.pos_x, agent.pos_y)
+                elif direction == "south":
+                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y + 1, agent.pos_x, agent.pos_y)
+                elif direction == "west":
+                    self._try_moving(agent, direction, agent.pos_x - 1, agent.pos_y, agent.pos_x, agent.pos_y)
+                elif direction == "east":
+                    self._try_moving(agent, direction, agent.pos_x + 1, agent.pos_y, agent.pos_x, agent.pos_y)
+                else:
+                    raise ValueError(
+                        "Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
+            else:
+                agent.movement_last_turn = None
+
+    def _try_moving(self, agent, direction, try_pos_x, try_pos_y, prev_pos_x, prev_pos_y):
+        try_pos_x = try_pos_x % self.size_x
+        try_pos_y = try_pos_y % self.size_y
+        if self._agent_grid[try_pos_x][try_pos_y] is None:
+            agent.pos_x = try_pos_x
+            agent.pos_y = try_pos_y
+            agent.movement_last_turn = direction
+            self._agent_grid[try_pos_x][try_pos_y] = agent
+            self._agent_grid[prev_pos_x][prev_pos_y] = None
+        else:
+            agent.movement_last_turn = None
+        return
+
     def _transfer_water(self):
         """ Update the agents' water inventory by one turn. This
             includes both mining, and the resolution of transfers
             the agents make among themselves. If requests or
             offers for water are not consistent with each other,
-            arbitrary tiebreaking will be applied. The details
+            arbitrary tie-breaking will be applied. The details
             are not specified. In particular, there is no
             guarantee for optimality. """
         # Algorithm description:
@@ -214,7 +260,7 @@ class SimulationState:
         # while the algorithm is running.
         #
         # Also maintain transfers, indicating how much water
-        # should be transfered to or from an agent after water
+        # should be transferred to or from an agent after water
         # has been mined. The transfers are the output of the
         # algorithm.
         #
@@ -223,7 +269,7 @@ class SimulationState:
         # Adjust needs accordingly, and keep track of transfers
         # made. Make sure that the transfer satisfies all the
         # constraints (amounts offered, amounts requested, max
-        # capacity, capacity that can be transfered).
+        # capacity, capacity that can be transferred).
 
         # Init data structures
         for x in range(self.size_x):
@@ -241,7 +287,17 @@ class SimulationState:
                         pass
         # Compute transfers
         agent_positions = [(agent.pos_x, agent.pos_y) for agent in self.get_agents_alive()]
+        for agent in self.get_agents_alive():
+            if agent is None:
+                raise ValueError("agent is None")
+            # else:
+            #     print(str(agent.water) + "." + str(agent.pos_x) + "." + str(agent.pos_y) + "." + str(agent.agent_id))
         for (x, y) in agent_positions:
+            # agent_test = self.get_agent_by_pos(x, y)
+            # if agent_test is None:
+            #     raise ValueError(
+            #             str(x) + "." + str(y)
+            #    )
             # Action is only needed for agents who send water
             if self._needs[x][y] < 0:
                 agent = self.get_agent_by_pos(x, y)
@@ -267,6 +323,7 @@ class SimulationState:
         # Apply transfers and mine water
         for (x, y) in agent_positions:
             agent = self.get_agent_by_pos(x, y)
+            assert(agent is not None)
             # Mine water
             minable = self._minable_at(x, y)
             if minable > 0:
@@ -284,7 +341,7 @@ class SimulationState:
     def _generate_water(self, initial_oasis_water, oasis_count):
         """ Terrain generation. Populate the grid with water. """
         # Currently just uniformly distribute 1x1 oases.
-        # Might do a gaussain blur later for coolness and interest.
+        # Might do a Gaussian blur later for coolness and interest.
         self._water = [[0] * self.size_y for _ in range(self.size_x)]
         for (x, y) in self._unique_random_coords(oasis_count):
             self._water[x][y] = initial_oasis_water
@@ -295,24 +352,13 @@ class SimulationState:
         current_id = 0
         self.agent_count = agent_count
         self._agents_by_id = []
-        self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
-        agent = Agent(current_id, initial_agent_water, 1, 0)
-        self._agents_by_id.append(agent)
-        self._agent_grid[1][0] = agent
-        current_id += 1
+        self._agent_grid: list[list[Agent]] = [[None] * self.size_y for _ in range(self.size_x)]
 
-        agent = Agent(current_id, initial_agent_water, 1, 1)
-        self._agents_by_id.append(agent)
-        self._agent_grid[1][1] = agent
-        current_id += 1
-
-        """             !!!!!!!!!!!!!!!REVERT!!!!!!!!!!!!!!
         for (x, y) in self._unique_random_coords(agent_count):
             agent = Agent(current_id, initial_agent_water, x, y)
             self._agents_by_id.append(agent)
             self._agent_grid[x][y] = agent
             current_id += 1
-        """
 
     def _unique_random_coords(self, count):
         """ Returns a list of `count` unique, uniformly distributed, random,
@@ -321,46 +367,11 @@ class SimulationState:
         return random.sample(possible_coords, count)
 
 
-class Registration:
-    """Class managing the registration of the simulation."""
-
-    def __init__(self) -> None:
-        """Instantiate the registration class."""
-        self._agent_addr_to_id = {}  # type: Dict[str, int]
-
-    @property
-    def agent_addr_to_id(self) -> Dict[str, int]:
-        """Get the registered agent addresses and their ids."""
-        return self._agent_addr_to_id
-
-    @property
-    def nb_agents(self) -> int:
-        """Get the number of registered agents."""
-        return len(self._agent_addr_to_id)
-
-    def register_agent(self, agent_addr: Address) -> None:
-        """
-        Register an agent.
-        :param agent_addr: the Address of the agent
-        :return: None
-        """
-        self._agent_addr_to_id[agent_addr] = len(self._agent_addr_to_id)  # ??? give it a new id
-
-    def unregister_agent(self, agent_addr: Address) -> None:
-        """
-        Register an agent.
-        :param agent_addr: the Address of the agent
-        :return: None
-        """
-        self._agent_addr_to_id.pop(agent_addr)
-
-
 class Environment(Model):
     """Model of the environment."""
 
     def __init__(self, **kwargs: Any) -> None:
         self._phase = Phase.PRE_SIMULATION
-        self._registration = Registration()
         self.state = SimulationState(
             kwargs['size_x'],
             kwargs['size_y'],
@@ -375,7 +386,7 @@ class Environment(Model):
         super().__init__(**kwargs)
 
     def set_mapping(self, mapping: AddressMapping) -> None:
-        """Set the maping by which id<->address resolution
+        """Set the mapping by which id<->address resolution
            will be done."""
         self._mapping = mapping
 
@@ -396,11 +407,6 @@ class Environment(Model):
         self._phase = phase
 
     @property
-    def registration(self) -> Registration:
-        """Get the registration."""
-        return self._registration
-
-    @property
     def turn_number(self) -> int:
         """Get the current turn number of the simulation."""
         return self.state.turn_number
@@ -416,19 +422,43 @@ class Environment(Model):
         agent_id = self.address_to_id(agent_address)
         return self.state.get_agent_by_id(agent_id).water
 
-    def neighbour_ids(self, agent_address):
-        """Get the list of addresses of the agents neighbours."""
-        # TODO rename method to 'neighbours'
+    def agent_movement(self, agent_address) -> str:
+        """Get the direction in which the agent was moved last turn.
+           one of "north", "east", "south", "west", or None if the
+           agent didn't move."""
+        agent_id = self.address_to_id(agent_address)
+        return self.state.get_agent_by_id(agent_id).movement_last_turn
+
+    def neighbours_nesw(self, agent_address):
+        """Get the list of addresses of the agents neighbours.
+           :return 4-tuple, where each element is either the
+                   neighbouring agent address, or None if there
+                   is no agent. The addresses are laid out like
+                   this: (N, W, S, E), where N corresponds to the
+                   address in the north etc."""
         agent = self.state.get_agent_by_id(self.address_to_id(agent_address))
-        neighbour_coords = [(agent.pos_x + x, agent.pos_y + y)
-                            for (x, y) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
-                            if 0 <= agent.pos_x + x < self.state.size_x
-                            and 0 <= agent.pos_y + y < self.state.size_y]
-        possible_agents = [self.state.get_agent_by_pos(x, y) for (x, y) in neighbour_coords]
-        return frozenset([self.id_to_address(agent.agent_id) for agent in possible_agents if agent is not None])
+        x, y = agent.pos_x, agent.pos_y
+        n, e, s, w = None, None, None, None
+        if y >= 1:
+            north_agent = self.state.get_agent_by_pos(x, y - 1)
+            if north_agent:
+                n = self.id_to_address(north_agent.agent_id)
+        if x + 1 < self.state.size_x:
+            east_agent = self.state.get_agent_by_pos(x + 1, y)
+            if east_agent:
+                e = self.id_to_address(east_agent.agent_id)
+        if y + 1 < self.state.size_y:
+            south_agent = self.state.get_agent_by_pos(x, y + 1)
+            if south_agent:
+                s = self.id_to_address(south_agent.agent_id)
+        if x >= 1:
+            west_agent = self.state.get_agent_by_pos(x - 1, y)
+            if west_agent:
+                w = self.id_to_address(west_agent.agent_id)
+        return n, e, s, w
 
     @property
-    def agents_alive(self) -> Dict[str, str]:
+    def agents_alive(self) -> list[Agent]:
         """Get a list of agents still alive in the simulation."""
         return [self.id_to_address(agent.agent_id) for agent in self.state.get_agents_alive()]
         # -> I actually prefer if we could return a similar dict as agent_addr_to_id
@@ -455,6 +485,7 @@ class Environment(Model):
             tokens = action.split(".")
             if len(tokens) == 0:
                 self.context.logger.warning("got empty action string")
+
             elif tokens[0] == "offer_water":
                 if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
@@ -463,6 +494,7 @@ class Environment(Model):
                         command = OfferWaterCommand(int(tokens[1]))
                     except ValueError:
                         self.context.logger.warning("could not parse action string {}".format(action))
+
             elif tokens[0] == "receive_water":
                 if len(tokens) != 2:
                     self.context.logger.warning("could not parse action string {}".format(action))
@@ -471,15 +503,21 @@ class Environment(Model):
                         command = ReceiveWaterCommand(int(tokens[1]))
                     except ValueError:
                         self.context.logger.warning("could not parse action string {}".format(action))
+
+            elif tokens[0] == "move":
+                if len(tokens) != 2:
+                    self.context.logger.warning("could not parse action string {}".format(action))
+                else:
+                    try:
+                        command = MoveCommand(tokens[1])
+                    except ValueError:
+                        self.context.logger.warning("could not parse action string {}".format(action))
             else:
                 self.context.logger.warning("could not parse action string {}".format(action))
         agent.queue_command(command)
 
-    def start_next_simulation_turn(self) -> None:
+    def update_simulation(self) -> None:
         """Starts the next simulation turn."""
-        # TODO rename to 'update_simulation' or something, because this will need to be called
-        # on the last turn, and has nothing to do with preparing the next turn
-
         self.state.update_simulation()
         self._agents_replied.clear()
 

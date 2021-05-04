@@ -74,6 +74,84 @@ class TestSimulationState(unittest.TestCase):
                 state.get_agent_by_pos(1, 0),
                 state.get_agent_by_pos(2, 0))
 
+
+    def test_agent_moving_out_of_the_map(self):
+        state = self.create_state_with_defaults(agent_count=1)
+        agents = state.get_agents_alive()
+        agent = agents[0]
+        ##map has size 10x10
+
+        agent.pos_x = 0
+        agent.pos_y = 5
+        agent.queue_command(MoveCommand("left"))
+        update_simulation()
+        self.assertEqual(10, agent.pos_x)
+
+        agent.pos_x = 10
+        agent.pos_y = 5
+        agent.queue_command(MoveCommand("right"))
+        update_simulation()
+        self.assertEqual(0, agent.pos_x)
+
+        agent.pos_x = 5
+        agent.pos_y = 0
+        agent.queue_command(MoveCommand("up"))
+        update_simulation()
+        self.assertEqual(10, agent.pos_y)
+
+        agent.pos_x = 5
+        agent.pos_y = 10
+        agent.queue_command(MoveCommand("down"))
+        update_simulation()
+        self.assertEqual(0, agent.pos_y)
+
+        
+    
+    def test_agent_moving_to_a_spot_already_taken(self):
+        state = self.create_state_with_defaults(agent_count=2)
+        agents = state.get_agents_alive()
+        agents[0].pos_x = 5
+        agents[0].pos_y = 5
+        agents[1].pos_x = 4
+        agents[1].pos_y = 5
+        agents[1].queue_command(MoveCommand("right"))
+        update_simulation()
+        ##making sure the agent didn't move
+        self.assertEqual(4, agents[1].pos_x)
+        self.assertEqual(5, agents[1].pos_y)
+    
+    def test_agent_moving_correctly(self):
+        state = self.create_state_with_defaults(agent_count=1)
+        agents = state.get_agents_alive()
+        agent=agents[0]
+        agent.pos_x = 5
+        agent.pos_y = 5
+        agent.queue_command(MoveCommand("up"))
+        state.update_simulation()
+        self.assertEqual(5, agent.pos_x)
+        self.assertEqual(4, agent.pos_y)
+        
+        agent.pos_x = 5
+        agent.pos_y = 5
+        agent.queue_command(MoveCommand("down"))
+        state.update_simulation()
+        self.assertEqual(5, agent.pos_x)
+        self.assertEqual(6, agent.pos_y)
+
+        agent.pos_x = 5
+        agent.pos_y = 5
+        agent.queue_command(MoveCommand("right"))
+        state.update_simulation()
+        self.assertEqual(6, agent.pos_x)
+        self.assertEqual(5, agent.pos_y)
+
+        agent.pos_x = 5
+        agent.pos_y = 5
+        agent.queue_command(MoveCommand("left"))
+        state.update_simulation()
+        self.assertEqual(4, agent.pos_x)
+        self.assertEqual(5, agent.pos_y)
+
     def test_all_agents_are_initially_alive(self):
         agent_count = 30
         state = self.create_state_with_defaults(agent_count = agent_count)
@@ -312,4 +390,5 @@ class TestSimulationState(unittest.TestCase):
         state = self.create_state_with_defaults()
         for _ in range(5000):
             state.update_simulation()
+
 
