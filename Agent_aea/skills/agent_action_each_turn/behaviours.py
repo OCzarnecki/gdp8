@@ -22,7 +22,8 @@ from typing import cast, Any
 
 from aea.skills.behaviours import TickerBehaviour
 
-from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
+from packages.gdp8.skills.agent_action_each_turn.strategy import \
+    DogStrategy, AltruisticGoldfishStrategy, LoneGoldfishStrategy
 
 DEFAULT_SEARCH_QUERY = {
     "search_key": "env",  # is that the key of the environment ?
@@ -70,6 +71,7 @@ class AgentLogicBehaviour(TickerBehaviour):
         """
         pass
 
+'''
 # A-GOldfish
 class AgentLogicBehaviour(TickerBehaviour):
     """Behaviour looks at if actions required in each tick:
