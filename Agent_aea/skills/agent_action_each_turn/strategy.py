@@ -413,6 +413,7 @@ class AltruisticGoldfishStrategy(Model):
     current_env_dialogue = None
     round_no = -1
     is_round_done = True
+    asked_for_info_already = True
     agent_messages_returned_waiting_for_response = []  # Storing any messages of future round
     agent_message_asking_for_my_water = []  # Storing any messages of future round
     a_neighbour_is_thirsty = None
@@ -442,6 +443,7 @@ class AltruisticGoldfishStrategy(Model):
         self.neighbour_water_amount = [[i, "Unknown"] for i in self.neighbour_id]
         self.context.logger.info(self.neighbour_water_amount)
         self.is_round_done = False
+        self.asked_for_info_already = False
 
     def receive_agent_agent_info(self, agent_agent_message: AgentAgentMessage) -> None:
         # If round number is of prev round. discard
@@ -458,7 +460,7 @@ class AltruisticGoldfishStrategy(Model):
             else:
                 self.a_neighbour_has_water_to_offer = True
 
-    def deal_with_an_agent_asking_for_water_info(self) -> bool:
+    def deal_with_an_agent_asking_for_info(self) -> bool:
         # Return true if a request was dealt with, return false if there were no request dealt with
         if not self.agent_message_asking_for_my_water:
             # no request
@@ -481,7 +483,7 @@ class AltruisticGoldfishStrategy(Model):
                 self.agent_message_asking_for_my_water.append(request)
                 return False
 
-    def potentially_ask_for_info(self) -> bool:
+    def ask_for_info_and_maybe_make_decision(self) -> None:
         # currently, ALL info has to be asked for
         # return true if a message asking for water is sent
         # false otherwise
@@ -498,8 +500,7 @@ class AltruisticGoldfishStrategy(Model):
                 )
                 self.context.outbox.put_message(message=send_agent_agent_message)
                 self.context.logger.info(i[0])
-                return True
-        return False
+        self.asked_for_info_already = True
 
     def enough_info_to_make_decision(self) -> bool:
         # If the agent is thirsty it needs to wait until its neighbours told him their water status
@@ -567,6 +568,16 @@ class LoneGoldfishStrategy(Model):
     current_env_message = None
     tile_water = None
     agent_water = None
+    asked_for_info_already = True
+
+    def deal_with_an_agent_asking_for_info(self) -> bool:
+        return False
+
+    def ask_for_info_and_maybe_make_decision(self) -> None:
+        pass
+
+    def enough_info_to_make_decision(self) -> bool:
+        return True
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
                                agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
@@ -592,7 +603,7 @@ class LoneGoldfishStrategy(Model):
         if self.tile_water > 0:
             decision = "NULL"
         else:
-            direction = self._rdm_direction()
+            direction = _rdm_direction()
             decision: str = "move" + "." + str(direction)
 
         self.context.logger.info(
@@ -607,8 +618,3 @@ class LoneGoldfishStrategy(Model):
         )
         self.context.outbox.put_message(message=return_agent_env_message)
         self.is_round_done = True
-
-    def _rdm_direction(self) -> str:
-        rdm = random.randint(0, 3)
-        directions = ["north", "east", "south", "west"]
-        return directions[rdm]
