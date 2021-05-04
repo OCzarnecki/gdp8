@@ -17,10 +17,8 @@
 #
 # ------------------------------------------------------------------------------
 
-from typing import Optional, Tuple, cast
+from typing import cast
 
-from aea.common import Address
-from aea.configurations.base import PublicId
 from aea.protocols.base import Message
 from aea.skills.base import Handler
 
@@ -29,7 +27,7 @@ from packages.gdp8.protocols.agent_agent.dialogues import AgentAgentDialogue, Ag
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
 
-from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
+from packages.gdp8.skills.agent_action_each_turn.strategy import LoneGoldfishStrategy
 
 
 # Handler will Update my model (strategy class) depending on what it has received
@@ -102,7 +100,7 @@ class EnvironmentMessageHandler(Handler):
         # Update my_model to get ready for next round
         self.context.logger.info("received tick message from the environment.")
 
-        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy = cast(LoneGoldfishStrategy, self.context.strategy)
         strategy.receive_agent_env_info(agent_env_msg, agent_environment_dialogue)
 
     def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage,
@@ -184,13 +182,13 @@ class AgentMessageHandler(Handler):
 
     def _handle_returned_water_info(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
         # Actual function where agent messages are used.
-        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy = cast(LoneGoldfishStrategy, self.context.strategy)
         # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
         # True = Go on, False = stop
         strategy.receive_agent_agent_info(agent_agent_msg)
 
     def _handle_water_query(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
-        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy = cast(LoneGoldfishStrategy, self.context.strategy)
         strategy.agent_message_asking_for_my_water.append(
             [agent_agent_msg, agent_agent_dialogue]
         )

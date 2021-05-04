@@ -39,6 +39,6 @@ models:
     class_name: AgentEnvironmentDialogues
   strategy:
     args: {}
-    class_name: BasicStrategy
+    class_name: LoneGoldfishStrategy
 dependencies: {}
 is_abstract: false

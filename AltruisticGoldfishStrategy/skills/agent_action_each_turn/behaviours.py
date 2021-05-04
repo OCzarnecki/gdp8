@@ -24,7 +24,7 @@ from aea.common import Address
 from aea.skills.behaviours import TickerBehaviour
 from aea.helpers.search.models import Constraint, ConstraintType, Query
 
-from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
+from packages.gdp8.skills.agent_action_each_turn.strategy import LoneGoldfishStrategy
 
 
 class AgentLogicBehaviour(TickerBehaviour):
@@ -45,7 +45,7 @@ class AgentLogicBehaviour(TickerBehaviour):
     def act(self) -> None:
 
         self.context.logger.info("act called")
-        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy = cast(LoneGoldfishStrategy, self.context.strategy)
 
         there_is_agent_asking_for_water_info = True
         while there_is_agent_asking_for_water_info:

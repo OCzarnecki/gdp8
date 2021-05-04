@@ -36,12 +36,12 @@ models:
     class_name: DefaultDialogues
   environment:
     args:
-      agent_count: 2
+      agent_count: 1
       agent_max_capacity: 150
       agent_mining_speed: 20
       initial_agent_water: 10
       initial_oasis_water: 10
-      oasis_count: 2
+      oasis_count: 1
       size_x: 2
       size_y: 2
     class_name: Environment
