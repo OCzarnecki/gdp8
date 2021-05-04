@@ -18,8 +18,9 @@
 # ------------------------------------------------------------------------------
 
 """This model is a "intermediate" for the handler to place stuff and behaviour to read and make decisions"""
+import math
 import random
-from typing import cast
+from typing import cast, Any
 
 from aea.skills.base import Model
 
@@ -225,7 +226,7 @@ class DogStrategy(Model):
         # If exploring:
         # If tile water > 100, mark and rmb
         # Replenish water supply if on water
-        if self.agent_water <= desperate_for_water_when_below:
+        if self.agent_water <= self.desperate_for_water_when_below:
             state = "returning"
         else:
             state = "exploring"
@@ -235,10 +236,10 @@ class DogStrategy(Model):
             self.water_location.remove([0, 0])
         except ValueError:
             pass
-        if self.tile_water > least_water_amount_in_tile_for_agent_to_remember_it:
+        if self.tile_water > self.least_water_amount_in_tile_for_agent_to_remember_it:
             self.water_location.append([0, 0])
         if state == "exploring":
-            if self.agent_water < agent_max_capacity - agent_max_dig_rate and self.tile_water > 0:
+            if self.agent_water < self.agent_max_capacity - self.agent_max_dig_rate and self.tile_water > 0:
                 # Replenish water supply, no need for asking for info
                 self.asked_for_info_already = True
                 return_agent_env_message = self.current_env_dialogue.reply(
