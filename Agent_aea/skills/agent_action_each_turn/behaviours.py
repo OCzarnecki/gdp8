@@ -39,13 +39,21 @@ class AgentLogicBehaviour(TickerBehaviour):
 
         :return: None
         """
-        # self.environment_address = kwargs['environment_address']
+        self.strategyName = kwargs['strategy']
 
     def act(self) -> None:
 
         self.context.logger.info("act called")
-        strategy = cast(BasicStrategy, self.context.strategy)
 
+        
+        if self.strategyName == "Explorer Dogs":
+            strategy = cast(DogStrategy, self.context.dog_strategy)
+        elif self.strategyName == "Altruistic Goldfish":
+            strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        else:
+            assert self.strategyName == "Lone Goldfish"
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
+            
         there_is_agent_asking_for_info = True
         while there_is_agent_asking_for_info:
             there_is_agent_asking_for_info = strategy.deal_with_an_agent_asking_for_info()

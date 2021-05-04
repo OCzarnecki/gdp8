@@ -130,6 +130,8 @@ class AgentMessageHandler(Handler):
 
         :return: None
         """
+        self.strategyName = kwargs['strategy']
+
 
     def handle(self, message: Message) -> None:
         """
@@ -183,7 +185,14 @@ class AgentMessageHandler(Handler):
 
     def _handle_info_in_replies_from_other_agent(self, agent_agent_msg: AgentAgentMessage):
         # Actual function where agent messages are used.
-        strategy = cast(DogStrategy, self.context.strategy)
+        if self.strategyName == "Explorer Dogs":
+            strategy = cast(DogStrategy, self.context.dog_strategy)
+        elif self.strategyName == "Altruistic Goldfish":
+            strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        else:
+            assert self.strategyName == "Lone Goldfish"
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
+
         # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
         # True = Go on, False = stop
         strategy.receive_agent_agent_info(agent_agent_msg)
