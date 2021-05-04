@@ -65,7 +65,6 @@ class BasicStrategy(Model):
         self.agent_water = agent_environment_message.agent_water
         self.neighbour_id = [agent_environment_message.north_neighbour_id, agent_environment_message.east_neighbour_id,
                              agent_environment_message.south_neighbour_id, agent_environment_message.west_neighbour_id]
-        print(agent_environment_message)
         self.neighbour_water_amount = [[i, "Unknown"] for i in self.neighbour_id if i != "None"]
         self.context.logger.info(self.neighbour_water_amount)
         self.is_round_done = False
@@ -115,7 +114,6 @@ class BasicStrategy(Model):
         # currently, ALL info has to be asked for
         # return true if a message asking for water is sent
         # false otherwise
-        print(self.neighbour_water_amount)
         for i in self.neighbour_water_amount:
             if i[1] == "Unknown":
                 i[1] = "Asking"

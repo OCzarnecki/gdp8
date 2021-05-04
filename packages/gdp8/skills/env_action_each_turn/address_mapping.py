@@ -1,5 +1,6 @@
 import json
 
+
 class AddressMapping:
     """Provides id<->address mapping, based on a static mapping
        file."""
@@ -24,5 +25,4 @@ class AddressMapping:
         return self._addresses[agent_id]
 
     def get_id_from_address(self, address):
-        print(address)
         return self._address_to_id[address]

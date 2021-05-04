@@ -7,12 +7,12 @@ license: Apache-2.0
 aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   __init__.py: QmSwBuAQmvDfLbuUvJ7nfrNCEE8iYzmqZzcTYupPwEsG4G
-  address_mapping.py: Qmca9zpW3bi2GJP85B3gEAZJps755zQRfY2G5PJWZfrLsm
-  behaviours.py: QmQBhLE5DBE8yJP9MQL8C3kiqGfdhwG5eNHX3N5JGxZTnr
-  dialogue.py: QmdteuGzg4MaAa3UGAPxuEoZdTYn2uGM5oEjiB4iYB6rVy
-  environment.py: QmUswFikSTUjvY15RVRgQj5w1a2LQzY4Rrm3yBmusovnxD
-  handlers.py: QmdfNhExQrugw7KotBMBVq64SKUu4WmZTsrS7mF9YtE8mW
-  replay_logger.py: QmQcgtaJiZSTNiJTzk3hWQiCbqm7e8ZM7DKNzxWDGWTKZv
+  address_mapping.py: QmdtDvZFJq1foYShEig1emeQ3vq753VntF4CmFASBoBpUt
+  behaviours.py: QmXd6MN2t9XTqmp2TWoHnZSKdPG6tLUmN14uPjXv8pPERP
+  dialogues.py: QmdteuGzg4MaAa3UGAPxuEoZdTYn2uGM5oEjiB4iYB6rVy
+  environment.py: QmY6tDtZ6P87Xk3NoqCxYEDdr3tam2YX3n4APWr4ejMMSg
+  handlers.py: QmNxhATPx7XUqmez1K8XHGqVfng81iCZt7rpLtSMVKs18n
+  replay_logger.py: QmTSN9yKyKwHKu6HuvLYE1BiTWtcTxEWWJ1ftCNvTkdSKx
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
@@ -36,7 +36,7 @@ models:
     class_name: DefaultDialogues
   environment:
     args:
-      agent_count: 1
+      agent_count: 5
       agent_max_capacity: 150
       agent_mining_speed: 20
       initial_agent_water: 100
