@@ -324,7 +324,7 @@ class TestSimulationState(unittest.TestCase):
     def test_no_water_is_transfered_if_agents_are_not_adjacent(self):
         initial_water = 10
         state = self.create_state_with_defaults(
-                size_x = 3,
+                size_x = 4,
                 size_y = 1,
                 oasis_count = 0,
                 agent_count = 2,
@@ -334,11 +334,12 @@ class TestSimulationState(unittest.TestCase):
         # Overwrite random positions for test
         left_agent = agents[0]
         right_agent = agents[1]
-        left_agent.x = 0
-        right_agent.x = 2
+        left_agent.pos_x = 0
+        right_agent.pos_x = 2
         state._agent_grid[0][0] = left_agent
         state._agent_grid[1][0] = None
         state._agent_grid[2][0] = right_agent
+        state._agent_grid[3][0] = None
         # Test
         left_agent.queue_command(OfferWaterCommand(10))
         right_agent.queue_command(ReceiveWaterCommand(10))
