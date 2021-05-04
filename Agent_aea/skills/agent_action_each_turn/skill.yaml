@@ -21,17 +21,17 @@ skills: []
 behaviours:
   agent_behaviour:
     args:
-      strategy_used: "Lone Goldfish" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"      
+      strategy_used: "Explorer Dogs" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"      
       tick_interval: 2
     class_name: AgentLogicBehaviour
 handlers:
   agent_message_handler:
     args:
-      strategy_used: "Lone Goldfish" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"
+      strategy_used: "Explorer Dogs" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"
     class_name: AgentMessageHandler
   environment_message_handler:
     args:
-      strategy_used: "Lone Goldfish" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"
+      strategy_used: "Explorer Dogs" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"
     class_name: EnvironmentMessageHandler
 models:
   agent_agent_dialogues:
@@ -45,7 +45,7 @@ models:
     class_name : LoneGoldfishStrategy
   altruistic_goldfish_strategy:
     args: 
-      thirsty_below_that_percentage_of_water: 60 #has to be between 0 and 100
+      thirsty_below_that_percentage_of_water: 5 #has to be between 0 and 100
       agent_max_capacity: 150
     class_name: AltruisticGoldfishStrategy
   dog_strategy:

@@ -33,19 +33,21 @@ class AgentLogicBehaviour(TickerBehaviour):
        is there enough info for making a decision? if so, do so,
        if not, might have to send message to ask for info"""
 
+    def __init__(self, **kwargs: Any) -> None:
+        self.strategyName = kwargs['strategy_used']
+        super().__init__(**kwargs)
+
     def setup(self, **kwargs: Any) -> None:
         """
         Implement the setup.
 
         :return: None
         """
-        self.strategyName = kwargs['strategy']
 
     def act(self) -> None:
 
         self.context.logger.info("act called")
 
-        
         if self.strategyName == "Explorer Dogs":
             strategy = cast(DogStrategy, self.context.dog_strategy)
         elif self.strategyName == "Altruistic Goldfish":
@@ -53,13 +55,13 @@ class AgentLogicBehaviour(TickerBehaviour):
         else:
             assert self.strategyName == "Lone Goldfish"
             strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
-            
+
         there_is_agent_asking_for_info = True
         while there_is_agent_asking_for_info:
             there_is_agent_asking_for_info = strategy.deal_with_an_agent_asking_for_info()
         if not strategy.is_round_done:
             if not strategy.asked_for_info_already:
-                self.context.logger.info("initial ?ask for info")
+                self.context.logger.info("initial ? ask for info")
                 strategy.ask_for_info_and_maybe_make_decision()
             elif strategy.enough_info_to_make_decision():
                 strategy.make_decision_send_to_env()

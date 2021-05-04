@@ -1,7 +1,7 @@
 import unittest
 import random
 
-from env_aea.skills.env_action_each_turn.environment import Environment, SimulationState, OfferWaterCommand, ReceiveWaterCommand
+from env_aea.skills.env_action_each_turn.environment import Environment, SimulationState, OfferWaterCommand, ReceiveWaterCommand, MoveCommand
 
 @unittest.skip("AEA interface changed. Must figure out how to provide name and skill_context")
 class TestEnvironment(unittest.TestCase):
@@ -87,25 +87,25 @@ class TestSimulationState(unittest.TestCase):
         agent.pos_x = 0
         agent.pos_y = 5
         agent.queue_command(MoveCommand("left"))
-        update_simulation()
+        state.update_simulation()
         self.assertEqual(10, agent.pos_x)
 
         agent.pos_x = 10
         agent.pos_y = 5
         agent.queue_command(MoveCommand("right"))
-        update_simulation()
+        state.update_simulation()
         self.assertEqual(0, agent.pos_x)
 
         agent.pos_x = 5
         agent.pos_y = 0
         agent.queue_command(MoveCommand("up"))
-        update_simulation()
+        state.update_simulation()
         self.assertEqual(10, agent.pos_y)
 
         agent.pos_x = 5
         agent.pos_y = 10
         agent.queue_command(MoveCommand("down"))
-        update_simulation()
+        state.update_simulation()
         self.assertEqual(0, agent.pos_y)
 
         
@@ -118,7 +118,7 @@ class TestSimulationState(unittest.TestCase):
         agents[1].pos_x = 4
         agents[1].pos_y = 5
         agents[1].queue_command(MoveCommand("right"))
-        update_simulation()
+        state.update_simulation()
         ##making sure the agent didn't move
         self.assertEqual(4, agents[1].pos_x)
         self.assertEqual(5, agents[1].pos_y)

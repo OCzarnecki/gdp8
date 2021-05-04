@@ -40,6 +40,10 @@ class EnvironmentMessageHandler(Handler):
 
     SUPPORTED_PROTOCOL = AgentEnvironmentMessage.protocol_id
 
+    def __init__(self, **kwargs: Any) -> None:
+        self.strategyName = kwargs['strategy_used']
+        super().__init__(**kwargs)
+
     def setup(self) -> None:
         """
         Implement the setup.
@@ -102,7 +106,14 @@ class EnvironmentMessageHandler(Handler):
         # Update my_model to get ready for next round
         self.context.logger.info("received tick message from the environment.")
 
-        strategy = cast(DogStrategy, self.context.strategy)
+        if self.strategyName == "Explorer Dogs":
+            strategy = cast(DogStrategy, self.context.dog_strategy)
+        elif self.strategyName == "Altruistic Goldfish":
+            strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        else:
+            assert self.strategyName == "Lone Goldfish"
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)   
+
         strategy.receive_agent_env_info(agent_env_msg, agent_environment_dialogue)
 
     def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage,
@@ -124,14 +135,16 @@ f
 class AgentMessageHandler(Handler):
     SUPPORTED_PROTOCOL = AgentAgentMessage.protocol_id
 
+    def __init__(self, **kwargs: Any) -> None:
+        self.strategyName = kwargs['strategy_used']
+        super().__init__(**kwargs)
+
     def setup(self, **kwargs: Any) -> None:
         """
         Implement the setup.
 
         :return: None
         """
-        self.strategyName = kwargs['strategy_used']
-
 
     def handle(self, message: Message) -> None:
         """
@@ -198,7 +211,14 @@ class AgentMessageHandler(Handler):
         strategy.receive_agent_agent_info(agent_agent_msg)
 
     def _handle_other_agent_request_for_info(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
-        strategy = cast(DogStrategy, self.context.strategy)
+        if self.strategyName == "Explorer Dogs":
+            strategy = cast(DogStrategy, self.context.dog_strategy)
+        elif self.strategyName == "Altruistic Goldfish":
+            strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        else:
+            assert self.strategyName == "Lone Goldfish"
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)   
+                 
         self.context.logger.info("request_appended")
         strategy.agent_message_asking_for_my_water.append(
             [agent_agent_msg, agent_agent_dialogue]
