@@ -62,7 +62,7 @@ class DogStrategy(Model):
 
     def __init__(self, **kwargs: Any) -> None:
         self.agent_max_capacity =  kwargs['agent_max_capacity']
-        self.desperate_for_water_when_below = self.agent_max_capacity / 2 # round below
+        self.desperate_for_water_when_below = math.floor(self.agent_max_capacity / 2)
         self.agent_max_dig_rate = kwargs['agent_max_dig_rate']
         self.least_water_amount_in_tile_for_agent_to_remember_it = self.agent_max_dig_rate
         super().__init__(**kwargs)
@@ -420,7 +420,7 @@ class AltruisticGoldfishStrategy(Model):
     a_neighbour_has_water_to_offer = None
 
     def __init__(self, **kwargs: Any) -> None:
-        self.desperate_for_water_when_below = kwargs['agent_max_capacity'] / 2 # round below
+        self.desperate_for_water_when_below = math.floor(kwargs['agent_max_capacity'] / 2)
         super().__init__(**kwargs)
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
