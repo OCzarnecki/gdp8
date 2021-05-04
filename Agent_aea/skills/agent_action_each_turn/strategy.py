@@ -18,9 +18,8 @@
 # ------------------------------------------------------------------------------
 
 """This model is a "intermediate" for the handler to place stuff and behaviour to read and make decisions"""
-import math
 import random
-from typing import cast, Any
+from typing import cast
 
 from aea.skills.base import Model
 
@@ -29,9 +28,10 @@ from packages.gdp8.protocols.agent_agent.dialogues import AgentAgentDialogue, Ag
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue
 
-
 # Next round env message SHOULD NEVER be able to come when is_round_done = false.
 # ALL messages sent has to be replied before making a decision (for now)
+
+
 
 
 class DogStrategy(Model):
@@ -59,12 +59,14 @@ class DogStrategy(Model):
     water_location = []
     move_direction_last_turn = "None"
 
+
     def __init__(self, **kwargs: Any) -> None:
-        self.agent_max_capacity = kwargs['agent_max_capacity']
+        self.agent_max_capacity =  kwargs['agent_max_capacity']
         self.desperate_for_water_when_below = math.floor(self.agent_max_capacity / 2)
         self.agent_max_dig_rate = kwargs['agent_max_dig_rate']
         self.least_water_amount_in_tile_for_agent_to_remember_it = self.agent_max_dig_rate
         super().__init__(**kwargs)
+
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
                                agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
@@ -127,7 +129,8 @@ class DogStrategy(Model):
                 index_not_found = True
                 while index_not_found:
                     index += 1
-                    if self.neighbour_water_amount[index][0] == sender and self.neighbour_water_amount[index][1] == "Asking":
+                    if self.neighbour_water_amount[index][0] == sender and self.neighbour_water_amount[index][
+                        1] == "Asking":
                         index_not_found = False
                 self.neighbour_water_amount[index][1] = water_info
             else:
