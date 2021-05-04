@@ -43,8 +43,8 @@ class ApplicationRunner:
         )
         self._manager.start_agent(env_id.name)
 
-    def _start_agent_with_id(self, agent_id_simulation):
-        name = f"agent_{agent_id_simulation}"
+    def _add_agent_with_id(self, agent_id_simulation):
+        name = self._agent_name_from_id(agent_id_simulation)
         agent_overrides = {
                 "connection_private_key_paths": {
                     "fetchai": "../../../keys/ckp.txt"
@@ -61,15 +61,19 @@ class ApplicationRunner:
                 agent_name = name,
                 agent_overrides=agent_overrides
         )
-        self._manager.start_agent(name)
 
     
-    def _start_agents(self):
+    def _start_agents(self, agent_count):
         self._agent_id = PublicId.from_str("gdp8/agent_aea:0.1.0")
         self._manager.add_project(self._agent_id)
-        for i in range(5):
-            self._start_agent_with_id(i)
+        for i in range(agent_count):
+            self._add_agent_with_id(i)
+            self._manager.start_agent(
+                    self._agent_name_from_id(i)
+            )
 
+    def _agent_name_from_id(self, agent_id):
+        return f"agent_{agent_id}"
 
     def _cleanup(self):
         if self._manager:
@@ -81,8 +85,8 @@ class ApplicationRunner:
     def main(self):
         try:
             self._init_mam()
-            self._start_agents()
-            time.sleep(5.0)
+            #self._start_agents(1)
+            #time.sleep(5.0)
             self._start_env()
             #time.sleep(60.0)
             while True:
