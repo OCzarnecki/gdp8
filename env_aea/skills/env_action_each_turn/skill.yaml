@@ -39,11 +39,11 @@ models:
       agent_count: 2
       agent_max_capacity: 150
       agent_mining_speed: 20
-      initial_agent_water: 10
-      initial_oasis_water: 10
-      oasis_count: 1
-      size_x: 2
-      size_y: 2
+      initial_agent_water: 100
+      initial_oasis_water: 1000
+      oasis_count: 20
+      size_x: 20
+      size_y: 20
     class_name: Environment
 dependencies: {}
 is_abstract: false

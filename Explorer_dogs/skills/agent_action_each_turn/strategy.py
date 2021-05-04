@@ -34,7 +34,7 @@ from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironment
 
 Desperate_for_water_when_below = 75
 agent_max_capacity = 150
-agent_max_dig_rate = 5
+agent_max_dig_rate = 20
 least_water_amount_in_tile_for_agent_to_remember_it = agent_max_dig_rate
 
 
