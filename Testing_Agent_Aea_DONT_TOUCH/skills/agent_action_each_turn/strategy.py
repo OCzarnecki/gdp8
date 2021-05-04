@@ -18,9 +18,8 @@
 # ------------------------------------------------------------------------------
 
 """This model is a "intermediate" for the handler to place stuff and behaviour to read and make decisions"""
-import math
 import random
-from typing import cast, Any
+from typing import cast
 
 from aea.skills.base import Model
 
