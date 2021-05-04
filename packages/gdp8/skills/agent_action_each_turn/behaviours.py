@@ -22,7 +22,9 @@ from typing import cast, Any
 
 from aea.skills.behaviours import TickerBehaviour
 
-from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
+from packages.gdp8.skills.agent_action_each_turn.strategy import \
+    DogStrategy, AltruisticGoldfishStrategy, LoneGoldfishStrategy
+
 
 class AgentLogicBehaviour(TickerBehaviour):
     """Behaviour looks at if actions required in each tick:
@@ -30,6 +32,10 @@ class AgentLogicBehaviour(TickerBehaviour):
        is the round done (on my end)? if so, stop
        is there enough info for making a decision? if so, do so,
        if not, might have to send message to ask for info"""
+
+    def __init__(self, **kwargs: Any) -> None:
+        self.strategyName = kwargs['strategy_used']
+        super().__init__(**kwargs)
 
     def setup(self, **kwargs: Any) -> None:
         """
@@ -41,21 +47,24 @@ class AgentLogicBehaviour(TickerBehaviour):
     def act(self) -> None:
 
         self.context.logger.info("act called")
-        strategy = cast(BasicStrategy, self.context.strategy)
 
-        there_is_agent_asking_for_water_info = True
-        while there_is_agent_asking_for_water_info:
-            there_is_agent_asking_for_water_info = strategy.deal_with_an_agent_asking_for_water_info()
+        if self.strategyName == "Explorer Dogs":
+            strategy = cast(DogStrategy, self.context.dog_strategy)
+        elif self.strategyName == "Altruistic Goldfish":
+            strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        else:
+            assert self.strategyName == "Lone Goldfish"
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
+
+        there_is_agent_asking_for_info = True
+        while there_is_agent_asking_for_info:
+            there_is_agent_asking_for_info = strategy.deal_with_an_agent_asking_for_info()
         if not strategy.is_round_done:
-            info_is_enough = strategy.enough_info_to_make_decision()
-            if info_is_enough:
+            if not strategy.asked_for_info_already:
+                self.context.logger.info("initial ? ask for info")
+                strategy.ask_for_info_and_maybe_make_decision()
+            elif strategy.enough_info_to_make_decision():
                 strategy.make_decision_send_to_env()
-                self.context.logger.info("info enough - send reply")
-            else:
-                self.context.logger.info("info not enough - send/wait")
-                asking_for_info = True
-                while asking_for_info:
-                    asking_for_info = strategy.potentially_ask_for_info()
 
     def teardown(self) -> None:
         """

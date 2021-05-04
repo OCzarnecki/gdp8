@@ -66,7 +66,6 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         :return: None
         """
         environment = cast(Environment, self.context.environment)
-        self.context.logger.debug(f"act() called. Phase: {environment.phase.value}")
 
         if environment.phase.value == Phase.PRE_SIMULATION.value:
             # should have a list of all agents and their address at the end of this phase

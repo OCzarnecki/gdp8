@@ -17,7 +17,7 @@
 #
 # ------------------------------------------------------------------------------
 
-from typing import cast
+from typing import cast, Any
 
 from aea.protocols.base import Message
 from aea.skills.base import Handler
@@ -27,7 +27,8 @@ from packages.gdp8.protocols.agent_agent.dialogues import AgentAgentDialogue, Ag
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
 
-from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
+from packages.gdp8.skills.agent_action_each_turn.strategy import \
+    DogStrategy, AltruisticGoldfishStrategy, LoneGoldfishStrategy
 
 
 # Handler will Update my model (strategy class) depending on what it has received
@@ -39,6 +40,10 @@ class EnvironmentMessageHandler(Handler):
 
     SUPPORTED_PROTOCOL = AgentEnvironmentMessage.protocol_id
 
+    def __init__(self, **kwargs: Any) -> None:
+        self.strategyName = kwargs['strategy_used']
+        super().__init__(**kwargs)
+
     def setup(self) -> None:
         """
         Implement the setup.
@@ -47,6 +52,7 @@ class EnvironmentMessageHandler(Handler):
         """
 
     def handle(self, message: Message) -> None:
+        self.context.logger.info("start handling env msg")
         """
         Implement the reaction to a message.
 
@@ -63,6 +69,7 @@ class EnvironmentMessageHandler(Handler):
             return
 
         # handle message
+        # environment = cast(Environment, self.context.environment)##
         self.context.logger.debug(
             "handling environment response. performative={}".format(agent_env_msg.performative)
         )
@@ -99,14 +106,21 @@ class EnvironmentMessageHandler(Handler):
         # Update my_model to get ready for next round
         self.context.logger.info("received tick message from the environment.")
 
-        strategy = cast(BasicStrategy, self.context.strategy)
+        if self.strategyName == "Explorer Dogs":
+            strategy = cast(DogStrategy, self.context.dog_strategy)
+        elif self.strategyName == "Altruistic Goldfish":
+            strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        else:
+            assert self.strategyName == "Lone Goldfish"
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)   
+
         strategy.receive_agent_env_info(agent_env_msg, agent_environment_dialogue)
 
     def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage,
                         agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """
         Handle an oef search message.
-
+f
         :param agent_env_msg: the agent environment message
         :param agent_environment_dialogue: the agent environment dialogue
         :return: None
@@ -121,7 +135,11 @@ class EnvironmentMessageHandler(Handler):
 class AgentMessageHandler(Handler):
     SUPPORTED_PROTOCOL = AgentAgentMessage.protocol_id
 
-    def setup(self) -> None:
+    def __init__(self, **kwargs: Any) -> None:
+        self.strategyName = kwargs['strategy_used']
+        super().__init__(**kwargs)
+
+    def setup(self, **kwargs: Any) -> None:
         """
         Implement the setup.
 
@@ -135,6 +153,7 @@ class AgentMessageHandler(Handler):
         :param message: the message
         :return: None
         """
+        self.context.logger.info("start handling agent msg")
         agent_agent_msg = cast(AgentAgentMessage, message)
 
         agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)
@@ -145,12 +164,10 @@ class AgentMessageHandler(Handler):
             return
 
         self.context.logger.info(agent_agent_msg.performative)
-        if agent_agent_msg.performative == AgentAgentMessage.Performative.RECEIVER_REPLY:
-            # water status returned
-            self._handle_returned_water_info(agent_agent_msg)
-        elif agent_agent_msg.performative == AgentAgentMessage.Performative.SENDER_REQUEST:
-            # water status asked
-            self._handle_water_query(agent_agent_msg, agent_agent_dialogue)
+        if agent_agent_msg.performative == AgentAgentMessage.Performative.SENDER_REQUEST:
+            self._handle_other_agent_request_for_info(agent_agent_msg, agent_agent_dialogue)
+        elif agent_agent_msg.performative == AgentAgentMessage.Performative.RECEIVER_REPLY:
+            self._handle_info_in_replies_from_other_agent(agent_agent_msg)
         else:
             self._handle_invalid(agent_agent_msg, agent_agent_dialogue)
 
@@ -179,15 +196,30 @@ class AgentMessageHandler(Handler):
         )
         self.context.outbox.put_message(message=default_msg)
 
-    def _handle_returned_water_info(self, agent_agent_msg: AgentAgentMessage):
+    def _handle_info_in_replies_from_other_agent(self, agent_agent_msg: AgentAgentMessage):
         # Actual function where agent messages are used.
-        strategy = cast(BasicStrategy, self.context.strategy)
+        if self.strategyName == "Explorer Dogs":
+            strategy = cast(DogStrategy, self.context.dog_strategy)
+        elif self.strategyName == "Altruistic Goldfish":
+            strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        else:
+            assert self.strategyName == "Lone Goldfish"
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
+
         # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
         # True = Go on, False = stop
         strategy.receive_agent_agent_info(agent_agent_msg)
 
-    def _handle_water_query(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
-        strategy = cast(BasicStrategy, self.context.strategy)
+    def _handle_other_agent_request_for_info(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
+        if self.strategyName == "Explorer Dogs":
+            strategy = cast(DogStrategy, self.context.dog_strategy)
+        elif self.strategyName == "Altruistic Goldfish":
+            strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        else:
+            assert self.strategyName == "Lone Goldfish"
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)   
+                 
+        self.context.logger.info("request_appended")
         strategy.agent_message_asking_for_my_water.append(
             [agent_agent_msg, agent_agent_dialogue]
         )

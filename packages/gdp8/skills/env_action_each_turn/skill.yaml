@@ -8,7 +8,7 @@ aea_version: '>=1.0.0, <2.0.0'
 fingerprint:
   __init__.py: QmSwBuAQmvDfLbuUvJ7nfrNCEE8iYzmqZzcTYupPwEsG4G
   address_mapping.py: QmdtDvZFJq1foYShEig1emeQ3vq753VntF4CmFASBoBpUt
-  behaviours.py: QmXd6MN2t9XTqmp2TWoHnZSKdPG6tLUmN14uPjXv8pPERP
+  behaviours.py: QmRxbqbyQuFsy7ZUKizYV8CVN6iwdFBEC2pmzX92Z68XUL
   dialogues.py: QmdteuGzg4MaAa3UGAPxuEoZdTYn2uGM5oEjiB4iYB6rVy
   environment.py: QmY6tDtZ6P87Xk3NoqCxYEDdr3tam2YX3n4APWr4ejMMSg
   handlers.py: QmNxhATPx7XUqmez1K8XHGqVfng81iCZt7rpLtSMVKs18n
@@ -36,12 +36,12 @@ models:
     class_name: DefaultDialogues
   environment:
     args:
-      agent_count: 5
+      agent_count: 1
       agent_max_capacity: 150
       agent_mining_speed: 20
       initial_agent_water: 100
-      initial_oasis_water: 2000
-      oasis_count: 15
+      initial_oasis_water: 1000
+      oasis_count: 20
       size_x: 20
       size_y: 20
     class_name: Environment
