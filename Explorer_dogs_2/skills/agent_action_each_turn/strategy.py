@@ -34,7 +34,7 @@ from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironment
 
 Desperate_for_water_when_below = 75
 agent_max_capacity = 150
-agent_max_dig_rate = 20
+agent_max_dig_rate = 5
 least_water_amount_in_tile_for_agent_to_remember_it = agent_max_dig_rate
 
 
@@ -69,7 +69,8 @@ class BasicStrategy(Model):
         # coming in the right sequence (1 then 2 then 3...)
         # Assert correct round and ready to accept
         # Assert last round done
-        assert agent_environment_message.turn_number == self.round_no + 1
+        assert agent_environment_message.turn_number == self.round_no + 1, \
+            agent_environment_message.turn_number + "." + self.round_no
         assert self.is_round_done
         self.round_no += 1
         self.current_env_message = agent_environment_message
@@ -117,41 +118,50 @@ class BasicStrategy(Model):
             # Use info
             sender = agent_agent_message.sender
             reply = agent_agent_message.reply
-            try:
+            if reply.find(".") == -1 and reply != "None":
                 water_info = int(reply)
                 index = -1
                 index_not_found = True
                 while index_not_found:
                     index += 1
-                    if self.neighbour_water_amount[index][0] == sender \
-                            & self.neighbour_water_amount[index][1] == "Asking":
+                    if self.neighbour_water_amount[index][0] == sender and self.neighbour_water_amount[index][1] == "Asking":
                         index_not_found = False
                 self.neighbour_water_amount[index][1] = water_info
-            except ValueError:
-                [x, y] = reply.split(".")
-                x = int(x)
-                y = int(y)
-                # x.y should be returned denoting x steps North and y steps East
-                # tokens = [x,y]
-                # Add the direction of this agent to cuz xy is the relative distance from that agent to water not
-                # distance of me to water
-                if self.north_neighbour_id == sender:
-                    y += 1
-                elif self.east_neighbour_id == sender:
-                    y += 1
-                elif self.south_neighbour_id == sender:
-                    y -= 1
-                elif self.west_neighbour_id == sender:
-                    y -= 1
-                self.add_to_water_location([x, y])
-                index_not_found = True
-                index = -1
-                while index_not_found:
-                    index += 1
-                    if self.neighbour_water_amount[index][0] == sender \
-                            & self.neighbour_water_amount[index][2] == "Asking":
-                        index_not_found = False
-                self.neighbour_water_amount[index][2] = "Result Received"
+            else:
+                if reply == "None":
+                    index_not_found = True
+                    index = -1
+                    while index_not_found:
+                        index += 1
+                        if self.neighbour_water_amount[index][0] == sender \
+                                and self.neighbour_water_amount[index][2] == "Asking":
+                            index_not_found = False
+                    self.neighbour_water_amount[index][2] = "Result Received"
+                else:
+                    [x, y] = reply.split(".")
+                    x = int(x)
+                    y = int(y)
+                    # x.y should be returned denoting x steps North and y steps East
+                    # tokens = [x,y]
+                    # Add the direction of this agent to cuz xy is the relative distance from that agent to water not
+                    # distance of me to water
+                    if self.north_neighbour_id == sender:
+                        y += 1
+                    elif self.east_neighbour_id == sender:
+                        y += 1
+                    elif self.south_neighbour_id == sender:
+                        y -= 1
+                    elif self.west_neighbour_id == sender:
+                        y -= 1
+                    self.add_to_water_location([x, y])
+                    index_not_found = True
+                    index = -1
+                    while index_not_found:
+                        index += 1
+                        if self.neighbour_water_amount[index][0] == sender \
+                                and self.neighbour_water_amount[index][2] == "Asking":
+                            index_not_found = False
+                    self.neighbour_water_amount[index][2] = "Result Received"
 
     def add_to_water_location(self, xy_coordinates: list[int]) -> None:
         try:
@@ -162,7 +172,7 @@ class BasicStrategy(Model):
 
     def deal_with_an_agent_asking_for_info(self) -> bool:
         # Return true if a request was dealt with, return false if there were no request dealt with
-        if not self.agent_message_asking_for_my_water:
+        if len(self.agent_message_asking_for_my_water) == 0:
             # no request
             return False
         else:
@@ -173,19 +183,22 @@ class BasicStrategy(Model):
             dialogue = cast(AgentAgentDialogue, dialogue_)
             if message.turn_number == self.round_no:
                 if message.request == "water_info":
+                    reply = str(self.agent_water)
                     return_message = dialogue.reply(
-                        performative=AgentAgentMessage.Performative.RECIEVER_REPLY,
+                        performative=AgentAgentMessage.Performative.RECEIVER_REPLY,
                         target_message=message,
-                        reply=str(self.agent_water),
+                        reply=reply,
                     )
+                    self.context.logger.info("sending agent message for info back")
                     self.context.outbox.put_message(message=return_message)
                 elif message.request == "closest_water":
-                    path = self.find_path_to_closest_water
+                    path = str(self.find_path_to_closest_water())
                     return_message = dialogue.reply(
-                        performative=AgentAgentMessage.Performative.RECIEVER_REPLY,
+                        performative=AgentAgentMessage.Performative.RECEIVER_REPLY,
                         target_message=message,
                         reply=path,
                     )
+                    self.context.logger.info("sending agent message for info back")
                     self.context.outbox.put_message(message=return_message)
                 else:
                     self.context.logger.info("Agent_Agent_Message of unknown request = {}".format(message.request))
@@ -219,7 +232,7 @@ class BasicStrategy(Model):
         if self.tile_water > least_water_amount_in_tile_for_agent_to_remember_it:
             self.water_location.append([0, 0])
         if state == "exploring":
-            if self.agent_water < agent_max_capacity - agent_max_dig_rate & self.tile_water > 0:
+            if self.agent_water < agent_max_capacity - agent_max_dig_rate and self.tile_water > 0:
                 # Replenish water supply, no need for asking for info
                 self.asked_for_info_already = True
                 return_agent_env_message = self.current_env_dialogue.reply(
@@ -293,6 +306,7 @@ class BasicStrategy(Model):
                     target_message=self.current_env_message,
                     command="NULL",
                 )
+                self.context.logger.info("sending env message back with command = " + "NULL")
                 self.context.outbox.put_message(message=return_agent_env_message)
                 self.is_round_done = True
             else:
@@ -309,8 +323,10 @@ class BasicStrategy(Model):
                 counterparty=id_of_agent_to_ask,
                 performative=AgentAgentMessage.Performative.SENDER_REQUEST,
                 turn_number=self.round_no,
-                requests="closest_water",
+                request="closest_water",
             )
+            self.context.outbox.put_message(message=send_agent_agent_message)
+            self.context.logger.info("sending agent message to " + id_of_agent_to_ask)
 
     def find_path_to_closest_water(self) -> str:
         # Look at info in water location, find closest

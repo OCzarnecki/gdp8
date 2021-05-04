@@ -47,6 +47,7 @@ class EnvironmentMessageHandler(Handler):
         """
 
     def handle(self, message: Message) -> None:
+        self.context.logger.info("start handling env msg")
         """
         Implement the reaction to a message.
 
@@ -107,7 +108,7 @@ class EnvironmentMessageHandler(Handler):
                         agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """
         Handle an oef search message.
-
+f
         :param agent_env_msg: the agent environment message
         :param agent_environment_dialogue: the agent environment dialogue
         :return: None
@@ -136,6 +137,7 @@ class AgentMessageHandler(Handler):
         :param message: the message
         :return: None
         """
+        self.context.logger.info("start handling agent msg")
         agent_agent_msg = cast(AgentAgentMessage, message)
 
         agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)
@@ -148,7 +150,7 @@ class AgentMessageHandler(Handler):
         self.context.logger.info(agent_agent_msg.performative)
         if agent_agent_msg.performative == AgentAgentMessage.Performative.SENDER_REQUEST:
             self._handle_other_agent_request_for_info(agent_agent_msg, agent_agent_dialogue)
-        elif agent_agent_msg.performative == AgentAgentMessage.Performative.RECIEVER_REPLY:
+        elif agent_agent_msg.performative == AgentAgentMessage.Performative.RECEIVER_REPLY:
             self._handle_info_in_replies_from_other_agent(agent_agent_msg)
         else:
             self._handle_invalid(agent_agent_msg, agent_agent_dialogue)
@@ -187,6 +189,7 @@ class AgentMessageHandler(Handler):
 
     def _handle_other_agent_request_for_info(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
         strategy = cast(BasicStrategy, self.context.strategy)
+        self.context.logger.info("request_appended")
         strategy.agent_message_asking_for_my_water.append(
             [agent_agent_msg, agent_agent_dialogue]
         )
