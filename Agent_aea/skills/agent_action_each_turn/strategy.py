@@ -38,7 +38,7 @@ agent_max_dig_rate = 20
 least_water_amount_in_tile_for_agent_to_remember_it = agent_max_dig_rate
 
 
-class BasicStrategy(Model):
+class DogStrategy(Model):
     """
     This class defines the strategy for the agent
     Generic Strategy is to gather agent water amount before making a decision
@@ -124,7 +124,8 @@ class BasicStrategy(Model):
                 index_not_found = True
                 while index_not_found:
                     index += 1
-                    if self.neighbour_water_amount[index][0] == sender and self.neighbour_water_amount[index][1] == "Asking":
+                    if self.neighbour_water_amount[index][0] == sender and self.neighbour_water_amount[index][
+                        1] == "Asking":
                         index_not_found = False
                 self.neighbour_water_amount[index][1] = water_info
             else:
@@ -381,10 +382,12 @@ class BasicStrategy(Model):
         self.context.outbox.put_message(message=return_agent_env_message)
         self.is_round_done = True
 
+
 def _rdm_direction() -> str:
     rdm = random.randint(0, 3)
     directions = ["north", "east", "south", "west"]
     return directions[rdm]
+
 
 class AltruisticGoldfishStrategy(Model):
     """

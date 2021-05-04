@@ -27,7 +27,8 @@ from packages.gdp8.protocols.agent_agent.dialogues import AgentAgentDialogue, Ag
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue, AgentEnvironmentDialogues
 
-from packages.gdp8.skills.agent_action_each_turn.strategy import BasicStrategy
+from packages.gdp8.skills.agent_action_each_turn.strategy import \
+    DogStrategy, AltruisticGoldfishStrategy, LoneGoldfishStrategy
 
 
 # Handler will Update my model (strategy class) depending on what it has received
@@ -101,7 +102,7 @@ class EnvironmentMessageHandler(Handler):
         # Update my_model to get ready for next round
         self.context.logger.info("received tick message from the environment.")
 
-        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy = cast(DogStrategy, self.context.strategy)
         strategy.receive_agent_env_info(agent_env_msg, agent_environment_dialogue)
 
     def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage,
@@ -182,13 +183,13 @@ class AgentMessageHandler(Handler):
 
     def _handle_info_in_replies_from_other_agent(self, agent_agent_msg: AgentAgentMessage):
         # Actual function where agent messages are used.
-        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy = cast(DogStrategy, self.context.strategy)
         # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
         # True = Go on, False = stop
         strategy.receive_agent_agent_info(agent_agent_msg)
 
     def _handle_other_agent_request_for_info(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
-        strategy = cast(BasicStrategy, self.context.strategy)
+        strategy = cast(DogStrategy, self.context.strategy)
         self.context.logger.info("request_appended")
         strategy.agent_message_asking_for_my_water.append(
             [agent_agent_msg, agent_agent_dialogue]
