@@ -17,7 +17,7 @@
 #
 # ------------------------------------------------------------------------------
 
-from typing import cast
+from typing import cast, Any
 
 from aea.protocols.base import Message
 from aea.skills.base import Handler
@@ -124,7 +124,7 @@ f
 class AgentMessageHandler(Handler):
     SUPPORTED_PROTOCOL = AgentAgentMessage.protocol_id
 
-    def setup(self) -> None:
+    def setup(self, **kwargs: Any) -> None:
         """
         Implement the setup.
 
