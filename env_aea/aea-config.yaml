@@ -21,8 +21,7 @@ required_ledgers: []
 default_routing: {}
 connection_private_key_paths:
   fetchai: ckp.txt
-private_key_paths:
-  fetchai: fetchai_private_key.txt
+private_key_paths: {}
 logging_config:
   disable_existing_loggers: false
   version: 1

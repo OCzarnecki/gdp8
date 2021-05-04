@@ -55,3 +55,6 @@ pyvenv.cfg
 
 # Simulation log files
 logs/
+
+# Multi agent manager working dir
+mam/
