@@ -25,13 +25,6 @@ from aea.skills.behaviours import TickerBehaviour
 from packages.gdp8.skills.agent_action_each_turn.strategy import \
     DogStrategy, AltruisticGoldfishStrategy, LoneGoldfishStrategy
 
-DEFAULT_SEARCH_QUERY = {
-    "search_key": "env",  # is that the key of the environment ?
-    "search_value": "v1",
-    "constraint_type": "==",
-}
-environment_address = None
-
 
 class AgentLogicBehaviour(TickerBehaviour):
     """Behaviour looks at if actions required in each tick:
