@@ -21,17 +21,17 @@ skills: []
 behaviours:
   agent_behaviour:
     args:
-      strategy_used: "lone_goldfish_strategy" #should be a string either "lone_goldfish_strategy", "altruistic_goldfish_strategy" or "dog_strategy"
+      strategy_used: "Lone Goldfish" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"      
       tick_interval: 2
     class_name: AgentLogicBehaviour
 handlers:
   agent_message_handler:
     args:
-      strategy_used: "lone_goldfish_strategy" #should be a string either "lone_goldfish_strategy", "altruistic_goldfish_strategy" or "dog_strategy"
+      strategy_used: "Lone Goldfish" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"
     class_name: AgentMessageHandler
   environment_message_handler:
     args:
-      strategy_used: "lone_goldfish_strategy" #should be a string either "lone_goldfish_strategy", "altruistic_goldfish_strategy" or "dog_strategy"
+      strategy_used: "Lone Goldfish" #either "Lone Goldfish", "Altruistic Goldfish" or "Explorer Dogs"
     class_name: EnvironmentMessageHandler
 models:
   agent_agent_dialogues:
