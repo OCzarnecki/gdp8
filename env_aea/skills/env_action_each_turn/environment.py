@@ -37,8 +37,8 @@ from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMap
 
 from enum import Enum, auto
 from itertools import product
-from typing import Any, Dict
-# from typing import List, Optional, cast
+from typing import Any
+# from typing import List, Optional, cast, Dict
 
 import random
 
@@ -100,8 +100,8 @@ class Agent:
     def __init__(self, agent_id, initial_water, pos_x, pos_y):
         self.agent_id = agent_id
         self.water = initial_water
-        self.pos_x = pos_x
-        self.pos_y = pos_y
+        self.pos_x: int = pos_x
+        self.pos_y: int = pos_y
         self.movement_last_turn = None
         self.queue_command(None)
 
@@ -218,26 +218,28 @@ class SimulationState:
             if agent.next_command.command_type == CommandType.MOVE:
                 direction = agent.next_command.direction
                 if direction == "north":
-                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y - 1)
+                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y - 1, agent.pos_x, agent.pos_y)
                 elif direction == "south":
-                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y + 1)
+                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y + 1, agent.pos_x, agent.pos_y)
                 elif direction == "west":
-                    self._try_moving(agent, direction, agent.pos_x - 1, agent.pos_y)
+                    self._try_moving(agent, direction, agent.pos_x - 1, agent.pos_y, agent.pos_x, agent.pos_y)
                 elif direction == "east":
-                    self._try_moving(agent, direction, agent.pos_x + 1, agent.pos_y)
+                    self._try_moving(agent, direction, agent.pos_x + 1, agent.pos_y, agent.pos_x, agent.pos_y)
                 else:
-                    self.context.logger.info(
+                    raise ValueError(
                         "Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
             else:
                 agent.movement_last_turn = None
 
-    def _try_moving(self, agent, direction, try_pos_x, try_pos_y):
+    def _try_moving(self, agent, direction, try_pos_x, try_pos_y, prev_pos_x, prev_pos_y):
         try_pos_x = try_pos_x % self.size_x
         try_pos_y = try_pos_y % self.size_y
         if self._agent_grid[try_pos_x][try_pos_y] is None:
             agent.pos_x = try_pos_x
             agent.pos_y = try_pos_y
             agent.movement_last_turn = direction
+            self._agent_grid[try_pos_x][try_pos_y] = agent
+            self._agent_grid[prev_pos_x][prev_pos_y] = None
         else:
             agent.movement_last_turn = None
         return
@@ -285,7 +287,17 @@ class SimulationState:
                         pass
         # Compute transfers
         agent_positions = [(agent.pos_x, agent.pos_y) for agent in self.get_agents_alive()]
+        for agent in self.get_agents_alive():
+            if agent is None:
+                raise ValueError("agent is None")
+            # else:
+            #     print(str(agent.water) + "." + str(agent.pos_x) + "." + str(agent.pos_y) + "." + str(agent.agent_id))
         for (x, y) in agent_positions:
+            # agent_test = self.get_agent_by_pos(x, y)
+            # if agent_test is None:
+            #     raise ValueError(
+            #             str(x) + "." + str(y)
+            #    )
             # Action is only needed for agents who send water
             if self._needs[x][y] < 0:
                 agent = self.get_agent_by_pos(x, y)
@@ -311,6 +323,7 @@ class SimulationState:
         # Apply transfers and mine water
         for (x, y) in agent_positions:
             agent = self.get_agent_by_pos(x, y)
+            assert(agent is not None)
             # Mine water
             minable = self._minable_at(x, y)
             if minable > 0:
@@ -339,7 +352,7 @@ class SimulationState:
         current_id = 0
         self.agent_count = agent_count
         self._agents_by_id = []
-        self._agent_grid = [[None] * self.size_y for _ in range(self.size_x)]
+        self._agent_grid: list[list[Agent]] = [[None] * self.size_y for _ in range(self.size_x)]
 
         for (x, y) in self._unique_random_coords(agent_count):
             agent = Agent(current_id, initial_agent_water, x, y)
@@ -445,7 +458,7 @@ class Environment(Model):
         return n, e, s, w
 
     @property
-    def agents_alive(self) -> Dict[str, str]:
+    def agents_alive(self) -> list[Agent]:
         """Get a list of agents still alive in the simulation."""
         return [self.id_to_address(agent.agent_id) for agent in self.state.get_agents_alive()]
         # -> I actually prefer if we could return a similar dict as agent_addr_to_id
