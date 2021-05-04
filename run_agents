@@ -12,6 +12,12 @@ from aea.manager import MultiAgentManager
 
 
 class ApplicationRunner:
+    """Warning for filepaths: the framework resolves
+       keypaths relative to the MAM's data folder
+       (mam/data/AGENT_NAME), but the CWD is the directory
+       that this script is run from (normally the project
+       root, ./). This means that paths for _our_ code are
+       relative to the project root."""
     def _init_mam(self):
         WORKING_DIR = "mam"
         REGISTRY_PATH = "packages"
@@ -111,7 +117,6 @@ class ApplicationRunner:
             self._start_agents(AGENT_COUNT)
             time.sleep(5.0)
             self._start_env(AGENT_COUNT)
-            time.sleep(60.0)
             while True:
                 time.sleep(5.)
         finally:
