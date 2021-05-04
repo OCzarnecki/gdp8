@@ -130,7 +130,7 @@ class AgentMessageHandler(Handler):
 
         :return: None
         """
-        self.strategyName = kwargs['strategy']
+        self.strategyName = kwargs['strategy_used']
 
 
     def handle(self, message: Message) -> None:
