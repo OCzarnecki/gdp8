@@ -29,6 +29,14 @@ class ApplicationRunner:
                     "fetchai": "../../../keys/ckp.txt"
                 }
         }
+        env_skill_id = PublicId.from_str("gdp8/env_action_each_turn:0.1.0")
+        component_overrides = [{
+            **env_skill_id.json,
+            "type": "behaviour",
+            "args": {
+                "mapping_path": "../../../keys/mapping.json"
+            }
+        }]
         self._manager.add_agent(
                 env_id, 
                 agent_overrides=agent_overrides
@@ -36,22 +44,24 @@ class ApplicationRunner:
         self._manager.start_agent(env_id.name)
 
     def _start_agent_with_id(self, agent_id_simulation):
-        name = f"agent-{agent_id_simulation}"
+        name = f"agent_{agent_id_simulation}"
         agent_overrides = {
-#                "agent_name": name,
                 "connection_private_key_paths": {
                     "fetchai": "../../../keys/ckp.txt"
                 },
                 "private_key_paths": {
                     "fetchai": f"../../../keys/fetchai_private_key-{agent_id_simulation}.txt"
+                },
+                "logging_config": {
+                    "root": {"level": "DEBUG"}
                 }
         }
         self._manager.add_agent(
                 self._agent_id, 
+                agent_name = name,
                 agent_overrides=agent_overrides
         )
-        #self._manager.start_agent(name)
-        self._manager.start_agent(self._agent_id.name)
+        self._manager.start_agent(name)
 
     
     def _start_agents(self):
@@ -63,8 +73,10 @@ class ApplicationRunner:
 
     def _cleanup(self):
         if self._manager:
-            self._manager.stop_all_agents()
-            self._manager.stop_manager()
+            try:
+                self._manager.stop_all_agents()
+            finally:
+                self._manager.stop_manager()
 
     def main(self):
         try:
@@ -72,8 +84,12 @@ class ApplicationRunner:
             self._start_agents()
             time.sleep(5.0)
             self._start_env()
-            time.sleep(5.0)
+            #time.sleep(60.0)
+            while True:
+                time.sleep(5.)
         finally:
+            print("*" * 500)
+            print("Time to clean up!")
             self._cleanup()
 
 if __name__ == "__main__":
