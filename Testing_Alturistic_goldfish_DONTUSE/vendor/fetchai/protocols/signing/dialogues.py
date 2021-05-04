@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 #
-#   Copyright 2021 gdp8
+#   Copyright 2021 fetchai
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@
 # ------------------------------------------------------------------------------
 
 """
-This module contains the classes required for agent_agent dialogue management.
+This module contains the classes required for signing dialogue management.
 
-- AgentAgentDialogue: The dialogue class maintains state of a dialogue and manages it.
-- AgentAgentDialogues: The dialogues class keeps track of all dialogues.
+- SigningDialogue: The dialogue class maintains state of a dialogue and manages it.
+- SigningDialogues: The dialogues class keeps track of all dialogues.
 """
 
 from abc import ABC
@@ -31,37 +31,61 @@ from aea.common import Address
 from aea.protocols.base import Message
 from aea.protocols.dialogue.base import Dialogue, DialogueLabel, Dialogues
 
-from packages.gdp8.protocols.agent_agent.message import AgentAgentMessage
+from packages.fetchai.protocols.signing.message import SigningMessage
 
 
-class AgentAgentDialogue(Dialogue):
-    """The agent_agent dialogue class maintains state of a dialogue and manages it."""
+class SigningDialogue(Dialogue):
+    """The signing dialogue class maintains state of a dialogue and manages it."""
 
-    INITIAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.SENDER_REQUEST})
-    TERMINAL_PERFORMATIVES = frozenset({AgentAgentMessage.Performative.RECEIVER_REPLY})
+    INITIAL_PERFORMATIVES = frozenset(
+        {
+            SigningMessage.Performative.SIGN_TRANSACTION,
+            SigningMessage.Performative.SIGN_MESSAGE,
+        }
+    )
+    TERMINAL_PERFORMATIVES = frozenset(
+        {
+            SigningMessage.Performative.SIGNED_TRANSACTION,
+            SigningMessage.Performative.SIGNED_MESSAGE,
+            SigningMessage.Performative.ERROR,
+        }
+    )
     VALID_REPLIES = {
-        AgentAgentMessage.Performative.RECEIVER_REPLY: frozenset(),
-        AgentAgentMessage.Performative.SENDER_REQUEST: frozenset(
-            {AgentAgentMessage.Performative.RECEIVER_REPLY}
+        SigningMessage.Performative.ERROR: frozenset(),
+        SigningMessage.Performative.SIGN_MESSAGE: frozenset(
+            {
+                SigningMessage.Performative.SIGNED_MESSAGE,
+                SigningMessage.Performative.ERROR,
+            }
         ),
+        SigningMessage.Performative.SIGN_TRANSACTION: frozenset(
+            {
+                SigningMessage.Performative.SIGNED_TRANSACTION,
+                SigningMessage.Performative.ERROR,
+            }
+        ),
+        SigningMessage.Performative.SIGNED_MESSAGE: frozenset(),
+        SigningMessage.Performative.SIGNED_TRANSACTION: frozenset(),
     }
 
     class Role(Dialogue.Role):
-        """This class defines the agent's role in a agent_agent dialogue."""
+        """This class defines the agent's role in a signing dialogue."""
 
-        AGENT = "agent"
+        DECISION_MAKER = "decision_maker"
+        SKILL = "skill"
 
     class EndState(Dialogue.EndState):
-        """This class defines the end states of a agent_agent dialogue."""
+        """This class defines the end states of a signing dialogue."""
 
-        MESSAGE_SENT = 0
+        SUCCESSFUL = 0
+        FAILED = 1
 
     def __init__(
         self,
         dialogue_label: DialogueLabel,
         self_address: Address,
         role: Dialogue.Role,
-        message_class: Type[AgentAgentMessage] = AgentAgentMessage,
+        message_class: Type[SigningMessage] = SigningMessage,
     ) -> None:
         """
         Initialize a dialogue.
@@ -80,10 +104,12 @@ class AgentAgentDialogue(Dialogue):
         )
 
 
-class AgentAgentDialogues(Dialogues, ABC):
-    """This class keeps track of all agent_agent dialogues."""
+class SigningDialogues(Dialogues, ABC):
+    """This class keeps track of all signing dialogues."""
 
-    END_STATES = frozenset({AgentAgentDialogue.EndState.MESSAGE_SENT})
+    END_STATES = frozenset(
+        {SigningDialogue.EndState.SUCCESSFUL, SigningDialogue.EndState.FAILED}
+    )
 
     _keep_terminal_state_dialogues = False
 
@@ -91,7 +117,7 @@ class AgentAgentDialogues(Dialogues, ABC):
         self,
         self_address: Address,
         role_from_first_message: Callable[[Message, Address], Dialogue.Role],
-        dialogue_class: Type[AgentAgentDialogue] = AgentAgentDialogue,
+        dialogue_class: Type[SigningDialogue] = SigningDialogue,
     ) -> None:
         """
         Initialize dialogues.
@@ -103,7 +129,7 @@ class AgentAgentDialogues(Dialogues, ABC):
             self,
             self_address=self_address,
             end_states=cast(FrozenSet[Dialogue.EndState], self.END_STATES),
-            message_class=AgentAgentMessage,
+            message_class=SigningMessage,
             dialogue_class=dialogue_class,
             role_from_first_message=role_from_first_message,
         )
