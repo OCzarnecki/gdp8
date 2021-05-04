@@ -3,8 +3,8 @@ import unittest
 
 from datetime import datetime
 
-from env_aea.skills.Action_Each_Turn.environment import SimulationState
-from env_aea.skills.Action_Each_Turn.replay_logger import ReplayLogger
+from env_aea.skills.env_action_each_turn.environment import SimulationState
+from env_aea.skills.env_action_each_turn.replay_logger import ReplayLogger
 
 class TestReplayLogger(unittest.TestCase):
     """ Tests for ReplayLogger """
