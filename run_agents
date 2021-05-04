@@ -1,6 +1,7 @@
 #!bin/python
 
 import os
+import sys
 import time
 
 from pathlib import Path
@@ -21,25 +22,43 @@ class ApplicationRunner:
         )
         self._manager.start_manager(local=True)
 
-    def _start_env(self):
+    def _start_env(self, agent_count):
         env_id = PublicId.from_str("gdp8/env_aea:0.1.0")
         self._manager.add_project(env_id)
         agent_overrides = {
                 "connection_private_key_paths": {
                     "fetchai": "../../../keys/ckp.txt"
+                },
+                "private_key_paths": {
+                    "fetchai": f"../../../keys/fetchai_private_key-ENV.txt"
+                },
+                "logging_config": {
+                    "root": {"level": "DEBUG"}
                 }
         }
         env_skill_id = PublicId.from_str("gdp8/env_action_each_turn:0.1.0")
         component_overrides = [{
             **env_skill_id.json,
-            "type": "behaviour",
-            "args": {
-                "mapping_path": "../../../keys/mapping.json"
+            "type": "skill",
+            "behaviours": {
+                "env_logic": {
+                    "args": {
+                        "mapping_path": "keys/mapping.json"
+                    }
+                }
+            },
+            "models": {
+                "environment": {
+                    "args": {
+                        "agent_count": agent_count
+                    }
+                }
             }
         }]
         self._manager.add_agent(
                 env_id, 
-                agent_overrides=agent_overrides
+                agent_overrides=agent_overrides,
+                component_overrides=component_overrides
         )
         self._manager.start_agent(env_id.name)
 
@@ -83,12 +102,16 @@ class ApplicationRunner:
                 self._manager.stop_manager()
 
     def main(self):
+        if len(sys.argv) != 2:
+            print("Usage: run_agents AGENT_COUNT")
+            return
         try:
+            AGENT_COUNT = int(sys.argv[1])
             self._init_mam()
-            #self._start_agents(1)
-            #time.sleep(5.0)
-            self._start_env()
-            #time.sleep(60.0)
+            self._start_agents(AGENT_COUNT)
+            time.sleep(5.0)
+            self._start_env(AGENT_COUNT)
+            time.sleep(60.0)
             while True:
                 time.sleep(5.)
         finally:
