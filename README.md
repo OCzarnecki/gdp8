@@ -8,11 +8,15 @@ Repository for the AEA project. All code goes here. Link relevant info in this f
 * Group number: 8
 
 # Set up
-Clone this repository with
+1. Clone this repository with
 ```
 git clone https://OlafC@bitbucket.org/OlafC/gdp.git
 ```
-Then, follow the [AEA Framework Installation Instructions](https://docs.fetch.ai/aea/quickstart/#option-2-automated-install-script).
+2. Install the AEA framework, by following the [AEA Framework Installation Instructions](https://docs.fetch.ai/aea/quickstart/#option-2-automated-install-script).
+3. Install the required python dependencies
+  * numpy
+  * pygame
+  * matplotlib
 
 # Testing
 From the root directory run
