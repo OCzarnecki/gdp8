@@ -42,7 +42,7 @@ class ApplicationRunner:
                     "fetchai": f"../../../keys/fetchai_private_key-ENV.txt"
                 },
                 "logging_config": {
-                    "root": {"level": "DEBUG"}
+                    "root": {"level": args.loglevel}
                 }
         }
         env_skill_id = PublicId.from_str("gdp8/env_action_each_turn:0.1.0")
@@ -52,7 +52,8 @@ class ApplicationRunner:
             "behaviours": {
                 "env_logic": {
                     "args": {
-                        "mapping_path": "keys/mapping.json"
+                        "mapping_path": "keys/mapping.json",
+                        "max_turns": args.max_turns
                     }
                 }
             },
@@ -88,7 +89,7 @@ class ApplicationRunner:
                     "fetchai": f"../../../keys/fetchai_private_key-{agent_id_simulation}.txt"
                 },
                 "logging_config": {
-                    "root": {"level": "DEBUG"}
+                    "root": {"level": args.loglevel}
                 }
         }
         agent_skill_id = PublicId.from_str("gdp8/agent_action_each_turn:0.1.0")
@@ -160,8 +161,9 @@ class ApplicationRunner:
             self._start_agents(args)
             time.sleep(5.0)
             self._start_env(args)
-            while True:
-                time.sleep(5.)
+            while not Path("$SIMULATION_ENDED").exists():
+                time.sleep(1.)
+            Path("$SIMULATION_ENDED").unlink()
         finally:
             print("*" * 500)
             print("Time to clean up!")
@@ -194,6 +196,13 @@ class ApplicationRunner:
 
     def main(self):
         parser = argparse.ArgumentParser()
+        parser.add_argument(
+                "--loglevel",
+                "-v",
+                choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                default="DEBUG",
+                help="log level"
+        )
         subparsers = parser.add_subparsers(
                 required=True,
                 help="command to run"
@@ -217,6 +226,12 @@ class ApplicationRunner:
                     "Altruistic Goldfish"
                 ],
                 help="strategy all the agents will use"
+        )
+        parser_run.add_argument(
+                "--max_turns",
+                help="limit on the number of turns the simulation will run for",
+                type=int,
+                default=250
         )
         parser_run.add_argument(
                 "--agent_max_capacity",

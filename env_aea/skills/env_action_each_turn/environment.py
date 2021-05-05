@@ -370,7 +370,7 @@ class Environment(Model):
     """Model of the environment."""
 
     def __init__(self, **kwargs: Any) -> None:
-        self._phase = Phase.PRE_SIMULATION
+        self._phase = Phase.START_SIMULATION
         self.state = SimulationState(
             kwargs['size_x'],
             kwargs['size_y'],
