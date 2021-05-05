@@ -1,0 +1,142 @@
+#!bin/python
+
+import os
+import sys
+import time
+
+from pathlib import Path
+
+from aea.configurations.base import PublicId
+from aea.manager import MultiAgentManager
+
+
+
+class ApplicationRunner:
+    """Warning for filepaths: the framework resolves
+       keypaths relative to the MAM's data folder
+       (mam/data/AGENT_NAME), but the CWD is the directory
+       that this script is run from (normally the project
+       root, ./). This means that paths for _our_ code are
+       relative to the project root."""
+    def _init_mam(self):
+        WORKING_DIR = "mam"
+        REGISTRY_PATH = "packages"
+
+        self._manager = MultiAgentManager(
+            WORKING_DIR,
+            registry_path = REGISTRY_PATH
+        )
+        self._manager.start_manager(local=True)
+
+    def _start_env(self, agent_count):
+        env_id = PublicId.from_str("gdp8/env_aea:0.1.0")
+        self._manager.add_project(env_id)
+        agent_overrides = {
+                "connection_private_key_paths": {
+                    "fetchai": "../../../keys/ckp.txt"
+                },
+                "private_key_paths": {
+                    "fetchai": f"../../../keys/fetchai_private_key-ENV.txt"
+                },
+                "logging_config": {
+                    "root": {"level": "DEBUG"}
+                }
+        }
+        env_skill_id = PublicId.from_str("gdp8/env_action_each_turn:0.1.0")
+        component_overrides = [{
+            **env_skill_id.json,
+            "type": "skill",
+            "behaviours": {
+                "env_logic": {
+                    "args": {
+                        "mapping_path": "keys/mapping.json"
+                    }
+                }
+            },
+            "models": {
+                "environment": {
+                    "args": {
+                        "agent_count": agent_count
+                    }
+                }
+            }
+        }]
+        self._manager.add_agent(
+                env_id, 
+                agent_overrides=agent_overrides,
+                component_overrides=component_overrides
+        )
+        self._manager.start_agent(env_id.name)
+
+    def _add_agent_with_id(self, agent_id_simulation, strategy):
+        name = self._agent_name_from_id(agent_id_simulation)
+        agent_overrides = {
+                "connection_private_key_paths": {
+                    "fetchai": "../../../keys/ckp.txt"
+                },
+                "private_key_paths": {
+                    "fetchai": f"../../../keys/fetchai_private_key-{agent_id_simulation}.txt"
+                },
+                "logging_config": {
+                    "root": {"level": "DEBUG"}
+                }
+        }
+        agent_skill_id = PublicId.from_str("gdp8/agent_action_each_turn:0.1.0")
+        component_overrides = [{
+            **agent_skill_id.json,
+            "type": "skill",
+            "behaviours": {
+                "agent_behaviour": {
+                    "args": {
+                        "strategy_used": strategy
+                    }
+                }
+            },
+        }]
+        self._manager.add_agent(
+                self._agent_id, 
+                agent_name = name,
+                agent_overrides=agent_overrides,
+                component_overrides=component_overrides
+        )
+
+    
+    def _start_agents(self, agent_count, strategy):
+        self._agent_id = PublicId.from_str("gdp8/agent_aea:0.1.0")
+        self._manager.add_project(self._agent_id)
+        for i in range(agent_count):
+            self._add_agent_with_id(i, strategy)
+            self._manager.start_agent(
+                    self._agent_name_from_id(i)
+            )
+
+    def _agent_name_from_id(self, agent_id):
+        return f"agent_{agent_id}"
+
+    def _cleanup(self):
+        if self._manager:
+            try:
+                self._manager.stop_all_agents()
+            finally:
+                self._manager.stop_manager()
+
+    def main(self):
+        if len(sys.argv) != 3:
+            print("Usage: run_agents AGENT_COUNT STRATEGY_NAME")
+            return
+        try:
+            AGENT_COUNT = int(sys.argv[1])
+            STRATEGY = sys.argv[2]
+            self._init_mam()
+            self._start_agents(AGENT_COUNT, STRATEGY)
+            time.sleep(5.0)
+            self._start_env(AGENT_COUNT)
+            while True:
+                time.sleep(5.)
+        finally:
+            print("*" * 500)
+            print("Time to clean up!")
+            self._cleanup()
+
+if __name__ == "__main__":
+    ApplicationRunner().main()

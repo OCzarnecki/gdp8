@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package aea.gdp8.agent_environment_communication.v0_1_0;
+
+message AgentEnvironmentMessage{
+
+  // Performatives and contents
+  message Tick_Performative{
+    int32 tile_water = 1;
+    int32 turn_number = 2;
+    int32 agent_water = 3;
+    repeated string neighbour_ids = 4;
+  }
+
+  message Action_Performative{
+    string command = 1;
+  }
+
+
+  oneof performative{
+    Action_Performative action = 5;
+    Tick_Performative tick = 6;
+  }
+}

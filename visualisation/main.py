@@ -1,3 +1,6 @@
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import sys, pygame, math, time, random
 import numpy as np
 from simulationState import State
@@ -181,9 +184,8 @@ def paused(state) :
             pygame.display.update()
         
 
-def main():
-
-    state = State("/Users/tancrede/Desktop/projects/survival_simulation/test.json")
+def run(log_path):
+    state = State(log_path)
 
     clock = pygame.time.Clock()
     iteration = 0
@@ -226,6 +228,17 @@ def main():
         
     pygame.quit()
 
+def main():
+    if len(sys.argv) != 2:
+        log_path = "/Users/tancrede/Desktop/projects/survival_simulation/test.json"
+        print(f"No log file specified, using default: {log_path}")
+        print(f"Run --help to see usage")
+        run(log_path)
+    elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
+        print("Usage: python main.py PATH_TO_SIMULATION_LOG")
+        return
+    else:
+        run(sys.argv[1])
 
 if __name__ == "__main__":
     main()
