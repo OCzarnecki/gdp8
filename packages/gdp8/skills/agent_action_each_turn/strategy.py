@@ -520,12 +520,12 @@ class AltruisticGoldfishStrategy(Model):
             if not self.a_neighbour_is_thirsty or self.agent_water <= 10:
                 decision = "NULL"  # neighbours are not thirsty and the cell has water
             else:
-                # a neighbour is thirsty, if cell has more water than I need till FULL, offer some of my water
-                if self.agent_water <= self.desperate_for_water_when_below:
-                    water = min(0, self.tile_water - (self.agent_max_water - self.agent_water))
+                # a neighbour is thirsty, if cell has more water than I need till FULL, offer half of my water
+                water = min(self.agent_water/2, self.tile_water - (self.agent_max_water - self.agent_water))
+                if water < 2:
+                    decision: str = "NULL"
                 else:
-                    water = self.tile_water
-                decision: str = "offer_water" + "." + str(water)
+                    decision: str = "offer_water" + "." + str(water)
         else:
             # the cell has no water
             if self.agent_water > self.desperate_for_water_when_below and self.a_neighbour_is_thirsty:
@@ -534,7 +534,8 @@ class AltruisticGoldfishStrategy(Model):
                 decision: str = "offer_water" + "." + str(water)
             elif self.agent_water <= self.desperate_for_water_when_below and self.a_neighbour_has_water_to_offer:
                 # agent is thirsty and another has water to offer
-                water = self.desperate_for_water_when_below - self.agent_water
+                water = self.desperate_for_water_when_below - self.agent_water + 10
+                # +10 so agent does not ask for 1 water every other turn
                 decision: str = "receive_water" + "." + str(water)
             else:
                 # cell has no water and neighbours are not thirsty or if they are agent doesn't have any to offer

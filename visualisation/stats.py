@@ -25,10 +25,10 @@ import sys
 
 from matplotlib.widgets import Slider
 
-from simStatePure import State
+from visualisation.simStatePure import State
 
 # Parameter
-FILE = "./example_logs/test.json"
+FILE = "./visualisation/example_logs/test.json"
 DEHYDRATION_RATE = 1
 
 # interface with logs
