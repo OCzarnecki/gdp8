@@ -301,11 +301,9 @@ class SimulationState:
             # Action is only needed for agents who send water
             if self._needs[x][y] < 0:
                 agent = self.get_agent_by_pos(x, y)
-                neighbour_coords = [(x + dx, y + dy)
-                                    for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]
-                                    if 0 <= x + dx < self.size_x
-                                    and 0 <= y + dy < self.size_y]
-                for (dst_x, dst_y) in neighbour_coords:
+                neighbour_coords = [((x + dx + self.size_x) % self.size_x, (y + dy + self.size_y) % self.size_y)
+                                    for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]]
+                for (dst_x, dst_y) in set(neighbour_coords):
                     dst_agent = self.get_agent_by_pos(dst_x, dst_y)
                     if dst_agent is not None and self._needs[dst_x][dst_y] > 0:
                         transfer_amount = min(self._agent_max_capacity
@@ -320,6 +318,7 @@ class SimulationState:
                         self._needs[dst_x][dst_y] -= transfer_amount
                         self._transfers[x][y] -= transfer_amount
                         self._transfers[dst_x][dst_y] += transfer_amount
+
         # Apply transfers and mine water
         for (x, y) in agent_positions:
             agent = self.get_agent_by_pos(x, y)
@@ -438,23 +437,20 @@ class Environment(Model):
                    address in the north etc."""
         agent = self.state.get_agent_by_id(self.address_to_id(agent_address))
         x, y = agent.pos_x, agent.pos_y
+        size_x, size_y = self.state.size_x, self.state.size_y
         n, e, s, w = None, None, None, None
-        if y >= 1:
-            north_agent = self.state.get_agent_by_pos(x, y - 1)
-            if north_agent:
-                n = self.id_to_address(north_agent.agent_id)
-        if x + 1 < self.state.size_x:
-            east_agent = self.state.get_agent_by_pos(x + 1, y)
-            if east_agent:
-                e = self.id_to_address(east_agent.agent_id)
-        if y + 1 < self.state.size_y:
-            south_agent = self.state.get_agent_by_pos(x, y + 1)
-            if south_agent:
-                s = self.id_to_address(south_agent.agent_id)
-        if x >= 1:
-            west_agent = self.state.get_agent_by_pos(x - 1, y)
-            if west_agent:
-                w = self.id_to_address(west_agent.agent_id)
+        north_agent = self.state.get_agent_by_pos(x, (y - 1 + size_y) % size_y)
+        if north_agent:
+            n = self.id_to_address(north_agent.agent_id)
+        east_agent = self.state.get_agent_by_pos((x + 1) % size_x, y)
+        if east_agent:
+            e = self.id_to_address(east_agent.agent_id)
+        south_agent = self.state.get_agent_by_pos(x, (y + 1) % size_y)
+        if south_agent:
+            s = self.id_to_address(south_agent.agent_id)
+        west_agent = self.state.get_agent_by_pos((x - 1 + size_x) % size_x, y)
+        if west_agent:
+            w = self.id_to_address(west_agent.agent_id)
         return n, e, s, w
 
     @property

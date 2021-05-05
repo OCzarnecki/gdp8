@@ -10,7 +10,7 @@ fingerprint:
   address_mapping.py: QmdtDvZFJq1foYShEig1emeQ3vq753VntF4CmFASBoBpUt
   behaviours.py: QmRxbqbyQuFsy7ZUKizYV8CVN6iwdFBEC2pmzX92Z68XUL
   dialogues.py: QmdteuGzg4MaAa3UGAPxuEoZdTYn2uGM5oEjiB4iYB6rVy
-  environment.py: QmY6tDtZ6P87Xk3NoqCxYEDdr3tam2YX3n4APWr4ejMMSg
+  environment.py: Qmf46HDGJrCa8t48EFrprvTxKggrMV2exrmvzAZD8we35k
   handlers.py: QmNxhATPx7XUqmez1K8XHGqVfng81iCZt7rpLtSMVKs18n
   replay_logger.py: QmTSN9yKyKwHKu6HuvLYE1BiTWtcTxEWWJ1ftCNvTkdSKx
 fingerprint_ignore_patterns: []

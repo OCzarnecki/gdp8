@@ -29,10 +29,9 @@ from packages.gdp8.protocols.agent_agent.dialogues import AgentAgentDialogue, Ag
 from packages.gdp8.protocols.agent_environment.message import AgentEnvironmentMessage
 from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironmentDialogue
 
+
 # Next round env message SHOULD NEVER be able to come when is_round_done = false.
 # ALL messages sent has to be replied before making a decision (for now)
-
-
 
 
 class DogStrategy(Model):
@@ -60,14 +59,12 @@ class DogStrategy(Model):
     water_location = []
     move_direction_last_turn = "None"
 
-
     def __init__(self, **kwargs: Any) -> None:
-        self.agent_max_capacity =  kwargs['agent_max_capacity']
+        self.agent_max_capacity = kwargs['agent_max_capacity']
         self.desperate_for_water_when_below = math.floor(self.agent_max_capacity / 2)
         self.agent_max_dig_rate = kwargs['agent_max_dig_rate']
         self.least_water_amount_in_tile_for_agent_to_remember_it = self.agent_max_dig_rate
         super().__init__(**kwargs)
-
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
                                agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
@@ -421,7 +418,8 @@ class AltruisticGoldfishStrategy(Model):
     a_neighbour_has_water_to_offer = None
 
     def __init__(self, **kwargs: Any) -> None:
-        self.desperate_for_water_when_below = math.floor(kwargs['agent_max_capacity'] / 2)
+        self.agent_max_water = kwargs['agent_max_capacity']
+        self.desperate_for_water_when_below = math.floor(self.agent_max_water / 2)
         super().__init__(**kwargs)
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
@@ -519,12 +517,12 @@ class AltruisticGoldfishStrategy(Model):
         # ********************************************************
 
         if self.tile_water > 0:
-            if not self.a_neighbour_is_thirsty:
+            if not self.a_neighbour_is_thirsty or self.agent_water <= 10:
                 decision = "NULL"  # neighbours are not thirsty and the cell has water
             else:
-                # a neighbour is thirsty, offering the extra water from the cell
+                # a neighbour is thirsty, if cell has more water than I need till FULL, offer some of my water
                 if self.agent_water <= self.desperate_for_water_when_below:
-                    water = min(0, self.tile_water - (self.desperate_for_water_when_below - self.agent_water))
+                    water = min(0, self.tile_water - (self.agent_max_water - self.agent_water))
                 else:
                     water = self.tile_water
                 decision: str = "offer_water" + "." + str(water)
