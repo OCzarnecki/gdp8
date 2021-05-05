@@ -1,5 +1,7 @@
 #!bin/python
 
+import argparse
+import glob
 import os
 import sys
 import time
@@ -9,7 +11,8 @@ from pathlib import Path
 from aea.configurations.base import PublicId
 from aea.manager import MultiAgentManager
 
-
+from visualisation import main as vis_main
+from visualisation import stats
 
 class ApplicationRunner:
     """Warning for filepaths: the framework resolves
@@ -120,23 +123,72 @@ class ApplicationRunner:
             finally:
                 self._manager.stop_manager()
 
-    def main(self):
-        if len(sys.argv) != 3:
-            print("Usage: run_agents AGENT_COUNT STRATEGY_NAME")
-            return
+    def run(self, args):
         try:
-            AGENT_COUNT = int(sys.argv[1])
-            STRATEGY = sys.argv[2]
             self._init_mam()
-            self._start_agents(AGENT_COUNT, STRATEGY)
+            self._start_agents(args.agent_count, args.strategy_name)
             time.sleep(5.0)
-            self._start_env(AGENT_COUNT)
+            self._start_env(args.agent_count)
             while True:
                 time.sleep(5.)
         finally:
             print("*" * 500)
             print("Time to clean up!")
             self._cleanup()
+
+    def _most_recent_log_file(self):
+        logfiles = glob.glob('logs/*.json')
+        if not logfiles:
+            return None
+        return max(logfiles, key=os.path.getctime)
+
+    def _log_file_from_args(self, args):
+        file = args.logfile
+        if not file:
+            # Find newest file in log dir
+            file = self._most_recent_log_file()
+            if not file:
+                print("No logfiles exist in the logs/ folder yet. Please specify a log file using the --logfile parameter, or run the simulation (simulation run) to generate one")
+        return file
+
+    def play_replay(self, args):
+        file = self._log_file_from_args(args)
+        if file:
+            vis_main.run_replay(file)
+
+    def show_stats(self, args):
+        file = self._log_file_from_args(args)
+        if file:
+            stats.main(file)
+
+    def main(self):
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers()
+
+        parser_run = subparsers.add_parser("run")
+        parser_run.add_argument("agent_count", type=int)
+        parser_run.add_argument("strategy_name")
+        parser_run.set_defaults(func=self.run)
+
+        parser_play_replay = subparsers.add_parser("play-replay")
+        parser_play_replay.add_argument(
+                "--logfile",
+                default=None)
+        parser_play_replay.set_defaults(func=self.play_replay)
+
+        parser_show_stats = subparsers.add_parser("show-stats")
+        parser_show_stats.add_argument(
+                "--logfile",
+                default=None)
+        parser_show_stats.set_defaults(func=self.show_stats)
+
+        args = parser.parse_args()
+        args.func(args)
+        return
+
+        if len(sys.argv) != 3:
+            print("Usage: run_agents AGENT_COUNT STRATEGY_NAME")
+            return
 
 if __name__ == "__main__":
     ApplicationRunner().main()

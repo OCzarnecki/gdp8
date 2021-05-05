@@ -25,10 +25,10 @@ import sys
 
 from matplotlib.widgets import Slider
 
-from simStatePure import State
+from visualisation.simStatePure import State
 
 # Parameter
-FILE = "./example_logs/test.json"
+FILE = "./visualisation/example_logs/test.json"
 
 # interface with logs
 def get_data():
