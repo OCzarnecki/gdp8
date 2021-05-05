@@ -31,7 +31,7 @@ class ApplicationRunner:
         )
         self._manager.start_manager(local=True)
 
-    def _start_env(self, agent_count):
+    def _start_env(self, args):
         env_id = PublicId.from_str("gdp8/env_aea:0.1.0")
         self._manager.add_project(env_id)
         agent_overrides = {
@@ -42,7 +42,7 @@ class ApplicationRunner:
                     "fetchai": f"../../../keys/fetchai_private_key-ENV.txt"
                 },
                 "logging_config": {
-                    "root": {"level": "DEBUG"}
+                    "root": {"level": args.loglevel}
                 }
         }
         env_skill_id = PublicId.from_str("gdp8/env_action_each_turn:0.1.0")
@@ -52,14 +52,22 @@ class ApplicationRunner:
             "behaviours": {
                 "env_logic": {
                     "args": {
-                        "mapping_path": "keys/mapping.json"
+                        "mapping_path": "keys/mapping.json",
+                        "max_turns": args.max_turns
                     }
                 }
             },
             "models": {
                 "environment": {
                     "args": {
-                        "agent_count": agent_count
+                        "agent_count": args.agent_count,
+                        "agent_max_capacity": args.agent_max_capacity,
+                        "agent_mining_speed": args.agent_mining_speed,
+                        "initial_agent_water": args.initial_agent_water,
+                        "initial_oasis_water": args.initial_oasis_water,
+                        "oasis_count": args.oasis_count,
+                        "size_x": args.size_x,
+                        "size_y": args.size_y
                     }
                 }
             }
@@ -71,7 +79,7 @@ class ApplicationRunner:
         )
         self._manager.start_agent(env_id.name)
 
-    def _add_agent_with_id(self, agent_id_simulation, strategy):
+    def _add_agent_with_id(self, agent_id_simulation, args):
         name = self._agent_name_from_id(agent_id_simulation)
         agent_overrides = {
                 "connection_private_key_paths": {
@@ -81,7 +89,7 @@ class ApplicationRunner:
                     "fetchai": f"../../../keys/fetchai_private_key-{agent_id_simulation}.txt"
                 },
                 "logging_config": {
-                    "root": {"level": "DEBUG"}
+                    "root": {"level": args.loglevel}
                 }
         }
         agent_skill_id = PublicId.from_str("gdp8/agent_action_each_turn:0.1.0")
@@ -91,10 +99,35 @@ class ApplicationRunner:
             "behaviours": {
                 "agent_behaviour": {
                     "args": {
-                        "strategy_used": strategy
+                        "strategy_used": args.strategy_name
                     }
                 }
             },
+            "handlers": {
+                "agent_message_handler": {
+                    "args": {
+                        "strategy_used": args.strategy_name
+                    }
+                },
+                "environment_message_handler": {
+                    "args": {
+                        "strategy_used": args.strategy_name
+                    }
+                }
+            },
+            "models": {
+                "altruistic_goldfish_strategy": {
+                    "args": {
+                        "agent_max_capacity": args.agent_max_capacity
+                    }
+                },
+                "dog_strategy": {
+                    "args": {
+                        "agent_max_capacity": args.agent_max_capacity,
+                        "agent_max_dig_rate": args.agent_mining_speed
+                    }
+                }
+            }
         }]
         self._manager.add_agent(
                 self._agent_id, 
@@ -103,12 +136,11 @@ class ApplicationRunner:
                 component_overrides=component_overrides
         )
 
-    
-    def _start_agents(self, agent_count, strategy):
+    def _start_agents(self, args):
         self._agent_id = PublicId.from_str("gdp8/agent_aea:0.1.0")
         self._manager.add_project(self._agent_id)
-        for i in range(agent_count):
-            self._add_agent_with_id(i, strategy)
+        for i in range(args.agent_count):
+            self._add_agent_with_id(i, args)
             self._manager.start_agent(
                     self._agent_name_from_id(i)
             )
@@ -126,11 +158,12 @@ class ApplicationRunner:
     def run(self, args):
         try:
             self._init_mam()
-            self._start_agents(args.agent_count, args.strategy_name)
+            self._start_agents(args)
             time.sleep(5.0)
-            self._start_env(args.agent_count)
-            while True:
-                time.sleep(5.)
+            self._start_env(args)
+            while not Path("$SIMULATION_ENDED").exists():
+                time.sleep(1.)
+            Path("$SIMULATION_ENDED").unlink()
         finally:
             print("*" * 500)
             print("Time to clean up!")
@@ -163,23 +196,105 @@ class ApplicationRunner:
 
     def main(self):
         parser = argparse.ArgumentParser()
-        subparsers = parser.add_subparsers()
+        parser.add_argument(
+                "--loglevel",
+                "-v",
+                choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                default="DEBUG",
+                help="log level"
+        )
+        subparsers = parser.add_subparsers(
+                required=True,
+                help="command to run"
+        )
+        subparsers.dest = "command"
 
-        parser_run = subparsers.add_parser("run")
-        parser_run.add_argument("agent_count", type=int)
-        parser_run.add_argument("strategy_name")
+        parser_run = subparsers.add_parser(
+                "run",
+                help="run the simulation"
+        )
+        parser_run.add_argument(
+                "agent_count",
+                type=int,
+                help="number of agents to start"
+        )
+        parser_run.add_argument(
+                "strategy_name",
+                choices=[
+                    "Explorer Dogs",
+                    "Lone Goldfish",
+                    "Altruistic Goldfish"
+                ],
+                help="strategy all the agents will use"
+        )
+        parser_run.add_argument(
+                "--max_turns",
+                help="limit on the number of turns the simulation will run for",
+                type=int,
+                default=250
+        )
+        parser_run.add_argument(
+                "--agent_max_capacity",
+                help="amount of water an agent can carry at most",
+                type=int,
+                default=50
+        )
+        parser_run.add_argument(
+                "--agent_mining_speed",
+                help="amount of water an agent can mine from an oasis per turn",
+                type=int,
+                default=10
+        )
+        parser_run.add_argument(
+                "--initial_agent_water",
+                help="amount of water an agent starts with",
+                type=int,
+                default=50
+        )
+        parser_run.add_argument(
+                "--initial_oasis_water",
+                help="amount of water in one of the randomly distributed oases",
+                type=int,
+                default=500
+        )
+        parser_run.add_argument(
+                "--oasis_count",
+                help="how many oases to distribute randomly over the desert",
+                type=int,
+                default=20
+        )
+        parser_run.add_argument(
+                "--size_x",
+                help="width of the simulation grid",
+                type=int,
+                default=20
+        )
+        parser_run.add_argument(
+                "--size_y",
+                help="height of the simulation grid",
+                type=int,
+                default=20
+        )
         parser_run.set_defaults(func=self.run)
 
-        parser_play_replay = subparsers.add_parser("play-replay")
+        parser_play_replay = subparsers.add_parser(
+                "play-replay",
+                help="visualise results of a simulation run"
+        )
         parser_play_replay.add_argument(
                 "--logfile",
-                default=None)
+                help="log file to use (default: newest log file in logs/ directory"
+        )
         parser_play_replay.set_defaults(func=self.play_replay)
 
-        parser_show_stats = subparsers.add_parser("show-stats")
+        parser_show_stats = subparsers.add_parser(
+                "show-stats",
+                help="show summary statistics for results of a simulation run"
+        )
         parser_show_stats.add_argument(
                 "--logfile",
-                default=None)
+                help="log file to use (default: newest log file in logs/ directory"
+        )
         parser_show_stats.set_defaults(func=self.show_stats)
 
         args = parser.parse_args()

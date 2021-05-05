@@ -3,7 +3,8 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 import sys, pygame, math, time, random
 import numpy as np
-from visualisation.simulationState import State
+<<<<<<< HEAD
+from simulationState import State
 
 AGENTS_WANDER_STRENGTH = None
 AGENT_RADIUS = None
@@ -19,6 +20,21 @@ SIZE = None
 TIME_STEP = None
 WHITE = None
 WIDTH = None
+=======
+from visualisation.simulationState import State
+
+AGENTS_WANDER_STRENGTH = None 
+AGENT_RADIUS = None
+AGENT_STEER_STRENGTH = None 
+BASIC_SPEED = None 
+BLACK = None 
+FPS = None 
+HEIGHT = None 
+SCREEN = None 
+SIZE = None 
+WHITE = None 
+WIDTH = None 
+>>>>>>> debugging
 
 def init_engine():
     pygame.init()
@@ -43,6 +59,7 @@ def init_engine():
     global AGENT_STEER_STRENGTH 
     AGENT_STEER_STRENGTH = 4
     global AGENTS_WANDER_STRENGTH 
+<<<<<<< HEAD
     AGENTS_WANDER_STRENGTH = 0.25
     global AGENT_RADIUS
     AGENT_RADIUS = 5
@@ -54,6 +71,13 @@ def init_engine():
     FAST_SPEED = 1
     global TIME_STEP
     TIME_STEP = 100
+=======
+    AGENTS_WANDER_STRENGTH = 0.5
+    global AGENT_RADIUS
+    AGENT_RADIUS = 5
+    global BASIC_SPEED 
+    BASIC_SPEED = 4
+>>>>>>> debugging
 
     global font 
     font = pygame.font.SysFont("Times New Roman", 13)

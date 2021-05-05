@@ -104,15 +104,15 @@ class EnvironmentMessageHandler(Handler):
         :return: None
         """
         # Update my_model to get ready for next round
-        self.context.logger.info("received tick message from the environment.")
 
         if self.strategyName == "Explorer Dogs":
             strategy = cast(DogStrategy, self.context.dog_strategy)
         elif self.strategyName == "Altruistic Goldfish":
             strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
+        elif self.strategyName == "Lone Goldfish":
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
         else:
-            assert self.strategyName == "Lone Goldfish"
-            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)   
+            raise AttributeError(f"Invalid strategy: {self.strategyName}")
 
         strategy.receive_agent_env_info(agent_env_msg, agent_environment_dialogue)
 
@@ -153,7 +153,6 @@ class AgentMessageHandler(Handler):
         :param message: the message
         :return: None
         """
-        self.context.logger.info("start handling agent msg")
         agent_agent_msg = cast(AgentAgentMessage, message)
 
         agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)
@@ -163,7 +162,7 @@ class AgentMessageHandler(Handler):
             self._handle_unidentified_dialogue(agent_agent_msg)
             return
 
-        self.context.logger.info(agent_agent_msg.performative)
+        self.context.logger.info("start handling agent msg of performative: " + str(agent_agent_msg.performative))
         if agent_agent_msg.performative == AgentAgentMessage.Performative.SENDER_REQUEST:
             self._handle_other_agent_request_for_info(agent_agent_msg, agent_agent_dialogue)
         elif agent_agent_msg.performative == AgentAgentMessage.Performative.RECEIVER_REPLY:
@@ -186,15 +185,7 @@ class AgentMessageHandler(Handler):
         self.context.logger.info(
             "received invalid agent_agent message={}, unidentified dialogue.".format(agent_agent_msg)
         )
-        default_dialogues = cast(DefaultDialogues, self.context.default_dialogues)
-        default_msg, _ = default_dialogues.create(
-            counterparty=agent_agent_msg.sender,
-            performative=DefaultMessage.Performative.ERROR,
-            error_code=DefaultMessage.ErrorCode.INVALID_DIALOGUE,
-            error_msg="Invalid dialogue.",
-            error_data={"Agent Environment Message": agent_agent_msg.encode()},
-        )
-        self.context.outbox.put_message(message=default_msg)
+        raise AttributeError("SOMETHING IS WRONG WITH MESSAGES SENT TO THIS AGENT")
 
     def _handle_info_in_replies_from_other_agent(self, agent_agent_msg: AgentAgentMessage):
         # Actual function where agent messages are used.
@@ -217,9 +208,8 @@ class AgentMessageHandler(Handler):
             strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
         else:
             assert self.strategyName == "Lone Goldfish"
-            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)   
-                 
-        self.context.logger.info("request_appended")
+            strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
+
         strategy.agent_message_asking_for_my_water.append(
             [agent_agent_msg, agent_agent_dialogue]
         )

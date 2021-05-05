@@ -9,10 +9,10 @@ license: Apache-2.0
 aea_version: '>=1.0.0'
 fingerprint:
   __init__.py: QmW2ruHq4t1ivCWRGF3BDZjHi4sH1ykoYjz1hExRfkWQmL
-  behaviours.py: QmTND2xxksRFxGH6vru4zfjEzBrahBcBtJqBG2sR8wixY9
+  behaviours.py: QmfZ764ENyBLekak7wmurMUwDzXwryRKzqX1ySdT6ahCyF
   dialogues.py: QmQjaUcAff4HPjCSEu9eP9oTrM3kXGkpBx6FkxNgnAwL9D
-  handlers.py: QmZTJW1ePpTKt65m8VVJg3FUDfcJaQ9LJPog7Gs9hiar2X
-  strategy.py: QmXzprLkKLRgeHWxU3KVRgx9yyTvNXk3J8KQkftkieijBU
+  handlers.py: QmZBiGGdYDK5u1VexmfnmMCp1M9vag9CL2SnK6U7t9HjD6
+  strategy.py: QmT6NBjw4LJe7b9QhqtN6fLAMx3cC7JscaxRcDv5684iPi
 fingerprint_ignore_patterns: []
 connections: []
 contracts: []
@@ -22,7 +22,7 @@ behaviours:
   agent_behaviour:
     args:
       strategy_used: Explorer Dogs
-      tick_interval: 2
+      tick_interval: 0.1
     class_name: AgentLogicBehaviour
 handlers:
   agent_message_handler:

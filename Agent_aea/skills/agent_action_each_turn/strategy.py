@@ -61,7 +61,7 @@ class DogStrategy(Model):
 
     def __init__(self, **kwargs: Any) -> None:
         self.agent_max_capacity = kwargs['agent_max_capacity']
-        self.desperate_for_water_when_below = math.floor(self.agent_max_capacity / 2)
+        self.desperate_for_water_when_below = math.floor(self.agent_max_capacity // 2)
         self.agent_max_dig_rate = kwargs['agent_max_dig_rate']
         self.least_water_amount_in_tile_for_agent_to_remember_it = self.agent_max_dig_rate
         super().__init__(**kwargs)
@@ -73,7 +73,7 @@ class DogStrategy(Model):
         # Assert correct round and ready to accept
         # Assert last round done
         assert agent_environment_message.turn_number == self.round_no + 1, \
-            agent_environment_message.turn_number + "." + self.round_no
+            agent_environment_message.turn_number + "." + str(self.round_no)
         assert self.is_round_done
         self.round_no += 1
         self.current_env_message = agent_environment_message
@@ -521,7 +521,7 @@ class AltruisticGoldfishStrategy(Model):
                 decision = "NULL"  # neighbours are not thirsty and the cell has water
             else:
                 # a neighbour is thirsty, if cell has more water than I need till FULL, offer half of my water
-                water = min(self.agent_water/2, self.tile_water - (self.agent_max_water - self.agent_water))
+                water = min(self.agent_water//2, self.tile_water - (self.agent_max_water - self.agent_water))
                 if water < 2:
                     decision: str = "NULL"
                 else:
