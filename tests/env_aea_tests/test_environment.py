@@ -81,30 +81,41 @@ class TestSimulationState(unittest.TestCase):
     def test_agent_moving_out_of_the_map(self):
         state = self.create_state_with_defaults(agent_count=1)
         agents = state.get_agents_alive()
-        agent = agents[0]
+        for my_agent in agents:
+            agent=my_agent
         ##map has size 10x10
 
+        state._agent_grid[agent.pos_x][agent.pos_y] = None
         agent.pos_x = 0
         agent.pos_y = 5
-        agent.queue_command(MoveCommand("left"))
+        state._agent_grid[agent.pos_x][agent.pos_y] = agent
+        agent.queue_command(MoveCommand("west"))
         state.update_simulation()
-        self.assertEqual(10, agent.pos_x)
+        self.assertEqual(9, agent.pos_x)
+        self.assertEqual(5, agent.pos_y)
 
-        agent.pos_x = 10
+
+        state._agent_grid[agent.pos_x][agent.pos_y] = None
+        agent.pos_x = 9
         agent.pos_y = 5
-        agent.queue_command(MoveCommand("right"))
+        state._agent_grid[agent.pos_x][agent.pos_y] = agent
+        agent.queue_command(MoveCommand("east"))
         state.update_simulation()
         self.assertEqual(0, agent.pos_x)
 
+        state._agent_grid[agent.pos_x][agent.pos_y] = None
         agent.pos_x = 5
         agent.pos_y = 0
-        agent.queue_command(MoveCommand("up"))
+        state._agent_grid[agent.pos_x][agent.pos_y] = agent
+        agent.queue_command(MoveCommand("north"))
         state.update_simulation()
-        self.assertEqual(10, agent.pos_y)
+        self.assertEqual(9, agent.pos_y)
 
+        state._agent_grid[agent.pos_x][agent.pos_y] = None
         agent.pos_x = 5
-        agent.pos_y = 10
-        agent.queue_command(MoveCommand("down"))
+        agent.pos_y = 9
+        state._agent_grid[agent.pos_x][agent.pos_y] = agent
+        agent.queue_command(MoveCommand("south"))
         state.update_simulation()
         self.assertEqual(0, agent.pos_y)
 
@@ -113,11 +124,15 @@ class TestSimulationState(unittest.TestCase):
     def test_agent_moving_to_a_spot_already_taken(self):
         state = self.create_state_with_defaults(agent_count=2)
         agents = state.get_agents_alive()
+        state._agent_grid[agents[0].pos_x][agents[0].pos_y] = None
+        state._agent_grid[agents[1].pos_x][agents[1].pos_y] = None
         agents[0].pos_x = 5
         agents[0].pos_y = 5
         agents[1].pos_x = 4
         agents[1].pos_y = 5
-        agents[1].queue_command(MoveCommand("right"))
+        state._agent_grid[agents[0].pos_x][agents[0].pos_y] = agents[0]
+        state._agent_grid[agents[1].pos_x][agents[1].pos_y] = agents[1]
+        agents[1].queue_command(MoveCommand("east"))
         state.update_simulation()
         ##making sure the agent didn't move
         self.assertEqual(4, agents[1].pos_x)
@@ -127,30 +142,41 @@ class TestSimulationState(unittest.TestCase):
         state = self.create_state_with_defaults(agent_count=1)
         agents = state.get_agents_alive()
         agent=agents[0]
+        state._agent_grid[agent.pos_x][agent.pos_y] = None
         agent.pos_x = 5
         agent.pos_y = 5
-        agent.queue_command(MoveCommand("up"))
+        state._agent_grid[agent.pos_x][agent.pos_y] = agent
+        agent.queue_command(MoveCommand("north"))
         state.update_simulation()
         self.assertEqual(5, agent.pos_x)
         self.assertEqual(4, agent.pos_y)
         
+
+        state._agent_grid[agent.pos_x][agent.pos_y] = None
         agent.pos_x = 5
         agent.pos_y = 5
-        agent.queue_command(MoveCommand("down"))
+        state._agent_grid[agent.pos_x][agent.pos_y] = agent
+        agent.queue_command(MoveCommand("south"))
         state.update_simulation()
         self.assertEqual(5, agent.pos_x)
         self.assertEqual(6, agent.pos_y)
 
+
+        state._agent_grid[agent.pos_x][agent.pos_y] = None
         agent.pos_x = 5
         agent.pos_y = 5
-        agent.queue_command(MoveCommand("right"))
+        state._agent_grid[agent.pos_x][agent.pos_y] = agent
+        agent.queue_command(MoveCommand("east"))
         state.update_simulation()
         self.assertEqual(6, agent.pos_x)
         self.assertEqual(5, agent.pos_y)
 
+
+        state._agent_grid[agent.pos_x][agent.pos_y] = None
         agent.pos_x = 5
         agent.pos_y = 5
-        agent.queue_command(MoveCommand("left"))
+        state._agent_grid[agent.pos_x][agent.pos_y] = agent
+        agent.queue_command(MoveCommand("west"))
         state.update_simulation()
         self.assertEqual(4, agent.pos_x)
         self.assertEqual(5, agent.pos_y)
