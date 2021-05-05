@@ -112,13 +112,14 @@ class EnvironmentMessageHandler(Handler):
         elif self.strategyName == "Altruistic Goldfish":
             strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
             self.context.logger.info("strat AG")
-        else:
-            assert self.strategyName == "Lone Goldfish"
+        elif self.strategyName == "Lone Goldfish":
             strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
             self.context.logger.info("strat LG")
+        else:
+            raise AttributeError(f"Invalid strategy: {self.strategyName}")
 
         self.context.logger.info(strategy.is_round_done)
-        self.context.logger.info(strategy.water_location)
+        #self.context.logger.info(strategy.water_location)
         # self.context.logger.info(strategy.a_neighbour_is_thirsty)
 
         strategy.receive_agent_env_info(agent_env_msg, agent_environment_dialogue)

@@ -95,6 +95,19 @@ class ApplicationRunner:
                     }
                 }
             },
+            "handlers": {
+                "agent_message_handler": {
+                    "args": {
+                        "strategy_used": strategy
+                    }
+                },
+                "environment_message_handler": {
+                    "args": {
+                        "strategy_used": strategy
+                    }
+                }
+            }
+
         }]
         self._manager.add_agent(
                 self._agent_id, 
