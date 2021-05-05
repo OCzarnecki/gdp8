@@ -3,26 +3,51 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 import sys, pygame, math, time, random
 import numpy as np
-from simulationState import State
+from visualisation.simulationState import State
 
-pygame.init()
+AGENTS_WANDER_STRENGTH = None 
+AGENT_RADIUS = None
+AGENT_STEER_STRENGTH = None 
+BASIC_SPEED = None 
+BLACK = None 
+FPS = None 
+HEIGHT = None 
+SCREEN = None 
+SIZE = None 
+WHITE = None 
+WIDTH = None 
 
-WIDTH = 900
-HEIGHT = 600
-SIZE = (WIDTH, HEIGHT)
-SCREEN = pygame.display.set_mode(SIZE)
-pygame.display.set_caption("Survival")
+def init_engine():
+    pygame.init()
 
-FPS = 60
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
+    global WIDTH 
+    WIDTH = 900
+    global HEIGHT 
+    HEIGHT = 600
+    global SIZE 
+    SIZE = (WIDTH, HEIGHT)
+    global SCREEN 
+    SCREEN = pygame.display.set_mode(SIZE)
+    pygame.display.set_caption("Survival")
 
-AGENT_STEER_STRENGTH = 4
-AGENTS_WANDER_STRENGTH = 0.5
-AGENT_RADIUS = 5
-BASIC_SPEED = 4
+    global FPS 
+    FPS = 60
+    global BLACK 
+    BLACK = (0, 0, 0)
+    global WHITE 
+    WHITE = (255, 255, 255)
 
-font = pygame.font.SysFont("Times New Roman", 13)
+    global AGENT_STEER_STRENGTH 
+    AGENT_STEER_STRENGTH = 4
+    global AGENTS_WANDER_STRENGTH 
+    AGENTS_WANDER_STRENGTH = 0.5
+    global AGENT_RADIUS
+    AGENT_RADIUS = 5
+    global BASIC_SPEED 
+    BASIC_SPEED = 4
+
+    global font 
+    font = pygame.font.SysFont("Times New Roman", 13)
 
 def colorPercentage(n, scale):
     return 255 * (n / scale)
@@ -39,7 +64,9 @@ def clamp_norm(v, n_max):
     f = min(n, n_max) / n
     return np.array([f * vx, f * vy])
 
-def message_to_screen(msg, x, y, color=WHITE):
+def message_to_screen(msg, x, y, color=None):
+    if color == None:
+        color = WHITE
     screen_txt = font.render(msg, False, color)
     SCREEN.blit(screen_txt, [x, y])
 
@@ -183,7 +210,8 @@ def paused(state) :
             pygame.display.update()
         
 
-def run(log_path):
+def run_replay(log_path):
+    init_engine()
     state = State(log_path)
 
     clock = pygame.time.Clock()
@@ -223,12 +251,12 @@ def main():
         log_path = "/Users/tancrede/Desktop/projects/survival_simulation/test.json"
         print(f"No log file specified, using default: {log_path}")
         print(f"Run --help to see usage")
-        run(log_path)
+        run_replay(log_path)
     elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
         print("Usage: python main.py PATH_TO_SIMULATION_LOG")
         return
     else:
-        run(sys.argv[1])
+        run_replay(sys.argv[1])
 
 if __name__ == "__main__":
     main()
