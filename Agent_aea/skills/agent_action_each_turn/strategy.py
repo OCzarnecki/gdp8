@@ -73,7 +73,7 @@ class DogStrategy(Model):
         # Assert correct round and ready to accept
         # Assert last round done
         assert agent_environment_message.turn_number == self.round_no + 1, \
-            agent_environment_message.turn_number + "." + self.round_no
+            agent_environment_message.turn_number + "." + str(self.round_no)
         assert self.is_round_done
         self.round_no += 1
         self.current_env_message = agent_environment_message

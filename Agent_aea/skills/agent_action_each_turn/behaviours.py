@@ -46,29 +46,25 @@ class AgentLogicBehaviour(TickerBehaviour):
 
     def act(self) -> None:
 
-        self.context.logger.info("act called")
+        self.context.logger.info("behaviour called")
 
         if self.strategyName == "Explorer Dogs":
             strategy = cast(DogStrategy, self.context.dog_strategy)
-            self.context.logger.info("strat named")
         elif self.strategyName == "Altruistic Goldfish":
             strategy = cast(AltruisticGoldfishStrategy, self.context.altruistic_goldfish_strategy)
-            self.context.logger.info("strat named")
         else:
             assert self.strategyName == "Lone Goldfish"
             strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
-            self.context.logger.info("strat named lg")
 
         there_is_agent_asking_for_info = True
         while there_is_agent_asking_for_info:
             there_is_agent_asking_for_info = strategy.deal_with_an_agent_asking_for_info()
         if not strategy.is_round_done:
-            self.context.logger.info("point a")
             if not strategy.asked_for_info_already:
-                self.context.logger.info("initial ? ask for info")
+                self.context.logger.info("ask for info/make decision")
                 strategy.ask_for_info_and_maybe_make_decision()
             elif strategy.enough_info_to_make_decision():
-                self.context.logger.info("point b")
+                self.context.logger.info("made decision")
                 strategy.make_decision_send_to_env()
 
     def teardown(self) -> None:
