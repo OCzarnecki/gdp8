@@ -21,6 +21,8 @@ Total water gathered in a single time step over time √ Need dehydration rate
 """
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
+
 from matplotlib.widgets import Slider
 
 from simStatePure import State
@@ -42,10 +44,10 @@ def get_data():
         states.append(s)
     return states
 
-# Global variables
-STATES = get_data()
-T = [state.time for state in STATES]
-MAX_TIME = T[-1]
+# Global variables (initialized in main)
+STATES = None
+T = None
+MAX_TIME = None
 
 # statistical functions
 def num_survivors(state):
@@ -219,8 +221,16 @@ def plot_6(ax):
 
     ax.plot(times, totals)
 
-# commands that get run
-if __name__ == "__main__":
+def main(log_path):
+    global FILE
+    FILE = log_path
+    global STATES
+    STATES = get_data()
+    global T
+    T = [state.time for state in STATES]
+    global MAX_TIME
+    MAX_TIME = T[-1]
+
     fig, axes = plt.subplots(2, 4, figsize=(8, 6))
     fig.canvas.set_window_title('AEA Simulation Statistics')
     #fig.tight_layout(pad=1,h_pad=1,w_pad=1) # make things overlap less
@@ -238,3 +248,18 @@ if __name__ == "__main__":
         f(ax)
 
     plt.show()
+
+def run_cli():
+    if len(sys.argv) != 2:
+        print(f"No file specified. Using default: {FILE}")
+        print("Run with --help to print usage")
+        main(FILE)
+    elif sys.argv[1] in ["-h", "--help"]:
+        print("Usage: python stats.py LOG_FILE_PATH")
+        return
+    else:
+        main(sys.argv[1])
+
+# commands that get run
+if __name__ == "__main__":
+    run_cli()
