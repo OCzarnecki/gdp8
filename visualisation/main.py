@@ -138,15 +138,15 @@ def insideUnitCircle():
         r = 2 - u
     return np.array([r * math.cos(t), r * math.sin(t)])
 
-def new_pos(agent, speed):
-    s = 2
+def new_pos(agent, speed, velocity):
+    s = 1
     if speed == MED_SPEED:
-        s = 4
-    desiredVelocity = agent.desired_dir * s
+        s = 2
+    desiredVelocity = agent.desired_dir * velocity * s
     desiredSteeringForce = (desiredVelocity - agent.vel) * AGENT_STEER_STRENGTH
     acceleration = clamp_norm(desiredSteeringForce, AGENT_STEER_STRENGTH) / 1
 
-    agent.vel = clamp_norm((agent.vel + acceleration), s) / 1
+    agent.vel = clamp_norm((agent.vel + acceleration), velocity * s) / 1
     agent.pos = agent.pos + agent.vel
 
     if agent.pos[0] < 0:
@@ -240,7 +240,11 @@ def updateAgent_slow(state):
                 agent.desired_dir[0] = - agent.desired_dir[0]
                 agent.desired_dir[1] = - agent.desired_dir[1]
         agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
-        new_pos(agent, state.speed)
+        # case 1 : hroizontal movement
+        if math.fabs(agent.desired_dir[0]) > math.fabs(agent.desired_dir[1]):
+            new_pos(agent, state.speed, state.hvelocity)
+        else:
+            new_pos(agent, state.speed, state.vvelocity)
 
 def stats(agent, x, y, max_inventory):
     message_to_screen("Agent id : " + str(agent.id), agent.pos[0] + x, agent.pos[1] + y)
@@ -308,7 +312,7 @@ def run_replay(log_path):
                     state.time += 100
                     state.load_fast()
                     iteration = 0
-                elif event.key == pygame.K_DOWN and state.time - TIME_STEP > 0:
+                elif event.key == pygame.K_DOWN:
                     if state.time < 100:
                         state.time = 0
                     else:
@@ -340,7 +344,7 @@ def run_replay(log_path):
 
 def main():
     if len(sys.argv) != 2:
-        log_path = "/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/Explorer_dogs_5.json"
+        log_path = "/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/log.json"
         print(f"No log file specified, using default: {log_path}")
         print(f"Run --help to see usage")
         run_replay(log_path)
