@@ -4,11 +4,11 @@ Visualisation files are under `visualisation`.
 
 ## Main Visualisation (play-replay)
 
-![Main Visualisation Diagram](/mainVis_diagram.png?raw=true)
+![Main Visualisation Diagram](/docs/mainVis_diagram.png?raw=true)
 
 ## Statistics (show-stats)
 
-![Statistics Diagram](/stats_diagram.png?raw=true)
+![Statistics Diagram](/docs/stats_diagram.png?raw=true)
 
 The statistics module takes a simulation log, and shows a series of graphs summarising the simulation. It includes statistics interesting for measuring individual survival, collective survival, and disparities between agents. It is intended to be used side by side with the main visualisation.
 
