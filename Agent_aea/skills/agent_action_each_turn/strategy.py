@@ -61,7 +61,8 @@ class DogStrategy(Model):
 
     def __init__(self, **kwargs: Any) -> None:
         self.agent_max_capacity = kwargs['agent_max_capacity']
-        self.desperate_for_water_when_below = math.floor(self.agent_max_capacity*kwargs['thirsty_below_that_percentage_of_water'])
+        self.desperate_for_water_when_below = math.floor(
+            self.agent_max_capacity * kwargs['thirsty_below_that_percentage_of_water'] / 100)
         self.agent_max_dig_rate = kwargs['agent_max_dig_rate']
         self.least_water_amount_in_tile_for_agent_to_remember_it = self.agent_max_dig_rate
         super().__init__(**kwargs)
@@ -153,11 +154,11 @@ class DogStrategy(Model):
                     if self.north_neighbour_id == sender:
                         y += 1
                     elif self.east_neighbour_id == sender:
-                        y += 1
+                        x += 1
                     elif self.south_neighbour_id == sender:
                         y -= 1
                     elif self.west_neighbour_id == sender:
-                        y -= 1
+                        x -= 1
                     self.add_to_water_location([x, y])
                     index_not_found = True
                     index = -1
@@ -364,15 +365,15 @@ class DogStrategy(Model):
             x = int(x)
             y = int(y)
             if x > 0:
-                decision = "move.north"
-            elif x < 0:
-                decision = "move.south"
-            elif y > 0:
                 decision = "move.east"
+            elif x < 0:
+                decision = "move.west"
+            elif y > 0:
+                decision = "move.north"
             else:
                 if y == 0:
                     self.context.logger.info("agent_decision_making_algorithm_error")
-                decision = "move.west"
+                decision = "move.south"
         self.context.logger.info(
             "sending command={} to env={}".format(
                 decision, self.current_env_message.sender
@@ -420,7 +421,8 @@ class AltruisticGoldfishStrategy(Model):
 
     def __init__(self, **kwargs: Any) -> None:
         self.agent_max_water = kwargs['agent_max_capacity']
-        self.desperate_for_water_when_below = math.floor(self.agent_max_water*kwargs['thirsty_below_that_percentage_of_water'])
+        self.desperate_for_water_when_below = math.floor(
+            self.agent_max_water * kwargs['thirsty_below_that_percentage_of_water'] / 100)
         super().__init__(**kwargs)
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
@@ -522,7 +524,7 @@ class AltruisticGoldfishStrategy(Model):
                 decision = "NULL"  # neighbours are not thirsty and the cell has water
             else:
                 # a neighbour is thirsty, if cell has more water than I need till FULL, offer half of my water
-                water = min(self.agent_water//2, self.tile_water - (self.agent_max_water - self.agent_water))
+                water = min(self.agent_water // 2, self.tile_water - (self.agent_max_water - self.agent_water))
                 if water < 2:
                     decision: str = "NULL"
                 else:
