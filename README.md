@@ -7,7 +7,7 @@ The authors are Blanche Duron, Chun Chang, Olaf Czarnecki, Kevin Xin, Tancrede G
 
 Note that this project was developed on a limited time scale, and is not under active development. Note also that the work is entirely our own, and is not officially endorsed by fetch.ai.
 
-# Instalation
+# Installation
 1. Clone this repository.
 2. Install the AEA framework, by following the [AEA Framework Installation Instructions](https://docs.fetch.ai/aea/quickstart/#option-2-automated-install-script).
 3. Install the required python dependencies

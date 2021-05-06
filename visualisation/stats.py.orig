@@ -29,7 +29,10 @@ from visualisation.simStatePure import State
 
 # Parameter
 FILE = "./visualisation/example_logs/test.json"
+<<<<<<< HEAD
 DEHYDRATION_RATE = 1
+=======
+>>>>>>> debugging
 
 # interface with logs
 def get_data():
