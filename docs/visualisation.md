@@ -4,11 +4,11 @@ Visualisation files are under `visualisation`.
 
 ## Main Visualisation (play-replay)
 
-![Main Visualisation Diagram](https://github.com/OCzarnecki/gdp8/tree/master/docs/mainVis_diagram.png)
+![Main Visualisation Diagram](/mainVis_diagram.png?raw=true)
 
 ## Statistics (show-stats)
 
-![Statistics Diagram](https://github.com/OCzarnecki/gdp8/tree/master/docs/stats_diagram.png)
+![Statistics Diagram](/stats_diagram.png?raw=true)
 
 The statistics module takes a simulation log, and shows a series of graphs summarising the simulation. It includes statistics interesting for measuring individual survival, collective survival, and disparities between agents. It is intended to be used side by side with the main visualisation.
 
