@@ -6,7 +6,7 @@ description: This skill recieves info from environment agent every turn, make a 
   by communicating with other agent and makes a decision to return to an environment
   agent.
 license: Apache-2.0
-aea_version: '>=1.0.0'
+aea_version: '>=1.0.1'
 fingerprint:
   __init__.py: QmW2ruHq4t1ivCWRGF3BDZjHi4sH1ykoYjz1hExRfkWQmL
   behaviours.py: QmfZ764ENyBLekak7wmurMUwDzXwryRKzqX1ySdT6ahCyF

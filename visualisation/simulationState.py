@@ -1,4 +1,4 @@
-import json
+import json, math
 import numpy as np
 
 WIDTH = 900
@@ -6,6 +6,11 @@ HEIGHT = 600
 
 def computePos(x, y, tw, th, twc, thc):
     return np.array([(x * tw) + twc, (y * th) + thc])
+
+def check_pos(a_pos, c, w, h):
+    hdist = math.fabs(a_pos[0] - c[0])
+    vdist = math.fabs(a_pos[1] - c[1])
+    return hdist < w/2 and vdist < h/2
 
 class Cell():
 
@@ -39,7 +44,7 @@ class State():
         self.max_inventory = self.data[0]['max_water_capacity_agent']
 
         self.time = 0 # read only
-        self.speed = 1
+        self.speed = 24
 
         # assuming there is one line for each [0, self.max_time]
         self.max_time = len(self.data)-2
@@ -51,9 +56,53 @@ class State():
         self.tile_height = HEIGHT / self.y_size
         self.pit_max_radius = min(self.tile_width/2, self.tile_height/2)
 
-        self.load()
+        self.load_fast()
 
-    def load(self):
+    def load_fast(self):
+        #reinitialize agents and cells
+        self.cells = []
+        self.agents = []
+
+        twcenter = self.tile_width / 2
+        thcenter = self.tile_height / 2
+
+        d = self.data[self.time+1]
+        assert(d['tick_number'] == self.time)
+        #agents on the next iteration, we want to know their position
+        nextTime = self.time+2
+        if self.time == self.max_time:
+            nextTime = 1
+
+        desired_pos_agents = self.data[nextTime]['agents']
+
+        j = 0 
+        for agent in d['agents']:
+            desired_pos_x = -1
+            desired_pos_y = -1
+            if j<len(desired_pos_agents) and desired_pos_agents[j]['id']==agent['id']:
+                desired_pos_x = desired_pos_agents[j]['x']
+                desired_pos_y = desired_pos_agents[j]['y']
+                j += 1
+            pos = computePos(agent['x'], agent['y'], self.tile_width, self.tile_height, twcenter, thcenter)
+            if desired_pos_x == -1:
+                self.agents.append(Agent(agent['id'],
+                    pos,
+                    pos,
+                    agent['inventory']))
+            else:
+                self.agents.append(Agent(agent['id'],
+                    pos,
+                    computePos(desired_pos_x, desired_pos_y, self.tile_width, self.tile_height, twcenter, thcenter),
+                    agent['inventory']))
+        for cell in d['cells']:
+            self.cells.append(Cell(computePos(cell['x'], cell['y'], self.tile_width, self.tile_height, twcenter, thcenter), cell['water']))
+        
+        #if self.time == self.max_time:
+         #   self.time = 0
+        #else:
+        self.time += 1
+
+    def load_slow(self):
         #reinitialize agents and cells
         self.cells = []
         #temporary array as we want to keep track of the velocity
@@ -96,17 +145,19 @@ class State():
         if self.agents != []:
             i = 0
             for newAgent in newAgents:
-                while newAgent.id != self.agents[i].id:
+                while i < len(self.agents) - 1 and newAgent.id != self.agents[i].id:
                     i += 1
                 newAgent.vel = self.agents[i].vel
-                newAgent.pos = self.agents[i].pos
+                if not check_pos(newAgent.pos, self.agents[i].pos, self.tile_width, self.tile_height):
+                    print("no" + str(newAgent.id) + str(newAgent.pos) + str(self.agents[i].pos))
+                #newAgent.pos = self.agents[i].pos
                 newAgent.desired_dir = self.agents[i].desired_dir
         self.agents = newAgents
 
-        if self.time == self.max_time:
-            self.time = 0
-        else:
-            self.time += 1
+        #if self.time == self.max_time:
+        #    self.time = 0
+        #else:
+        self.time += 1
     
     def read_file(self):
         # takes self.file and returns a list of json objects from the file

@@ -29,6 +29,7 @@ from visualisation.simStatePure import State
 
 # Parameter
 FILE = "./visualisation/example_logs/test.json"
+DEHYDRATION_RATE = 1
 
 # interface with logs
 def get_data():
@@ -39,6 +40,7 @@ def get_data():
     for i in range(0, max_time+1):
         s = State(FILE)
         s.load(i)
+        assert(all(a.inventory > 0 for a in s.agents))
         s.agents.sort(key=lambda x: x.id)
         #print([a.id for a in s.agents])
         states.append(s)
@@ -72,12 +74,20 @@ class TimeKeeper:
     slider = Slider(slider_ax, 'Time', 0, MAX_TIME, valinit=0, valstep=)
     return slider"""
 
+def off(ax):
+    ax.axis('off')
+
+def undefined(ax):
+    off(ax)
+    ax.text(0.5, 0.5, 'Undefined', horizontalalignment='center',
+    verticalalignment='center', transform=ax.transAxes)
+
 # individual plots
 def plot_1(ax):
     # Proportion of surviving agents / time
     initial_population = num_survivors(STATES[0])
     prop = [num_survivors(s) / initial_population for s in STATES]
-    ax.set_title("Proportion of Surviving Agents", fontsize=7)
+    ax.set_title("Proportion of Agents Surviving", fontsize=7)
     ax.set_ylabel("Proportion")
     ax.set_xlabel("Time")
     ax.plot(T, prop)
@@ -94,7 +104,10 @@ def plot_2(ax):
         ax.set_ylabel("Count")
         state = STATES[t]
         waters = [agent.inventory for agent in state.agents]
-        ax.hist(waters, range=(0, state.max_inventory))
+        if waters != []:
+            ax.hist(waters, range=(0, state.max_inventory))
+        else:
+            undefined(ax)
     TimeKeeper.observers.append(update_plot_2)
     update_plot_2(0)
 
@@ -122,7 +135,7 @@ def plot_3(ax):
                 break
             else:
                 b = s1.agents[i]
-                diffs.append(max(0, b.inventory - a.inventory))
+                diffs.append(max(0, b.inventory - a.inventory + DEHYDRATION_RATE))
         average = np.mean(diffs)
         averages.append(average)
 
@@ -173,8 +186,10 @@ def plot_4(ax):
                 time -= 1
             if not found:
                 times.append(t)
-
-        ax.hist(times, range=(0, t+1))
+        if times != []:
+            ax.hist(times, range=(0, t+1))
+        else:
+            undefined(ax)
     TimeKeeper.observers.append(update_plot_4)
     update_plot_4(0)
 
@@ -200,7 +215,9 @@ def plot_5(ax):
                         d = min(d, dist(a, b))
                 distances.append(d)
 
-        ax.hist(distances)
+            ax.hist(distances)
+        else:
+            undefined(ax)
     TimeKeeper.observers.append(update_plot_5)
     update_plot_5(0)
 
@@ -216,7 +233,8 @@ def plot_6(ax):
         s0 = STATES[t]
         s1 = STATES[t+1]
         def total_inv(s): return sum(a.inventory for a in s.agents)
-        total = total_inv(s1) - total_inv(s0)
+        water_lost = len(s0.agents) * DEHYDRATION_RATE
+        total = total_inv(s1) - total_inv(s0) + water_lost
         totals.append(total)
 
     ax.plot(times, totals)
@@ -243,7 +261,7 @@ def main(log_path):
 
     axes = [i for j in axes for i in j]
     #print(axes)
-    plot_funcs = [plot_1, plot_2, plot_3, plot_4, plot_5, plot_6]
+    plot_funcs = [plot_1, plot_2, plot_3, plot_4, plot_5, plot_6, off, off]
     for ax, f in zip(axes, plot_funcs):
         f(ax)
 

@@ -5,7 +5,7 @@ protocol_specification_id: gdp8/agent_environment_communication:0.1.0
 type: protocol
 description: Agent-environment messages
 license: Apache-2.0
-aea_version: '>=0.11.0, <=1.0.0'
+aea_version: '>=0.11.0, <=1.0.1'
 fingerprint:
   __init__.py: QmSzaNJaAR4TtykVzWT3d6Nbu1wSHUNLb6ncaHoAGEsYNy
   agent_environment.proto: QmWFe6RfDDQ93k22K4W2qLE8qFAs65ryQAX19XZgRashFT

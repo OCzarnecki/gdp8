@@ -5,17 +5,20 @@ import sys, pygame, math, time, random
 import numpy as np
 from visualisation.simulationState import State
 
-AGENTS_WANDER_STRENGTH = None 
+AGENTS_WANDER_STRENGTH = None
 AGENT_RADIUS = None
-AGENT_STEER_STRENGTH = None 
-BASIC_SPEED = None 
-BLACK = None 
-FPS = None 
-HEIGHT = None 
-SCREEN = None 
-SIZE = None 
-WHITE = None 
-WIDTH = None 
+AGENT_STEER_STRENGTH = None
+SLOW_SPEED = None
+MED_SPEED = None
+FAST_SPEED = None
+BLACK = None
+FPS = None
+HEIGHT = None
+SCREEN = None
+SIZE = None
+TIME_STEP = None
+WHITE = None
+WIDTH = None
 
 def init_engine():
     pygame.init()
@@ -40,11 +43,17 @@ def init_engine():
     global AGENT_STEER_STRENGTH 
     AGENT_STEER_STRENGTH = 4
     global AGENTS_WANDER_STRENGTH 
-    AGENTS_WANDER_STRENGTH = 0.5
+    AGENTS_WANDER_STRENGTH = 0.25
     global AGENT_RADIUS
     AGENT_RADIUS = 5
-    global BASIC_SPEED 
-    BASIC_SPEED = 4
+    global SLOW_SPEED
+    SLOW_SPEED = 24
+    global MED_SPEED
+    MED_SPEED = 12
+    global FAST_SPEED 
+    FAST_SPEED = 1
+    global TIME_STEP
+    TIME_STEP = 100
 
     global font 
     font = pygame.font.SysFont("Times New Roman", 13)
@@ -71,7 +80,12 @@ def message_to_screen(msg, x, y, color=None):
     SCREEN.blit(screen_txt, [x, y])
 
 def draw_speed(speed):
-    message_to_screen("x " + str(speed), 875, 20)
+    s = 1
+    if speed == MED_SPEED:
+        s = 2
+    if speed == FAST_SPEED:
+        s = 10
+    message_to_screen("x " + str(s), 875, 20)
 
 def draw_controls(play):
     if play:
@@ -114,7 +128,7 @@ def drawAgent(agent, max_inventory):
 def check_pos(a_pos, c, w, h):
     hdist = math.fabs(a_pos[0] - c[0])
     vdist = math.fabs(a_pos[1] - c[1])
-    return hdist < w and vdist < h
+    return hdist < w/2 and vdist < h/2
 
 def insideUnitCircle():
     t = 2 * math.pi * random.random()
@@ -125,21 +139,49 @@ def insideUnitCircle():
     return np.array([r * math.cos(t), r * math.sin(t)])
 
 def new_pos(agent, speed):
-    desiredVelocity = agent.desired_dir * speed
+    s = 2
+    if speed == MED_SPEED:
+        s = 4
+    desiredVelocity = agent.desired_dir * s
     desiredSteeringForce = (desiredVelocity - agent.vel) * AGENT_STEER_STRENGTH
     acceleration = clamp_norm(desiredSteeringForce, AGENT_STEER_STRENGTH) / 1
 
-    agent.vel = clamp_norm(agent.vel + acceleration, speed) / 1
+    agent.vel = clamp_norm((agent.vel + acceleration), s) / 1
     agent.pos = agent.pos + agent.vel
 
-def updateAgent(state):
+    if agent.pos[0] < 0:
+        agent.pos[0] = WIDTH
+    elif agent.pos[0] > WIDTH:
+        agent.pos[0] = 0
+    if agent.pos[1] < 0:
+        agent.pos[1] = HEIGHT
+    elif agent.pos[1] > HEIGHT:
+        agent.pos[1] = 0
+
+def updateAgent_fast(state):
     for agent in state.agents:
         # we check if the agent is near water
         is_near_water = False
         cell_pos = np.array([0, 0])
         cell_water = 0
         for cell in state.cells:
-            if cell.water != 0 and check_pos(agent.pos, cell.pos, state.tile_width/2, state.tile_height/2):
+            if cell.water != 0 and check_pos(agent.pos, cell.pos, state.tile_width, state.tile_height):
+                is_near_water = True
+                cell_pos = cell.pos
+                cell_water = cell.water
+                break
+        # case 1) agent is near water...
+        if is_near_water:
+            agent.pos[0] = cell.pos[0] - pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity))
+
+def updateAgent_slow(state):
+    for agent in state.agents:
+        # we check if the agent is near water
+        is_near_water = False
+        cell_pos = np.array([0, 0])
+        cell_water = 0
+        for cell in state.cells:
+            if cell.water != 0 and check_pos(agent.pos, cell.pos, state.tile_width, state.tile_height):
                 is_near_water = True
                 cell_pos = cell.pos
                 cell_water = cell.water
@@ -153,27 +195,51 @@ def updateAgent(state):
                 # if the distance between the agent and the center of the pit is smaller than the radius, we stop
                 if dist <= pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity)):
                     # deal with the start state where the agent is in the middle of the lake
-                    if (agent.pos == cell_pos).all():
-                        agent.pos[0] = agent.pos[0] - pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity))
+                    if (agent.pos == cell.pos).all():
+                        agent.pos[0] = cell.pos[0] - pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity))
                     agent.desired_dir = np.array([0, 0])
                 else:
                     temp = agent.desired_pos - agent.pos
                     agent.desired_dir = temp / np.linalg.norm(temp)
             # 1.2) ...and wants to leave
             else:
-                temp = agent.desired_pos - agent.pos
-                agent.desired_dir = temp / np.linalg.norm(temp)
+                # case 1, the next pos is near
+                if math.hypot(agent.pos[0] - agent.desired_pos[0], agent.pos[1] - agent.desired_pos[1]) < 300:
+                    temp = agent.desired_pos - agent.pos
+                    if (temp != np.array([0, 0])).all:
+                        agent.desired_dir = temp / np.linalg.norm(temp)
+                    else:
+                        agent.desired_dir = temp
+                # case 2, the agent is crossing the map
+                else:
+                    temp = agent.desired_pos - agent.pos
+                    agent.desired_dir = temp / np.linalg.norm(temp)
+                    agent.desired_dir[0] = - agent.desired_dir[0]
+                    agent.desired_dir[1] = - agent.desired_dir[1]
+
         # case 2) agent is not near water...
         else:
             # 2.1) ...and wants to stay
-            if check_pos(agent.pos, agent.desired_pos, state.tile_width/4, state.tile_height/4):
-                agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
-                if (agent.desired_dir != np.array([0, 0])).all():
-                    agent.desired_dir = agent.desired_dir / np.linalg.norm(agent.desired_dir)
+            #if check_pos(agent.pos, agent.desired_pos, state.tile_width/2, state.tile_height/2):
+                #agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
+                #if (agent.desired_dir != np.array([0, 0])).all():
+                    #agent.desired_dir = agent.desired_dir / np.linalg.norm(agent.desired_dir)
             # 2.2) ...and wants to leave
+            #else:
+            # case 1, the next pos is near
+            if math.hypot(agent.pos[0] - agent.desired_pos[0], agent.pos[1] - agent.desired_pos[1]) < 300:
+                temp = agent.desired_pos - agent.pos
+                if (temp != np.array([0., 0.])).all():
+                    agent.desired_dir = temp / np.linalg.norm(temp)
+                else:
+                    agent.desired_dir = temp
+            # case 2, the agent is crossing the map
             else:
                 temp = agent.desired_pos - agent.pos
                 agent.desired_dir = temp / np.linalg.norm(temp)
+                agent.desired_dir[0] = - agent.desired_dir[0]
+                agent.desired_dir[1] = - agent.desired_dir[1]
+        agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
         new_pos(agent, state.speed)
 
 def stats(agent, x, y, max_inventory):
@@ -197,7 +263,7 @@ def paused(state) :
             SCREEN.fill(BLACK)
             draw_window(state, False)
             for agent in state.agents:
-                #computing the distance between water pit's center and agent's center
+                #computing the distance between mouse center and agent's center
                 dist = math.hypot(agent.pos[0]-pos[0], agent.pos[1]-pos[1])
                 #if the distance is lower than the radius, then again change the direction
                 if dist < AGENT_RADIUS:
@@ -226,29 +292,55 @@ def run_replay(log_path):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused(state)
-                if event.key == pygame.K_RIGHT and state.speed < 4:
-                    state.speed *= 2
+                elif event.key == pygame.K_RIGHT and state.speed > FAST_SPEED:
+                    if state.speed == SLOW_SPEED:
+                        state.speed = MED_SPEED
+                    else:
+                        state.speed = FAST_SPEED
                     iteration = 0
-                if event.key == pygame.K_LEFT and state.speed > 1:
-                    state.speed = math.floor(state.speed / 2)
+                elif event.key == pygame.K_LEFT and state.speed < SLOW_SPEED:
+                    if state.speed == MED_SPEED:
+                        state.speed = SLOW_SPEED
+                    else:
+                        state.speed = MED_SPEED
                     iteration = 0
-        if run:
-            if iteration == BASIC_SPEED / state.speed:
-                state.load()
+                elif event.key == pygame.K_UP and state.time + TIME_STEP < state.max_time:
+                    state.time += 100
+                    state.load_fast()
+                    iteration = 0
+                elif event.key == pygame.K_DOWN and state.time - TIME_STEP > 0:
+                    if state.time < 100:
+                        state.time = 0
+                    else:
+                        state.time -= 100
+                    state.load_fast()
+                    iteration = 0
+
+        if run and state.time <= state.max_time:
+            if iteration == state.speed:
+                if state.speed == FAST_SPEED:
+                    state.load_fast()
+                else:
+                    state.load_slow()
                 iteration = 0
             else:
                 iteration += 1
 
+            if state.speed == FAST_SPEED:
+                updateAgent_fast(state)
+            else:
+                updateAgent_slow(state)
+            
+        if run:
             SCREEN.fill(BLACK)
             draw_window(state)
             pygame.display.update()
-            updateAgent(state)
         
     pygame.quit()
 
 def main():
     if len(sys.argv) != 2:
-        log_path = "/Users/tancrede/Desktop/projects/survival_simulation/test.json"
+        log_path = "/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/Explorer_dogs_5.json"
         print(f"No log file specified, using default: {log_path}")
         print(f"Run --help to see usage")
         run_replay(log_path)
