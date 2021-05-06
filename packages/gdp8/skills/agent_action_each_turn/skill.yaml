@@ -1,0 +1,58 @@
+name: agent_action_each_turn
+author: gdp8
+version: 0.1.0
+type: skill
+description: This skill recieves info from environment agent every turn, make a decision
+  by communicating with other agent and makes a decision to return to an environment
+  agent.
+license: Apache-2.0
+aea_version: '>=1.0.1'
+fingerprint:
+  __init__.py: QmW2ruHq4t1ivCWRGF3BDZjHi4sH1ykoYjz1hExRfkWQmL
+  behaviours.py: QmfZ764ENyBLekak7wmurMUwDzXwryRKzqX1ySdT6ahCyF
+  dialogues.py: QmQjaUcAff4HPjCSEu9eP9oTrM3kXGkpBx6FkxNgnAwL9D
+  handlers.py: QmZBiGGdYDK5u1VexmfnmMCp1M9vag9CL2SnK6U7t9HjD6
+  strategy.py: QmT6NBjw4LJe7b9QhqtN6fLAMx3cC7JscaxRcDv5684iPi
+fingerprint_ignore_patterns: []
+connections: []
+contracts: []
+protocols: []
+skills: []
+behaviours:
+  agent_behaviour:
+    args:
+      strategy_used: Explorer Dogs
+      tick_interval: 0.1
+    class_name: AgentLogicBehaviour
+handlers:
+  agent_message_handler:
+    args:
+      strategy_used: Explorer Dogs
+    class_name: AgentMessageHandler
+  environment_message_handler:
+    args:
+      strategy_used: Explorer Dogs
+    class_name: EnvironmentMessageHandler
+models:
+  agent_agent_dialogues:
+    args: {}
+    class_name: AgentAgentDialogues
+  agent_environment_dialogues:
+    args: {}
+    class_name: AgentEnvironmentDialogues
+  altruistic_goldfish_strategy:
+    args:
+      agent_max_capacity: 150
+      thirsty_below_that_percentage_of_water: 15
+    class_name: AltruisticGoldfishStrategy
+  dog_strategy:
+    args:
+      agent_max_capacity: 150
+      agent_max_dig_rate: 20
+      thirsty_below_that_percentage_of_water: 15
+    class_name: DogStrategy
+  lone_goldfish_strategy:
+    args: {}
+    class_name: LoneGoldfishStrategy
+dependencies: {}
+is_abstract: false
