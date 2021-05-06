@@ -94,15 +94,15 @@ class EnvironmentHandler(Handler):
         self.context.logger.info(
             "received invalid agent_env message={}, unidentified dialogue.".format(agent_env_msg)
         )
-        default_dialogues = cast(DefaultDialogues, self.context.default_dialogues)
-        default_msg, _ = default_dialogues.create(
-            counterparty=agent_env_msg.sender,
-            performative=DefaultMessage.Performative.ERROR,
-            error_description=DefaultMessage.ErrorCode.INVALID_DIALOGUE,
-            error_msg="Invalid dialogue.",
-            error_data={"Agent Environment Message": agent_env_msg.encode()},
-        )
-        self.context.outbox.put_message(message=default_msg)
+        #default_dialogues = cast(DefaultDialogues, self.context.default_dialogues)
+        #default_msg, _ = default_dialogues.create(
+            #counterparty=agent_env_msg.sender,
+            #performative=DefaultMessage.Performative.ERROR,
+            #error_description=DefaultMessage.ErrorCode.INVALID_DIALOGUE,
+            #error_msg="Invalid dialogue.",
+            #error_data={"Agent Environment Message": agent_env_msg.encode()},
+        #)
+        #self.context.outbox.put_message(message=default_msg)
 
     def _handle_valid_tick_reply(self, agent_env_msg: AgentEnvironmentMessage):
         """
