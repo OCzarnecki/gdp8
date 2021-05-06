@@ -118,13 +118,15 @@ class ApplicationRunner:
             "models": {
                 "altruistic_goldfish_strategy": {
                     "args": {
-                        "agent_max_capacity": args.agent_max_capacity
+                        "agent_max_capacity": args.agent_max_capacity,
+                        "thirsty_below_that_percentage_of_water": args.thirsty_below_that_percentage_of_water
                     }
                 },
                 "dog_strategy": {
                     "args": {
                         "agent_max_capacity": args.agent_max_capacity,
-                        "agent_max_dig_rate": args.agent_mining_speed
+                        "agent_max_dig_rate": args.agent_mining_speed,
+                        "thirsty_below_that_percentage_of_water": args.thirsty_below_that_percentage_of_water
                     }
                 }
             }
@@ -297,6 +299,12 @@ class ApplicationRunner:
                 help="height of the simulation grid",
                 type=int,
                 default=20
+        )
+        parser_run.add_argument(
+                "--thirsty_below_that_percentage_of_water",
+                help="config parameter for Explorer Dogs and Altruistic Goldfish strategies",
+                type=int,
+                default=15
         )
         parser_run.set_defaults(func=self.run)
 
