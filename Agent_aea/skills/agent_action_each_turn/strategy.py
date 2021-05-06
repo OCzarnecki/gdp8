@@ -56,12 +56,12 @@ class DogStrategy(Model):
     agent_messages_returned_waiting_for_response = []  # Storing any messages of future round
     agent_message_asking_for_my_water = []  # Storing any messages of future round
     asked_for_info_already = True
-    water_location = []
+    water_location: list[list[int]] = []
     move_direction_last_turn = "None"
 
     def __init__(self, **kwargs: Any) -> None:
         self.agent_max_capacity = kwargs['agent_max_capacity']
-        self.desperate_for_water_when_below = math.floor(self.agent_max_capacity // 2)
+        self.desperate_for_water_when_below = math.floor(self.agent_max_capacity*kwargs['thirsty_below_that_percentage_of_water'])
         self.agent_max_dig_rate = kwargs['agent_max_dig_rate']
         self.least_water_amount_in_tile_for_agent_to_remember_it = self.agent_max_dig_rate
         super().__init__(**kwargs)
@@ -75,6 +75,7 @@ class DogStrategy(Model):
         assert agent_environment_message.turn_number == self.round_no + 1, \
             agent_environment_message.turn_number + "." + str(self.round_no)
         assert self.is_round_done
+        self.context.logger.info("CHUN_TESTING_WATER_LOCATION = " + str(self.water_location))
         self.round_no += 1
         self.current_env_message = agent_environment_message
         self.current_env_dialogue = agent_environment_dialogue
@@ -167,7 +168,7 @@ class DogStrategy(Model):
                             index_not_found = False
                     self.neighbour_water_amount[index][2] = "Result Received"
 
-    def add_to_water_location(self, xy_coordinates: list[int]) -> None:
+    def add_to_water_location(self, xy_coordinates) -> None:
         try:
             self.water_location.index(xy_coordinates)
             # if doesn't fail, we already know there is water there, nothing to be done
@@ -419,7 +420,7 @@ class AltruisticGoldfishStrategy(Model):
 
     def __init__(self, **kwargs: Any) -> None:
         self.agent_max_water = kwargs['agent_max_capacity']
-        self.desperate_for_water_when_below = math.floor(self.agent_max_water / 2)
+        self.desperate_for_water_when_below = math.floor(self.agent_max_water*kwargs['thirsty_below_that_percentage_of_water'])
         super().__init__(**kwargs)
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
