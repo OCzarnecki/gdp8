@@ -167,7 +167,7 @@ class DogStrategy(Model):
                             index_not_found = False
                     self.neighbour_water_amount[index][2] = "Result Received"
 
-    def add_to_water_location(self, xy_coordinates: list[int]) -> None:
+    def add_to_water_location(self, xy_coordinates) -> None:
         try:
             self.water_location.index(xy_coordinates)
             # if doesn't fail, we already know there is water there, nothing to be done
