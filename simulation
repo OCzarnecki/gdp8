@@ -1,6 +1,7 @@
 #!bin/python
 
 import argparse
+from datetime import datetime
 import glob
 import os
 import sys
@@ -21,6 +22,9 @@ class ApplicationRunner:
        that this script is run from (normally the project
        root, ./). This means that paths for _our_ code are
        relative to the project root."""
+    def __init__(self):
+        self._debug_logfile = None
+
     def _init_mam(self):
         WORKING_DIR = "mam"
         REGISTRY_PATH = "packages"
@@ -35,15 +39,13 @@ class ApplicationRunner:
         env_id = PublicId.from_str("gdp8/env_aea:0.1.0")
         self._manager.add_project(env_id)
         agent_overrides = {
-                "connection_private_key_paths": {
-                    "fetchai": "../../../keys/ckp.txt"
-                },
-                "private_key_paths": {
-                    "fetchai": f"../../../keys/fetchai_private_key-ENV.txt"
-                },
-                "logging_config": {
-                    "root": {"level": args.loglevel}
-                }
+            "connection_private_key_paths": {
+                "fetchai": "../../../keys/ckp.txt"
+            },
+            "private_key_paths": {
+                "fetchai": f"../../../keys/fetchai_private_key-ENV.txt"
+            },
+            "logging_config": self._get_logging_config(args) 
         }
         env_skill_id = PublicId.from_str("gdp8/env_action_each_turn:0.1.0")
         component_overrides = [{
@@ -82,15 +84,13 @@ class ApplicationRunner:
     def _add_agent_with_id(self, agent_id_simulation, args):
         name = self._agent_name_from_id(agent_id_simulation)
         agent_overrides = {
-                "connection_private_key_paths": {
-                    "fetchai": "../../../keys/ckp.txt"
-                },
-                "private_key_paths": {
-                    "fetchai": f"../../../keys/fetchai_private_key-{agent_id_simulation}.txt"
-                },
-                "logging_config": {
-                    "root": {"level": args.loglevel}
-                }
+            "connection_private_key_paths": {
+                "fetchai": "../../../keys/ckp.txt"
+            },
+            "private_key_paths": {
+                "fetchai": f"../../../keys/fetchai_private_key-{agent_id_simulation}.txt"
+            },
+            "logging_config": self._get_logging_config(args) 
         }
         agent_skill_id = PublicId.from_str("gdp8/agent_action_each_turn:0.1.0")
         component_overrides = [{
@@ -144,6 +144,29 @@ class ApplicationRunner:
             self._manager.start_agent(
                     self._agent_name_from_id(i)
             )
+
+    def _get_logging_config(self, args):
+        if not self._debug_logfile:
+            self._debug_logfile = datetime.now().strftime(
+                "debug-logs/log-%Y-%m-%d_%H.%M.%S-%Z.txt"
+            )
+        return {
+            "disable_existing_loggers": True,
+            "root": {
+                "level": args.loglevel,
+                "handlers": ["file", "console"]
+            },
+            "handlers": {
+                "console": {
+                    "class": "logging.StreamHandler",
+                    "stream" : "ext://sys.stdout"
+                },
+                "file": {
+                    "class": "logging.FileHandler",
+                    "filename": self._debug_logfile
+                }
+            }
+        }
 
     def _agent_name_from_id(self, agent_id):
         return f"agent_{agent_id}"
