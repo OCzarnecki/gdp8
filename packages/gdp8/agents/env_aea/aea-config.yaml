@@ -3,7 +3,7 @@ author: gdp8
 version: 0.1.0
 license: Apache-2.0
 description: This agent provides the environment simulation for the other agents.
-aea_version: '>=1.0.0'
+aea_version: '>=1.0.1'
 fingerprint: {}
 fingerprint_ignore_patterns: []
 connections:
