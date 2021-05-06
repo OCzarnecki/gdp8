@@ -56,12 +56,13 @@ class DogStrategy(Model):
     agent_messages_returned_waiting_for_response = []  # Storing any messages of future round
     agent_message_asking_for_my_water = []  # Storing any messages of future round
     asked_for_info_already = True
-    water_location = []
+    water_location: list[list[int]] = []
     move_direction_last_turn = "None"
 
     def __init__(self, **kwargs: Any) -> None:
         self.agent_max_capacity = kwargs['agent_max_capacity']
-        self.desperate_for_water_when_below = math.floor(self.agent_max_capacity // 2)
+        self.desperate_for_water_when_below = math.floor(
+            self.agent_max_capacity * kwargs['thirsty_below_that_percentage_of_water'] / 100)
         self.agent_max_dig_rate = kwargs['agent_max_dig_rate']
         self.least_water_amount_in_tile_for_agent_to_remember_it = self.agent_max_dig_rate
         super().__init__(**kwargs)
@@ -75,6 +76,7 @@ class DogStrategy(Model):
         assert agent_environment_message.turn_number == self.round_no + 1, \
             agent_environment_message.turn_number + "." + str(self.round_no)
         assert self.is_round_done
+        self.context.logger.info("CHUN_TESTING_WATER_LOCATION = " + str(self.water_location))
         self.round_no += 1
         self.current_env_message = agent_environment_message
         self.current_env_dialogue = agent_environment_dialogue
@@ -152,11 +154,11 @@ class DogStrategy(Model):
                     if self.north_neighbour_id == sender:
                         y += 1
                     elif self.east_neighbour_id == sender:
-                        y += 1
+                        x += 1
                     elif self.south_neighbour_id == sender:
                         y -= 1
                     elif self.west_neighbour_id == sender:
-                        y -= 1
+                        x -= 1
                     self.add_to_water_location([x, y])
                     index_not_found = True
                     index = -1
@@ -167,7 +169,7 @@ class DogStrategy(Model):
                             index_not_found = False
                     self.neighbour_water_amount[index][2] = "Result Received"
 
-    def add_to_water_location(self, xy_coordinates: list[int]) -> None:
+    def add_to_water_location(self, xy_coordinates) -> None:
         try:
             self.water_location.index(xy_coordinates)
             # if doesn't fail, we already know there is water there, nothing to be done
@@ -363,15 +365,15 @@ class DogStrategy(Model):
             x = int(x)
             y = int(y)
             if x > 0:
-                decision = "move.north"
-            elif x < 0:
-                decision = "move.south"
-            elif y > 0:
                 decision = "move.east"
+            elif x < 0:
+                decision = "move.west"
+            elif y > 0:
+                decision = "move.north"
             else:
                 if y == 0:
                     self.context.logger.info("agent_decision_making_algorithm_error")
-                decision = "move.west"
+                decision = "move.south"
         self.context.logger.info(
             "sending command={} to env={}".format(
                 decision, self.current_env_message.sender
@@ -419,7 +421,8 @@ class AltruisticGoldfishStrategy(Model):
 
     def __init__(self, **kwargs: Any) -> None:
         self.agent_max_water = kwargs['agent_max_capacity']
-        self.desperate_for_water_when_below = math.floor(self.agent_max_water / 2)
+        self.desperate_for_water_when_below = math.floor(
+            self.agent_max_water * kwargs['thirsty_below_that_percentage_of_water'] / 100)
         super().__init__(**kwargs)
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
@@ -443,6 +446,8 @@ class AltruisticGoldfishStrategy(Model):
         self.context.logger.info(self.neighbour_water_amount)
         self.is_round_done = False
         self.asked_for_info_already = False
+        self.a_neighbour_has_water_to_offer = False
+        self.a_neighbour_is_thirsty = False
 
     def receive_agent_agent_info(self, agent_agent_message: AgentAgentMessage) -> None:
         # If round number is of prev round. discard
@@ -517,12 +522,14 @@ class AltruisticGoldfishStrategy(Model):
         # ********************************************************
 
         if self.tile_water > 0:
-            if not self.a_neighbour_is_thirsty or self.agent_water <= 10:
+            if not self.a_neighbour_is_thirsty:
                 decision = "NULL"  # neighbours are not thirsty and the cell has water
+            elif self.agent_water <= 10:
+                decision = "NULL"  # agent desperate
             else:
                 # a neighbour is thirsty, if cell has more water than I need till FULL, offer half of my water
-                water = min(self.agent_water//2, self.tile_water - (self.agent_max_water - self.agent_water))
-                if water < 2:
+                water = min(self.agent_water // 2, self.tile_water - (self.agent_max_water - self.agent_water))
+                if water < 5:
                     decision: str = "NULL"
                 else:
                     decision: str = "offer_water" + "." + str(water)
