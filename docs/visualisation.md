@@ -18,7 +18,7 @@ It currently shows the following 6 statistics:
 3. Average water gathered per agent in a single time step / time (water gathered from time `t` to `t+1`)
 4. Distribution of time since last drink
 5. Distribution of distance to nearest agent
-6. Total water gathered by all agents / time
+6. Cumulative water gathered by all agents / time
 
 The module includes time-dependent graphs, which is controlled through the time slider.
 
