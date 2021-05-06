@@ -1,0 +1,30 @@
+#!/usr/bin/bash
+# generate_keyfiles: generate_keyfiles NUM AEA_DIR
+# 
+# Generate NUM keyfiles and output an id to address mapping in
+# json format to stdout.
+#
+# This is quite hacky, as it uses `aea get-address` to find
+# the address corresponding to a key, so it needs to be run
+# from within an aea, and it WILL change its private key.
+# The script will use the aea in AEA_DIR.
+# 
+# To run, best set up an alias aea that is configured to
+# have its private key for fetchai to be stored in
+#   fetchai_private_key.txt
+#
+# The resulting keyfiles are placed in the keys/ directory.
+
+if (( $# != 2 )) ; then
+  echo "Inalid number of args! See script text for usage."
+  exit 1
+fi
+
+cd $2
+echo "{"
+for i in $( seq 1 $1 ) ; do
+  aea generate-key fetchai
+  echo "\"$i\": \"$( aea get-address fetchai )\","
+  mv fetchai_private_key.txt ../keys/fetchai_private_key-$i.txt
+done
+echo "}"

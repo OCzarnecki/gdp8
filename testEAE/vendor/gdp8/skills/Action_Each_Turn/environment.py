@@ -39,7 +39,7 @@ from itertools import product
 from typing import Any, Dict, List, Optional, cast
 
 
-import agent_aea
+import Init_implementation_agent_aea
 
 
 import random
