@@ -56,8 +56,8 @@ class State():
         self.tile_height = HEIGHT / self.y_size
         self.pit_max_radius = min(self.tile_width/2, self.tile_height/2)
 
-        self.hvelocity = self.tile_width / self.speed
-        self.vvelocity = self.tile_height / self.speed
+        self.hvelocity = math.ceil(self.tile_width / self.speed)
+        self.vvelocity = math.ceil(self.tile_height / self.speed)
 
         self.load_fast()
 
