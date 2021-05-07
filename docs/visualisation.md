@@ -4,7 +4,7 @@ Visualisation files are under `visualisation`.
 
 ## Main Visualisation (play-replay)
 
-![Main Visualisation Diagram](/docs/mainVis_diagram.png?raw=true)
+![Main Visualisation Diagram](img/mainVis_diagram.png)
 
 The visualisation module takes a simulation log, and displays a dynamic view of the agents behaviours and the real time state of the simulation.
 
@@ -33,7 +33,7 @@ To implement agent movement, we retrieve the agent actual position as well as th
 
 ## Statistics (show-stats)
 
-![Statistics Diagram](/docs/stats_diagram.png?raw=true)
+![Statistics Diagram](img/stats_diagram.png)
 
 The statistics module takes a simulation log, and shows a series of graphs summarising the simulation. It includes statistics interesting for measuring individual survival, collective survival, and disparities between agents. It is intended to be used side by side with the main visualisation.
 
