@@ -222,8 +222,7 @@ def plot_5(ax):
     update_plot_5(0)
 
 def plot_6(ax):
-    # Need dehydration rate
-    ax.set_title("Total Water Gathered", fontsize=7)
+    ax.set_title("Cumulative Water Gathered, All Agents", fontsize=5)
     ax.set_xlabel("Time")
     ax.set_ylabel("Water")
 
@@ -235,7 +234,10 @@ def plot_6(ax):
         def total_inv(s): return sum(a.inventory for a in s.agents)
         water_lost = len(s0.agents) * DEHYDRATION_RATE
         total = total_inv(s1) - total_inv(s0) + water_lost
-        totals.append(total)
+        if t > 0:
+            totals.append(total + totals[-1])
+        else:
+            totals.append(total)
 
     ax.plot(times, totals)
 

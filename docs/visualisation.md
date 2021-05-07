@@ -4,11 +4,36 @@ Visualisation files are under `visualisation`.
 
 ## Main Visualisation (play-replay)
 
-![Main Visualisation Diagram](/mainVis_diagram.png?raw=true)
+![Main Visualisation Diagram](/docs/mainVis_diagram.png?raw=true)
+
+The visualisation module takes a simulation log, and displays a dynamic view of the agents behaviours and the real time state of the simulation.
+
+It shows the following features:
+1. Map filled with water pits whose size matches their quantity of water
+2. Agents moving inside that map
+3. Time of simulation and number of survivors
+4. Speed of the simulation (x1, x2 or x10)
+5. Play / Pause the simulation to look for precise agent stats
+
+Keys that can be used to manipulate the visualisation:
+1. RIGHT and LEFT keys increase / decrease the speed of the simulation
+2. UP and DOWN keys bounce forward / back in the simulation (+/- 100 iterations)
+3. SPACE bar pauses and resumes the simulation
+4. While on pause, moving the mouse above an agent will display its remaining water and its ID
+
+Two python files are used for main visualisation : `simulationState.py` and `main.py`. The first one is used to retrieve the data from the given json log file. It implements a `State` class which represents the state of the simulation at any given time. A state has a set of agents and their characteristics, a set of cells and their characteristics and other useful values (time, speed etc).
+
+The `main.py` file is used to display the visualisation. It uses `pygame` library and works as follows :
+1. At a frame of 60 FPS, runs a main loop
+2. Depending on the given simulation speed, loads the new state in `simulationState.py`
+3. Updates agents position
+4. Draws the new positions on the screen
+
+To implement agent movement, we retrieve the agent actual position as well as the position the agent will be in the next iteration (`desired_pos`). Using these two positions we can compute the direction in which the agent wants to move and compute a velocity and acceleration accordingly. This is all done with simple arithmetic and basic `math` and `numpy` methods.
 
 ## Statistics (show-stats)
 
-![Statistics Diagram](/stats_diagram.png?raw=true)
+![Statistics Diagram](/docs/stats_diagram.png?raw=true)
 
 The statistics module takes a simulation log, and shows a series of graphs summarising the simulation. It includes statistics interesting for measuring individual survival, collective survival, and disparities between agents. It is intended to be used side by side with the main visualisation.
 
@@ -18,7 +43,7 @@ It currently shows the following 6 statistics:
 3. Average water gathered per agent in a single time step / time (water gathered from time `t` to `t+1`)
 4. Distribution of time since last drink
 5. Distribution of distance to nearest agent
-6. Total water gathered by all agents / time
+6. Cumulative water gathered by all agents / time
 
 The module includes time-dependent graphs, which is controlled through the time slider.
 
