@@ -222,13 +222,6 @@ def updateAgent_slow(state):
 
         # case 2) agent is not near water...
         else:
-            # 2.1) ...and wants to stay
-            #if check_pos(agent.pos, agent.desired_pos, state.tile_width/2, state.tile_height/2):
-                #agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
-                #if (agent.desired_dir != np.array([0, 0])).all():
-                    #agent.desired_dir = agent.desired_dir / np.linalg.norm(agent.desired_dir)
-            # 2.2) ...and wants to leave
-            #else:
             # case 1, the next pos is near
             if math.hypot(agent.pos[0] - agent.desired_pos[0], agent.pos[1] - agent.desired_pos[1]) < 300:
                 temp = agent.desired_pos - agent.pos
