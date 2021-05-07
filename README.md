@@ -36,7 +36,7 @@ Prints statistics about a simulation run, using a log file.
 will use the most recent log file, but as with `play-replay` you can provide any valid log file using `--logfile PATH`.
 
 # Building
-The launcher script does not run the code from `env_aea` and `agent_aea` directly. Instead, it uses the snapshot of the code stored in the `packages` folder (the local registry). To push your current work into the package registry, run the `update_packages` script. For more info, check out docs.fetch.ai.
+The launcher script does not run the code from `env_aea` and `agent_aea` directly. Instead, it uses the snapshot of the code stored in the `packages` folder (the local registry). To push your current work into the package registry, run the `script/update_packages` script. For more info, check out docs.fetch.ai.
 
 After the packages have been pushed, your changes should be applied immedietly, when running the `simulation` script.
 
