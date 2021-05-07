@@ -27,11 +27,12 @@ from packages.gdp8.skills.agent_action_each_turn.strategy import \
 
 
 class AgentLogicBehaviour(TickerBehaviour):
-    """Behaviour looks at if actions required in each tick:
-       is there agent asking for water info? if so, tell them
-       is the round done (on my end)? if so, stop
-       is there enough info for making a decision? if so, do so,
-       if not, might have to send message to ask for info"""
+    """Behaviour first looks at the strategy passed in, chooses the correct strategy, then
+       looks at if actions required in each tick:
+       is there agent asking for info? if so, tell them
+       is the round done (on my end)? if so, end behaviour
+       have I asked for information (if needed)? if not, ask
+       otherwise, have I received enough information to make a decision? if so, do so"""
 
     def __init__(self, **kwargs: Any) -> None:
         self.strategyName = kwargs['strategy_used']
@@ -45,8 +46,6 @@ class AgentLogicBehaviour(TickerBehaviour):
         """
 
     def act(self) -> None:
-
-        self.context.logger.info("behaviour called")
 
         if self.strategyName == "Explorer Dogs":
             strategy = cast(DogStrategy, self.context.dog_strategy)

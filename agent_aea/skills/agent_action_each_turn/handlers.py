@@ -31,10 +31,6 @@ from packages.gdp8.skills.agent_action_each_turn.strategy import \
     DogStrategy, AltruisticGoldfishStrategy, LoneGoldfishStrategy
 
 
-# Handler will Update my model (strategy class) depending on what it has received
-# Unimplemented: self.context.agent_environment_dialogues, self.context.default_dialogues
-
-
 class EnvironmentMessageHandler(Handler):
     """This class handles messages from the environment."""
 
@@ -52,7 +48,6 @@ class EnvironmentMessageHandler(Handler):
         """
 
     def handle(self, message: Message) -> None:
-        self.context.logger.info("start handling env msg")
         """
         Implement the reaction to a message.
 
@@ -69,7 +64,6 @@ class EnvironmentMessageHandler(Handler):
             return
 
         # handle message
-        # environment = cast(Environment, self.context.environment)##
         self.context.logger.debug(
             "handling environment response. performative={}".format(agent_env_msg.performative)
         )
@@ -119,8 +113,7 @@ class EnvironmentMessageHandler(Handler):
     def _handle_invalid(self, agent_env_msg: AgentEnvironmentMessage,
                         agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
         """
-        Handle an oef search message.
-f
+        Handle an invalid message.
         :param agent_env_msg: the agent environment message
         :param agent_environment_dialogue: the agent environment dialogue
         :return: None
@@ -162,7 +155,6 @@ class AgentMessageHandler(Handler):
             self._handle_unidentified_dialogue(agent_agent_msg)
             return
 
-        self.context.logger.info("start handling agent msg of performative: " + str(agent_agent_msg.performative))
         if agent_agent_msg.performative == AgentAgentMessage.Performative.SENDER_REQUEST:
             self._handle_other_agent_request_for_info(agent_agent_msg, agent_agent_dialogue)
         elif agent_agent_msg.performative == AgentAgentMessage.Performative.RECEIVER_REPLY:
@@ -185,7 +177,6 @@ class AgentMessageHandler(Handler):
         self.context.logger.info(
             "received invalid agent_agent message={}, unidentified dialogue.".format(agent_agent_msg)
         )
-        raise AttributeError("SOMETHING IS WRONG WITH MESSAGES SENT TO THIS AGENT")
 
     def _handle_info_in_replies_from_other_agent(self, agent_agent_msg: AgentAgentMessage):
         # Actual function where agent messages are used.
@@ -197,8 +188,6 @@ class AgentMessageHandler(Handler):
             assert self.strategyName == "Lone Goldfish"
             strategy = cast(LoneGoldfishStrategy, self.context.lone_goldfish_strategy)
 
-        # Info received. returns whether we can go to make_decision (may be on waiting list since last round not over)
-        # True = Go on, False = stop
         strategy.receive_agent_agent_info(agent_agent_msg)
 
     def _handle_other_agent_request_for_info(self, agent_agent_msg: AgentAgentMessage, agent_agent_dialogue):
