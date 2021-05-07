@@ -100,9 +100,6 @@ class State():
         for cell in d['cells']:
             self.cells.append(Cell(computePos(cell['x'], cell['y'], self.tile_width, self.tile_height, twcenter, thcenter), cell['water']))
         
-        #if self.time == self.max_time:
-         #   self.time = 0
-        #else:
         self.time += 1
 
     def load_slow(self):
@@ -151,9 +148,6 @@ class State():
                 while i < len(self.agents) - 1 and newAgent.id != self.agents[i].id:
                     i += 1
                 newAgent.vel = self.agents[i].vel
-                if not check_pos(newAgent.pos, self.agents[i].pos, self.tile_width, self.tile_height):
-                    print("no" + str(newAgent.id) + str(newAgent.pos) + str(self.agents[i].pos))
-                #newAgent.pos = self.agents[i].pos
                 newAgent.desired_dir = self.agents[i].desired_dir
         self.agents = newAgents
 
