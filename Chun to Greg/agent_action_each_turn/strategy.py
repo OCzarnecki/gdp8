@@ -446,6 +446,8 @@ class AltruisticGoldfishStrategy(Model):
         self.context.logger.info(self.neighbour_water_amount)
         self.is_round_done = False
         self.asked_for_info_already = False
+        self.a_neighbour_has_water_to_offer = False
+        self.a_neighbour_is_thirsty = False
 
     def receive_agent_agent_info(self, agent_agent_message: AgentAgentMessage) -> None:
         # If round number is of prev round. discard
@@ -520,12 +522,14 @@ class AltruisticGoldfishStrategy(Model):
         # ********************************************************
 
         if self.tile_water > 0:
-            if not self.a_neighbour_is_thirsty or self.agent_water <= 10:
+            if not self.a_neighbour_is_thirsty:
                 decision = "NULL"  # neighbours are not thirsty and the cell has water
+            elif self.agent_water <= 10:
+                decision = "NULL"  # agent desperate
             else:
                 # a neighbour is thirsty, if cell has more water than I need till FULL, offer half of my water
                 water = min(self.agent_water // 2, self.tile_water - (self.agent_max_water - self.agent_water))
-                if water < 2:
+                if water < 5:
                     decision: str = "NULL"
                 else:
                     decision: str = "offer_water" + "." + str(water)

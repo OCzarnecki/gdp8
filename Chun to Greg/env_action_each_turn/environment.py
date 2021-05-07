@@ -218,13 +218,17 @@ class SimulationState:
             if agent.next_command.command_type == CommandType.MOVE:
                 direction = agent.next_command.direction
                 if direction == "north":
-                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y - 1, agent.pos_x, agent.pos_y)
+                    self._try_moving(agent, direction, agent.pos_x % self.size_x, (agent.pos_y - 1) % self.size_y,
+                                     agent.pos_x, agent.pos_y)
                 elif direction == "south":
-                    self._try_moving(agent, direction, agent.pos_x, agent.pos_y + 1, agent.pos_x, agent.pos_y)
+                    self._try_moving(agent, direction, agent.pos_x % self.size_x, (agent.pos_y + 1) % self.size_y,
+                                     agent.pos_x, agent.pos_y)
                 elif direction == "west":
-                    self._try_moving(agent, direction, agent.pos_x - 1, agent.pos_y, agent.pos_x, agent.pos_y)
+                    self._try_moving(agent, direction, (agent.pos_x - 1) % self.size_x, agent.pos_y % self.size_y,
+                                     agent.pos_x, agent.pos_y)
                 elif direction == "east":
-                    self._try_moving(agent, direction, agent.pos_x + 1, agent.pos_y, agent.pos_x, agent.pos_y)
+                    self._try_moving(agent, direction, (agent.pos_x + 1) % self.size_x, agent.pos_y % self.size_y,
+                                     agent.pos_x, agent.pos_y)
                 else:
                     raise ValueError(
                         "Agent tried to move in a direction not recognised: '{}'".format(agent.next_command))
@@ -232,8 +236,6 @@ class SimulationState:
                 agent.movement_last_turn = None
 
     def _try_moving(self, agent, direction, try_pos_x, try_pos_y, prev_pos_x, prev_pos_y):
-        try_pos_x = try_pos_x % self.size_x
-        try_pos_y = try_pos_y % self.size_y
         if self._agent_grid[try_pos_x][try_pos_y] is None:
             agent.pos_x = try_pos_x
             agent.pos_y = try_pos_y
