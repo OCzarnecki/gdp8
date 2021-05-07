@@ -5,6 +5,13 @@ They help him decide:
 * whether to offer water to his neighbours or not and how much
 * whether to ask for water from his neighbours or not and how much
 
+An agent can take one of the following actions each turn:
+* offer water (specifying how much he offers)
+* receive water (specifying how much he is willing to receive)
+* move (specifying the direction of his move)
+* idle 
+
+
 # Lone Goldfish
 The agent will not communicate with its neighbours. 
 Hence he won’t ask for water nor offer water to them. 

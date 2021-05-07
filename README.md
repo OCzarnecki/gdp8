@@ -10,7 +10,7 @@ Note that this project was developed on a limited time scale, and is not under a
 # Installation
 1. Clone this repository.
 2. Install the AEA framework, by following the [AEA Framework Installation Instructions](https://docs.fetch.ai/aea/quickstart/#option-2-automated-install-script).
-3. Install the required python dependencies
+3. Install the required python dependencies. This can be done automatically using the `requirements.txt` file
   * numpy
   * pygame
   * matplotlib
