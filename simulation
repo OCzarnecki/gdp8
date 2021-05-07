@@ -148,27 +148,32 @@ class ApplicationRunner:
             )
 
     def _get_logging_config(self, args):
-        if not self._debug_logfile:
-            self._debug_logfile = datetime.now().strftime(
-                "debug-logs/log-%Y-%m-%d_%H.%M.%S-%Z.txt"
-            )
-        return {
+        config = {
             "disable_existing_loggers": True,
             "root": {
                 "level": args.loglevel,
-                "handlers": ["file", "console"]
+                "handlers": ["console"]
             },
             "handlers": {
                 "console": {
                     "class": "logging.StreamHandler",
                     "stream" : "ext://sys.stdout"
-                },
-                "file": {
-                    "class": "logging.FileHandler",
-                    "filename": self._debug_logfile
                 }
             }
         }
+        if args.log_to_file:
+            if not self._debug_logfile:
+                Path("debug-logs").mkdir(exist_ok=True)
+                self._debug_logfile = datetime.now().strftime(
+                    "debug-logs/log-%Y-%m-%d_%H.%M.%S-%Z.txt"
+                )
+            config["handlers"]["file"] = {
+                "class": "logging.FileHandler",
+                "filename": self._debug_logfile
+            }
+            config["root"]["handlers"].append("file")
+            print(config)
+        return config
 
     def _agent_name_from_id(self, agent_id):
         return f"agent_{agent_id}"
@@ -190,8 +195,6 @@ class ApplicationRunner:
                 time.sleep(1.)
             Path("$SIMULATION_ENDED").unlink()
         finally:
-            print("*" * 500)
-            print("Time to clean up!")
             self._cleanup()
 
     def _most_recent_log_file(self):
@@ -225,8 +228,13 @@ class ApplicationRunner:
                 "--loglevel",
                 "-v",
                 choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                default="DEBUG",
+                default="INFO",
                 help="log level"
+        )
+        parser.add_argument(
+                "--log_to_file",
+                action="store_true",
+                help="print log output to a file in debug-logs/, in addition to printing it to stdout"
         )
         subparsers = parser.add_subparsers(
                 required=True,

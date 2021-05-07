@@ -19,6 +19,7 @@ SIZE = None
 TIME_STEP = None
 WHITE = None
 WIDTH = None
+ZERO_ARRAY = None
 
 def init_engine():
     pygame.init()
@@ -54,6 +55,8 @@ def init_engine():
     FAST_SPEED = 1
     global TIME_STEP
     TIME_STEP = 100
+    global ZERO_ARRAY
+    ZERO_ARRAY = np.array([0, 0])
 
     global font 
     font = pygame.font.SysFont("Times New Roman", 13)
@@ -69,7 +72,7 @@ def clamp_norm(v, n_max):
     vy = v[1]
     n = math.sqrt(vx**2 + vy**2)
     if n == 0:
-        return np.array([0, 0])
+        return ZERO_ARRAY
     f = min(n, n_max) / n
     return np.array([f * vx, f * vy])
 
@@ -162,7 +165,7 @@ def updateAgent_fast(state):
     for agent in state.agents:
         # we check if the agent is near water
         is_near_water = False
-        cell_pos = np.array([0, 0])
+        cell_pos = ZERO_ARRAY
         cell_water = 0
         for cell in state.cells:
             if cell.water != 0 and check_pos(agent.pos, cell.pos, state.tile_width, state.tile_height):
@@ -178,7 +181,7 @@ def updateAgent_slow(state):
     for agent in state.agents:
         # we check if the agent is near water
         is_near_water = False
-        cell_pos = np.array([0, 0])
+        cell_pos = ZERO_ARRAY
         cell_water = 0
         for cell in state.cells:
             if cell.water != 0 and check_pos(agent.pos, cell.pos, state.tile_width, state.tile_height):
@@ -197,7 +200,7 @@ def updateAgent_slow(state):
                     # deal with the start state where the agent is in the middle of the lake
                     if (agent.pos == cell.pos).all():
                         agent.pos[0] = cell.pos[0] - pit_radius(state.pit_max_radius, cell_water / float(state.max_water_capacity))
-                    agent.desired_dir = np.array([0, 0])
+                    agent.desired_dir = ZERO_ARRAY
                 else:
                     temp = agent.desired_pos - agent.pos
                     agent.desired_dir = temp / np.linalg.norm(temp)
@@ -206,7 +209,7 @@ def updateAgent_slow(state):
                 # case 1, the next pos is near
                 if math.hypot(agent.pos[0] - agent.desired_pos[0], agent.pos[1] - agent.desired_pos[1]) < 300:
                     temp = agent.desired_pos - agent.pos
-                    if (temp != np.array([0, 0])).all:
+                    if (temp != ZERO_ARRAY).all:
                         agent.desired_dir = temp / np.linalg.norm(temp)
                     else:
                         agent.desired_dir = temp
@@ -219,17 +222,10 @@ def updateAgent_slow(state):
 
         # case 2) agent is not near water...
         else:
-            # 2.1) ...and wants to stay
-            #if check_pos(agent.pos, agent.desired_pos, state.tile_width/2, state.tile_height/2):
-                #agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
-                #if (agent.desired_dir != np.array([0, 0])).all():
-                    #agent.desired_dir = agent.desired_dir / np.linalg.norm(agent.desired_dir)
-            # 2.2) ...and wants to leave
-            #else:
             # case 1, the next pos is near
             if math.hypot(agent.pos[0] - agent.desired_pos[0], agent.pos[1] - agent.desired_pos[1]) < 300:
                 temp = agent.desired_pos - agent.pos
-                if (temp != np.array([0., 0.])).all():
+                if (temp != ZERO_ARRAY).all():
                     agent.desired_dir = temp / np.linalg.norm(temp)
                 else:
                     agent.desired_dir = temp
@@ -239,7 +235,8 @@ def updateAgent_slow(state):
                 agent.desired_dir = temp / np.linalg.norm(temp)
                 agent.desired_dir[0] = - agent.desired_dir[0]
                 agent.desired_dir[1] = - agent.desired_dir[1]
-        agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
+            if not np.allclose(agent.desired_dir, ZERO_ARRAY, 1.e-05, 1):
+                agent.desired_dir = agent.desired_dir + insideUnitCircle() * AGENTS_WANDER_STRENGTH
         # case 1 : hroizontal movement
         if math.fabs(agent.desired_dir[0]) > math.fabs(agent.desired_dir[1]):
             new_pos(agent, state.speed, state.hvelocity)
@@ -344,7 +341,7 @@ def run_replay(log_path):
 
 def main():
     if len(sys.argv) != 2:
-        log_path = "/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/log.json"
+        log_path = "/Users/tancrede/Desktop/projects/aea/gdp/visualisation/example_logs/AG.json"
         print(f"No log file specified, using default: {log_path}")
         print(f"Run --help to see usage")
         run_replay(log_path)
