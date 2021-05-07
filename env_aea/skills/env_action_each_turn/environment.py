@@ -24,21 +24,12 @@ https://github.com/fetchai/agents-aea/blob/main/packages/fetchai/skills/tac_cont
 """
 
 from aea.skills.base import Model
-# from aea.common import Address
-# from aea.helpers.search.generic import (
-#    AGENT_LOCATION_MODEL,
-#    AGENT_REMOVE_SERVICE_MODEL,
-#    AGENT_SET_SERVICE_MODEL,
-# )
-# Causes syntax error
-# from aea.helpers.search.models import
 
 from packages.gdp8.skills.env_action_each_turn.address_mapping import AddressMapping
 
 from enum import Enum, auto
 from itertools import product
 from typing import Any
-# from typing import List, Optional, cast, Dict
 
 import random
 
@@ -137,7 +128,6 @@ class SimulationState:
         self._generate_water(initial_oasis_water, oasis_count)
         self._init_agents(agent_count, initial_agent_water)
         self.turn_number = 0
-        # Allocate datastructures used in update_simulation once
         self._needs = [[0] * size_y for _ in range(size_x)]
         self._transfers = [[0] * size_y for _ in range(size_x)]
 
@@ -212,7 +202,6 @@ class SimulationState:
         Update position of all agents that wanted to move. 
         If the position is already taken, the action will be discarded.
         The world is "round", if you reach the top and move up you go back to the bottom.
-
         """
         for agent in self.get_agents_alive():
             if agent.next_command.command_type == CommandType.MOVE:
@@ -292,15 +281,7 @@ class SimulationState:
         for agent in self.get_agents_alive():
             if agent is None:
                 raise ValueError("agent is None")
-            # else:
-            #     print(str(agent.water) + "." + str(agent.pos_x) + "." + str(agent.pos_y) + "." + str(agent.agent_id))
         for (x, y) in agent_positions:
-            # agent_test = self.get_agent_by_pos(x, y)
-            # if agent_test is None:
-            #     raise ValueError(
-            #             str(x) + "." + str(y)
-            #    )
-            # Action is only needed for agents who send water
             if self._needs[x][y] < 0:
                 agent = self.get_agent_by_pos(x, y)
                 neighbour_coords = [((x + dx + self.size_x) % self.size_x, (y + dy + self.size_y) % self.size_y)
@@ -325,13 +306,11 @@ class SimulationState:
         for (x, y) in agent_positions:
             agent = self.get_agent_by_pos(x, y)
             assert(agent is not None)
-            # Mine water
             minable = self._minable_at(x, y)
             if minable > 0:
                 to_mine = min(self._agent_max_capacity - agent.water, minable)
                 self._water[x][y] -= to_mine
                 agent.water += to_mine
-            # Transfer water
             agent.water += self._transfers[x][y]
 
     def _minable_at(self, x, y):
@@ -341,15 +320,12 @@ class SimulationState:
 
     def _generate_water(self, initial_oasis_water, oasis_count):
         """ Terrain generation. Populate the grid with water. """
-        # Currently just uniformly distribute 1x1 oases.
-        # Might do a Gaussian blur later for coolness and interest.
         self._water = [[0] * self.size_y for _ in range(self.size_x)]
         for (x, y) in self._unique_random_coords(oasis_count):
             self._water[x][y] = initial_oasis_water
 
     def _init_agents(self, agent_count, initial_agent_water):
-        """ Initiate IDs and locations for agents. """
-        # Distribute agents uniformly.
+        """ Initiate IDs and locations for agents. Distribute agents uniformly """
         current_id = 0
         self.agent_count = agent_count
         self._agents_by_id = []
@@ -521,7 +497,6 @@ class Environment(Model):
 
     def end_simulation(self) -> None:
         """Cleanup."""
-        # Nothing to do, currently.
         pass
 
     def address_to_id(self, agent_address):

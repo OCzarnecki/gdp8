@@ -8,10 +8,10 @@ aea_version: '>=1.0.1, <2.0.0'
 fingerprint:
   __init__.py: QmSwBuAQmvDfLbuUvJ7nfrNCEE8iYzmqZzcTYupPwEsG4G
   address_mapping.py: QmdtDvZFJq1foYShEig1emeQ3vq753VntF4CmFASBoBpUt
-  behaviours.py: QmPyQDNKb62ULtZ8GH6whFdk82wbUtNhPx5dkmjQCbrBKx
-  dialogues.py: QmdteuGzg4MaAa3UGAPxuEoZdTYn2uGM5oEjiB4iYB6rVy
-  environment.py: QmXqN2Q5a5eT7hsD5ni3CPjHzWZeCTHFnJXE2SJuRatv7f
-  handlers.py: QmVfKLqyPjpdJQy5Nx7LAhrVwSCRQyDDpBet5YkFApYzPK
+  behaviours.py: QmWq4seTdZSkdZthZwXWJsjhSxxEKN5aKzcTkrxqc3QZbv
+  dialogues.py: QmNxSNePHhhNgNrY47ArZ1wqHLM2zMVH6Exd14FqfPpxoZ
+  environment.py: QmRgdf94FgyEXcTjfgf6yev2xHbmtcoR3g4fjn3j2nGk9y
+  handlers.py: QmUxsw712NxLDkt7JD8TQm6XcwBm4UrzeaV9T8gS9RHVEy
   replay_logger.py: QmTSN9yKyKwHKu6HuvLYE1BiTWtcTxEWWJ1ftCNvTkdSKx
 fingerprint_ignore_patterns: []
 connections: []

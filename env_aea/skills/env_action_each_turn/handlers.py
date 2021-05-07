@@ -34,7 +34,7 @@ from packages.gdp8.skills.env_action_each_turn.environment import Environment, P
 
 
 class EnvironmentHandler(Handler):
-    """This class handles oef messages."""
+    """This class handles Agent Environment messages."""
 
     SUPPORTED_PROTOCOL = AgentEnvironmentMessage.protocol_id
 
@@ -94,15 +94,6 @@ class EnvironmentHandler(Handler):
         self.context.logger.info(
             "received invalid agent_env message={}, unidentified dialogue.".format(agent_env_msg)
         )
-        #default_dialogues = cast(DefaultDialogues, self.context.default_dialogues)
-        #default_msg, _ = default_dialogues.create(
-            #counterparty=agent_env_msg.sender,
-            #performative=DefaultMessage.Performative.ERROR,
-            #error_description=DefaultMessage.ErrorCode.INVALID_DIALOGUE,
-            #error_msg="Invalid dialogue.",
-            #error_data={"Agent Environment Message": agent_env_msg.encode()},
-        #)
-        #self.context.outbox.put_message(message=default_msg)
 
     def _handle_valid_tick_reply(self, agent_env_msg: AgentEnvironmentMessage):
         """
@@ -119,10 +110,6 @@ class EnvironmentHandler(Handler):
                 environment.address_to_id(agent_env_msg.sender), agent_env_msg.sender
             )
         )
-        # Agents reply should only be handled if they concern the current turn. 
-        # FIXME getting rid of this for now, because of weird message shenanigans:
-        #     turn_number' content is not set.
-        # assert(agent_env_msg.turn_number == self.context.environment.turn_number)
 
         environment.save_action(agent_env_msg.sender, agent_env_msg.command)
 

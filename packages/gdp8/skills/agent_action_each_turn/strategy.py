@@ -36,8 +36,11 @@ from packages.gdp8.protocols.agent_environment.dialogues import AgentEnvironment
 
 class DogStrategy(Model):
     """
-    This class defines the strategy for the agent
-    Generic Strategy is to gather agent water amount before making a decision
+    This class defines the strategy Explorer Dogs for the agent
+    The explorer dogs:
+    They're loyal, stubborn, and just a little smart. They actively go out and seek water when they're hydrated, when
+    they are not hydrated, they will ask agents encountered about water directions and return to where they think the
+    closest water is at (could be from info of another agent, could be from previous exploration)
     """
 
     tile_water = None
@@ -47,14 +50,12 @@ class DogStrategy(Model):
     south_neighbour_id = None
     west_neighbour_id = None
     neighbour_water_amount = None
-    # neighbour_water_amount are list of twos of agent_id and their info which = "Unknown" initially,
-    # = "Asking" if a message has been sent to ask
     current_env_message = None
     current_env_dialogue = None
     round_no = -1
     is_round_done = True
-    agent_messages_returned_waiting_for_response = []  # Storing any messages of future round
-    agent_message_asking_for_my_water = []  # Storing any messages of future round
+    agent_messages_returned_waiting_for_response = []
+    agent_message_asking_for_my_water = []
     asked_for_info_already = True
     water_location: list[list[int]] = []
     move_direction_last_turn = "None"
@@ -69,14 +70,9 @@ class DogStrategy(Model):
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
                                agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
-        # ENV messages should only be allowed to arrive when last round is done and should forever be
-        # coming in the right sequence (1 then 2 then 3...)
-        # Assert correct round and ready to accept
-        # Assert last round done
         assert agent_environment_message.turn_number == self.round_no + 1, \
             agent_environment_message.turn_number + "." + str(self.round_no)
         assert self.is_round_done
-        self.context.logger.info("CHUN_TESTING_WATER_LOCATION = " + str(self.water_location))
         self.round_no += 1
         self.current_env_message = agent_environment_message
         self.current_env_dialogue = agent_environment_dialogue
@@ -106,21 +102,13 @@ class DogStrategy(Model):
             elif self.move_direction_last_turn == "south":
                 new_list = [[x, y + 1] for [x, y] in self.water_location]
             else:
-                # assert(self.move_direction_last_turn == "west")
-                if not self.move_direction_last_turn == "west":
-                    self.context.logger.info("invalid move direction last turn = " + self.move_direction_last_turn)
+                assert(self.move_direction_last_turn == "west")
                 new_list = [[x + 1, y] for [x, y] in self.water_location]
             self.water_location = new_list
 
     def receive_agent_agent_info(self, agent_agent_message: AgentAgentMessage) -> None:
-        # If round number is of prev round. discard
-        # If round number is of future round. something is wrong cuz you should not be able to
-        # request anything
-        # assert self.round_no >= agent_agent_message.turn_number
-        # if self.round_no == agent_agent_message.turn_number:
 
         if not self.is_round_done:
-            # Use info
             sender = agent_agent_message.sender
             reply = agent_agent_message.reply
             if reply.find(".") == -1 and reply != "None":
@@ -147,10 +135,6 @@ class DogStrategy(Model):
                     [x, y] = reply.split(".")
                     x = int(x)
                     y = int(y)
-                    # x.y should be returned denoting x steps North and y steps East
-                    # tokens = [x,y]
-                    # Add the direction of this agent to cuz xy is the relative distance from that agent to water not
-                    # distance of me to water
                     if self.north_neighbour_id == sender:
                         y += 1
                     elif self.east_neighbour_id == sender:
@@ -172,17 +156,13 @@ class DogStrategy(Model):
     def add_to_water_location(self, xy_coordinates) -> None:
         try:
             self.water_location.index(xy_coordinates)
-            # if doesn't fail, we already know there is water there, nothing to be done
         except ValueError:
             self.water_location.append(xy_coordinates)
 
     def deal_with_an_agent_asking_for_info(self) -> bool:
-        # Return true if a request was dealt with, return false if there were no request dealt with
         if len(self.agent_message_asking_for_my_water) == 0:
-            # no request
             return False
         else:
-            # there is request, test round no, deal with it if correct
             request, *self.agent_message_asking_for_my_water = self.agent_message_asking_for_my_water
             [message_, dialogue_] = request
             message = cast(AgentAgentMessage, message_)
@@ -214,23 +194,17 @@ class DogStrategy(Model):
                 return False
 
     def enough_info_to_make_decision(self) -> bool:
-        # Wait till all info that were asked are returned
         for i in self.neighbour_water_amount:
             if i[1] == "Asking" or i[2] == "Asking":
                 return False
         return True
 
     def ask_for_info_and_maybe_make_decision(self) -> None:
-        # state, am i exploring? or am i in desperation need for water
-        # If exploring:
-        # If tile water > 100, mark and rmb
-        # Replenish water supply if on water
         if self.agent_water <= self.desperate_for_water_when_below:
             state = "returning"
         else:
             state = "exploring"
         self.context.logger.info("agent in state = " + state)
-        # no matter what, update memory about this tile
         try:
             self.water_location.remove([0, 0])
         except ValueError:
@@ -239,7 +213,6 @@ class DogStrategy(Model):
             self.water_location.append([0, 0])
         if state == "exploring":
             if self.agent_water < self.agent_max_capacity - self.agent_max_dig_rate and self.tile_water > 0:
-                # Replenish water supply, no need for asking for info
                 self.asked_for_info_already = True
                 return_agent_env_message = self.current_env_dialogue.reply(
                     performative=AgentEnvironmentMessage.Performative.ACTION,
@@ -250,9 +223,7 @@ class DogStrategy(Model):
                 self.context.outbox.put_message(message=return_agent_env_message)
                 self.is_round_done = True
             else:
-                # No need to ask for info, exploring
                 self.asked_for_info_already = True
-                # Explore, follow path from last round with high probability, can return to env immediately
                 if self.move_direction_last_turn == "None":
                     randomizer = random.randint(1, 4)
                     if randomizer == 1:
@@ -305,7 +276,6 @@ class DogStrategy(Model):
                 self.is_round_done = True
         if state == "returning":
             if self.tile_water > 1:
-                # Replenish water supply, no need for asking for info
                 self.asked_for_info_already = True
                 return_agent_env_message = self.current_env_dialogue.reply(
                     performative=AgentEnvironmentMessage.Performative.ACTION,
@@ -316,7 +286,6 @@ class DogStrategy(Model):
                 self.context.outbox.put_message(message=return_agent_env_message)
                 self.is_round_done = True
             else:
-                # Ask all other agent about closest water location, make_decision later
                 self.ask_all_neighbour_water_location()
                 self.asked_for_info_already = True
 
@@ -335,7 +304,6 @@ class DogStrategy(Model):
             self.context.logger.info("sending agent message to " + id_of_agent_to_ask)
 
     def find_path_to_closest_water(self) -> str:
-        # Look at info in water location, find closest
         if len(self.water_location) == 0:
             return "None"
         else:
@@ -407,15 +375,13 @@ class AltruisticGoldfishStrategy(Model):
     agent_water = None
     neighbour_id = None
     neighbour_water_amount = None
-    # neighbour_water_amount are list of twos of agent_id and their info which = "Unknown" initially,
-    # = "Asking" if a message has been sent to ask
     current_env_message = None
     current_env_dialogue = None
     round_no = -1
     is_round_done = True
     asked_for_info_already = True
-    agent_messages_returned_waiting_for_response = []  # Storing any messages of future round
-    agent_message_asking_for_my_water = []  # Storing any messages of future round
+    agent_messages_returned_waiting_for_response = []
+    agent_message_asking_for_my_water = []
     a_neighbour_is_thirsty = None
     a_neighbour_has_water_to_offer = None
 
@@ -427,10 +393,6 @@ class AltruisticGoldfishStrategy(Model):
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
                                agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
-        # ENV messages should only be allowed to arrive when last round is done and should forever be
-        # coming in the right sequence (1 then 2 then 3...)
-        # Assert correct round and ready to accept
-        # Assert last round done
         assert agent_environment_message.turn_number == self.round_no + 1
         assert self.is_round_done
         self.round_no += 1
@@ -450,13 +412,7 @@ class AltruisticGoldfishStrategy(Model):
         self.a_neighbour_is_thirsty = False
 
     def receive_agent_agent_info(self, agent_agent_message: AgentAgentMessage) -> None:
-        # If round number is of prev round. discard
-        # If round number is of future round. something is wrong because you should not be able to
-        # request anything
-        # assert self.round_no >= agent_agent_message.turn_number
-        # if self.round_no == agent_agent_message.turn_number:
         if not self.is_round_done:
-            # Use info
             index = self.neighbour_water_amount.index([agent_agent_message.sender, "Asking"])
             self.neighbour_water_amount[index] = [agent_agent_message.sender, int(agent_agent_message.reply)]
             if self.neighbour_water_amount[index][1] <= self.desperate_for_water_when_below:
@@ -465,12 +421,9 @@ class AltruisticGoldfishStrategy(Model):
                 self.a_neighbour_has_water_to_offer = True
 
     def deal_with_an_agent_asking_for_info(self) -> bool:
-        # Return true if a request was dealt with, return false if there were no request dealt with
         if not self.agent_message_asking_for_my_water:
-            # no request
             return False
         else:
-            # there is request, test round no, deal with it if correct
             request, *self.agent_message_asking_for_my_water = self.agent_message_asking_for_my_water
             [message_, dialogue_] = request
             message = cast(AgentAgentMessage, message_)
@@ -488,14 +441,10 @@ class AltruisticGoldfishStrategy(Model):
                 return False
 
     def ask_for_info_and_maybe_make_decision(self) -> None:
-        # currently, ALL info has to be asked for
-        # return true if a message asking for water is sent
-        # false otherwise
         for i in self.neighbour_water_amount:
             if i[1] == "Unknown":
                 i[1] = "Asking"
                 agent_agent_dialogues = cast(AgentAgentDialogues, self.context.agent_agent_dialogues)
-                # message sent to another agent
                 send_agent_agent_message, _ = agent_agent_dialogues.create(
                     counterparty=i[0],
                     performative=AgentAgentMessage.Performative.SENDER_REQUEST,
@@ -507,45 +456,31 @@ class AltruisticGoldfishStrategy(Model):
         self.asked_for_info_already = True
 
     def enough_info_to_make_decision(self) -> bool:
-        # If the agent is thirsty it needs to wait until its neighbours told him their water status
         for i in self.neighbour_water_amount:
             if i[1] == "Unknown" or i[1] == "Asking":
                 return False
         return True
 
     def make_decision_send_to_env(self) -> None:
-        # *******************************************************
-        # decision making:
-        # if thirsty : drink (either from cell or from neighbours)
-        # if water in current cell and neighbours thirsty : send water
-        # else move randomly (up, down, left or right)
-        # ********************************************************
-
         if self.tile_water > 0:
             if not self.a_neighbour_is_thirsty:
-                decision = "NULL"  # neighbours are not thirsty and the cell has water
+                decision = "NULL"
             elif self.agent_water <= 10:
-                decision = "NULL"  # agent desperate
+                decision = "NULL"
             else:
-                # a neighbour is thirsty, if cell has more water than I need till FULL, offer half of my water
                 water = min(self.agent_water // 2, self.tile_water - (self.agent_max_water - self.agent_water))
                 if water < 5:
                     decision: str = "NULL"
                 else:
                     decision: str = "offer_water" + "." + str(water)
         else:
-            # the cell has no water
             if self.agent_water > self.desperate_for_water_when_below and self.a_neighbour_is_thirsty:
-                # a neighbour is thirsty so it offers the extra water that he has
                 water = self.agent_water - self.desperate_for_water_when_below
                 decision: str = "offer_water" + "." + str(water)
             elif self.agent_water <= self.desperate_for_water_when_below and self.a_neighbour_has_water_to_offer:
-                # agent is thirsty and another has water to offer
                 water = self.desperate_for_water_when_below - self.agent_water + 10
-                # +10 so agent does not ask for 1 water every other turn
                 decision: str = "receive_water" + "." + str(water)
             else:
-                # cell has no water and neighbours are not thirsty or if they are agent doesn't have any to offer
                 direction = _rdm_direction()
                 decision: str = "move" + "." + str(direction)
 
@@ -588,10 +523,6 @@ class LoneGoldfishStrategy(Model):
 
     def receive_agent_env_info(self, agent_environment_message: AgentEnvironmentMessage,
                                agent_environment_dialogue: AgentEnvironmentDialogue) -> None:
-        # ENV messages should only be allowed to arrive when last round is done and should forever be
-        # coming in the right sequence (1 then 2 then 3...)
-        # Assert correct round and ready to accept
-        # Assert last round done
         assert agent_environment_message.turn_number == self.round_no + 1
         assert self.is_round_done
         self.round_no += 1
@@ -602,11 +533,6 @@ class LoneGoldfishStrategy(Model):
         self.is_round_done = False
 
     def make_decision_send_to_env(self) -> None:
-        # *******************************************************
-        # decision making:
-        # if cell contains water: drink maximum amount
-        # else move randomly (up, down, left or right)
-        # ********************************************************
         if self.tile_water > 0:
             decision = "NULL"
         else:

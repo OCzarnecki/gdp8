@@ -85,9 +85,6 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         elif environment.phase.value == Phase.COLLECTING_AGENTS_REPLY.value:
             if environment.agents_reply_received:
                 environment.phase = Phase.AGENTS_REPLY_RECEIVED
-                # elif after_some_time_constraint:
-                #   environment.remove_dead_agents() # agents are considered dead if they haven't replied after a delay
-                #   environment.phase = Phase.AGENTS_REPLY_RECEIVED
 
                 environment.phase = Phase.START_NEXT_SIMULATION_TURN
                 environment.update_simulation()
@@ -101,14 +98,8 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
             # the simulation has been canceled
             environment.end_simulation()
             self._cancel_simulation(environment)
-            # save the env state
-            # kill all agents
-            # end simulation
-            # -> Who does the above ? 
             return None
         else:
-            # there has been an issue, the env should be in one of those phases
-            # return phase of env
             return None
 
     def teardown(self) -> None:
@@ -123,30 +114,6 @@ class EnvironmentLogicBehaviour(TickerBehaviour):
         if self.context.is_active:
             self.context.is_active = False
             Path("$SIMULATION_ENDED").touch()
-
-        #"""Notify agents that the simulation is cancelled."""
-        #self.context.logger.info("notifying agents that the simulation is cancelled.")
-
-        #agent_environment_dialogues = cast(AgentEnvironmentDialogues, self.context.agent_environment_dialogues)
-        #for agent_address in environment.registration.agent_addr_to_name.keys():
-            #_agent_environment_dialogues = agent_environment_dialogues.get_dialogues_with_counterparty(
-                #agent_address
-            #)
-            #if len(_agent_environment_dialogues) != 1:
-                #raise ValueError("Error when retrieving dialogue.")
-            #agent_environment_dialogue = _agent_environment_dialogues[0]
-            #last_msg = agent_environment_dialogue.last_message
-            #if last_msg is None:  # pragma: nocover
-                #raise ValueError("Error when retrieving last message.")
-            #env_msg = agent_environment_dialogue.reply(
-                #performative=AgentEnvironmentMessage.Performative.CANCELLED,
-            #)
-            #self.context.outbox.put_message(message=env_msg)
-
-        #if (environment.phase == Phase.START_NEXT_SIMULATION_TURN
-                #or environment.phase == Phase.COLLECTING_AGENTS_REPLY
-                #or environment.phase == Phase.AGENTS_REPLY_RECEIVED):  # ## indentation error possible
-            #self.context.is_active = False  # ## when was it set to true ?
 
     def _send_tick_messages(self, environment: Environment) -> None:
         """Collects data from the env and sends tick messages to all agents alive for current turn of simulation."""

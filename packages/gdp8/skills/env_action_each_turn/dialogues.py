@@ -21,8 +21,8 @@
 This module contains the classes required for dialogue management.
 - DefaultDialogue: The dialogue class maintains state of a dialogue of type default and manages it.
 - DefaultDialogues: The dialogues class keeps track of all dialogues of type default.
-- OefSearchDialogue: The dialogue class maintains state of a dialogue of type oef_search and manages it.
-- OefSearchDialogues: The dialogues class keeps track of all dialogues of type oef_search.
+- AgentEnvironmentDialogue: The dialogue class maintains state of a dialogue of type agent_environment and manages it.
+- AgentEnvironmentDialogues: The dialogues class keeps track of all dialogues of type agent_environment.
 """
 from typing import Any
 
